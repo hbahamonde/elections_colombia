@@ -1,0 +1,44 @@
+{{ block title }}
+Summary
+{{ endblock }}
+
+{{ block content }}
+
+<p><strong>Initial endowment:</strong> {{ initial_endowment }}</p>
+<p><strong>Final balance:</strong> {{ final_balance }}</p>
+<p><strong>Timer pattern across tasks:</strong> {{ timed_tasks }}</p>
+<p><strong>Attribute order shown to this subject:</strong> {{ attribute_order }}</p>
+<p><strong>Comparison metric:</strong> {{ metric_label }}</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Task</th>
+            <th>Timed?</th>
+            <th>Time spent</th>
+            <th>Correct?</th>
+            <th>Accuracy payoff</th>
+            <th>Time penalty</th>
+            <th>Info cost</th>
+            <th>Net change</th>
+            <th>Balance after task</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for p in rounds %}
+        <tr>
+            <td>{{ p.round_number }}</td>
+            <td>{{ p.timed_task }}</td>
+            <td>{{ p.time_spent_seconds }}</td>
+            <td>{{ p.correct }}</td>
+            <td>{{ p.accuracy_payoff }}</td>
+            <td>{{ p.time_penalty_applied }}</td>
+            <td>{{ p.info_cost_spent }}</td>
+            <td>{{ p.task_net_change }}</td>
+            <td>{{ p.balance_after_task }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{{ endblock }}

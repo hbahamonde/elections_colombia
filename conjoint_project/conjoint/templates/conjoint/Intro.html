@@ -1,0 +1,53 @@
+{{ block title }}
+Conjoint Demo
+{{ endblock }}
+
+{{ block content }}
+
+<p><strong>Initial endowment:</strong> {{ initial_endowment }} points</p>
+<p><strong>Current balance:</strong> {{ current_balance }} points</p>
+
+<p>
+    In each task, you will see two candidate photos.
+</p>
+
+<p>
+    You may selectively unlock three profile attributes for each candidate:
+    <strong>party</strong>, <strong>age</strong>, and <strong>occupation</strong>.
+</p>
+
+<p>
+    Each attribute has its own point cost:
+</p>
+
+<ul>
+    <li><strong>Party:</strong> {{ party_cost }} points</li>
+    <li><strong>Age:</strong> {{ age_cost }} points</li>
+    <li><strong>Occupation:</strong> {{ occupation_cost }} points</li>
+</ul>
+
+<p>
+    These costs are determined centrally by the design and can be varied across implementations.
+</p>
+
+<p>
+    Your task is to guess which candidate obtained the higher vote share.
+</p>
+
+<p>
+    If your answer is correct, you gain <strong>{{ correct_payoff }}</strong> points.
+    If your answer is incorrect, you lose <strong>{{ incorrect_payoff_display }}</strong> points.
+</p>
+
+<p>
+    In timed tasks, each second costs <strong>{{ time_penalty_per_second }}</strong> point,
+    but only if your answer is correct.
+</p>
+
+<p>
+    After each task, your point balance will be updated.
+</p>
+
+{{ next_button }}
+
+{{ endblock }}
