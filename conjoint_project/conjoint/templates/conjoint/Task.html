@@ -1,14 +1,15 @@
 {{ block title }}
-Task {{ round_number }} of {{ total_rounds }}
+Decisión {{ round_number }} de {{ total_rounds }}
 {{ endblock }}
 
 {{ block content }}
 
 <style>
     .task-wrapper {
-        max-width: 1250px;
+        max-width: 1150px;
         margin: 0 auto;
     }
+
     .top-bar {
         display: flex;
         justify-content: space-between;
@@ -19,12 +20,21 @@ Task {{ round_number }} of {{ total_rounds }}
         border-radius: 8px;
         background: #f8f9fa;
     }
+
+    .question {
+        text-align: center;
+        font-size: 24px;
+        font-weight: 700;
+        margin: 22px 0;
+    }
+
     .profiles {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 28px;
         margin-top: 20px;
     }
+
     .profile-card {
         border: 1px solid #ddd;
         border-radius: 10px;
@@ -32,22 +42,28 @@ Task {{ round_number }} of {{ total_rounds }}
         background: white;
         text-align: center;
     }
+
     .profile-card img {
         max-width: 100%;
-        max-height: 420px;
+        max-height: 430px;
         object-fit: contain;
         border-radius: 6px;
         margin-bottom: 16px;
     }
-    .unlock-stack {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        margin-top: 16px;
-        margin-bottom: 14px;
-        align-items: center;
+
+    .option-label {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 12px;
     }
-    .unlock-btn {
+
+    .learn-row {
+        min-height: 54px;
+        margin-top: 8px;
+        margin-bottom: 10px;
+    }
+
+    .learn-btn {
         width: 260px;
         padding: 10px 16px;
         border: 1px solid #666;
@@ -55,146 +71,229 @@ Task {{ round_number }} of {{ total_rounds }}
         background: white;
         cursor: pointer;
     }
+
     .choose-row {
-        margin-top: 10px;
+        margin-top: 14px;
     }
+
     .choice-btn {
         width: 260px;
-        padding: 10px 16px;
+        padding: 12px 16px;
         border: none;
         border-radius: 8px;
         background: #0d6efd;
         color: white;
         cursor: pointer;
+        font-size: 17px;
+        font-weight: 700;
     }
+
     .selected-choice {
         background: #198754 !important;
     }
-    .unlocked-info {
-        margin-top: 16px;
+
+    .revealed-info {
+        display: none;
+        margin-top: 12px;
         padding: 12px;
         border: 1px solid #d9d9d9;
         border-radius: 8px;
         background: #f5f5f5;
-        text-align: left;
-        min-height: 110px;
+        text-align: center;
     }
-    .info-line {
-        display: none;
-        margin-bottom: 8px;
-    }
+
     .timer-box {
         font-weight: 700;
         font-size: 18px;
         color: #b02a37;
     }
-    .feedback-box {
+
+    .cost-box {
         display: none;
-        margin-top: 28px;
-        padding: 16px;
-        border-radius: 10px;
-        border: 1px solid #ccc;
+        margin: 12px auto;
+        padding: 12px;
+        max-width: 380px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
         background: #f8f9fa;
+        text-align: left;
     }
-    .correct-box {
-        background: #eaf7ee;
-        border-color: #198754;
-    }
-    .wrong-box {
-        background: #fbeaea;
-        border-color: #b02a37;
+
+    .cost-box input {
+        width: 80px;
+        margin-left: 6px;
+        margin-right: 8px;
     }
 </style>
 
 <div class="task-wrapper">
     <div class="top-bar">
         <div>
-            <strong>Goal:</strong> Choose the candidate you think obtained the higher {{ metric_label }}.
-            <br>
-            <strong>Current balance:</strong> <span id="current-balance">{{ current_balance }}</span> points
+            <strong>Por favor observe ambos candidatos antes de responder.</strong>
         </div>
+
         <div>
             {% if timed_task %}
-                <span class="timer-box">Timed task — elapsed time: <span id="timer">0</span> sec</span>
-            {% else %}
-                <span><strong>Untimed task</strong></span>
+                <span class="timer-box">Tiempo: <span id="timer">0</span> segundos</span>
             {% endif %}
         </div>
     </div>
 
-    <div style="margin-bottom: 16px;">
-        <strong>Correct answer:</strong> +{{ correct_payoff }} points<br>
-        <strong>Incorrect answer:</strong> {{ incorrect_payoff }} points<br>
-        {% if timed_task %}
-            <strong>Time penalty:</strong> {{ time_penalty_per_second }} point per second, only if correct<br>
-        {% endif %}
-        <strong>Current information cost spent:</strong> <span id="info-cost-total">0</span>
+    <div class="question">
+        ¿Por quién votaría usted?
     </div>
 
     <div class="profiles">
-        <div class="profile-card">
-            <img src="{% static left_candidate.image_path %}" alt="Candidate on left">
+        <div class="profile-card" id="left-card">
+            <div class="option-label">Opción 1</div>
 
-            <div class="unlock-stack" id="left-unlock-stack"></div>
+            <img src="{% static left_candidate.image_path %}" alt="Opción 1">
+
+            <div class="learn-row">
+                {% if info_condition == 'timer_mostrar_mas' %}
+                    <button type="button" id="learn-left" class="learn-btn" onclick="startReveal('left')">
+                        Mostrar más
+                    </button>
+
+                    <div id="left-ideology-info" class="revealed-info">
+                        <strong>Ideología:</strong>
+                        {% if left_candidate.ideologia_cat %}
+                            {{ left_candidate.ideologia_cat }}
+                        {% else %}
+                            Sin información
+                        {% endif %}
+                    </div>
+                {% elif info_condition == 'captcha_ver_mas' %}
+                    <button type="button" id="learn-left" class="learn-btn" onclick="startReveal('left')">
+                        Ver más
+                    </button>
+
+                    <div id="left-cost-box" class="cost-box">
+                        <p><strong>Tarea breve:</strong> Para ver la información, escriba el resultado.</p>
+                        <label>{{ captcha_left_a }} + {{ captcha_left_b }} = <input type="number" id="left-cost-answer"></label>
+                        <button type="button" onclick="checkCostTask('left')">Enviar</button>
+                        <div id="left-cost-error" style="display:none; color:#b02a37; margin-top:8px;">
+                            Inténtelo nuevamente.
+                        </div>
+                    </div>
+
+                    <div id="left-ideology-info" class="revealed-info">
+                        <strong>Ideología:</strong>
+                        {% if left_candidate.ideologia_cat %}
+                            {{ left_candidate.ideologia_cat }}
+                        {% else %}
+                            Sin información
+                        {% endif %}
+                    </div>
+                {% elif info_condition == 'control_ver_mas' %}
+                    <button type="button" id="learn-left" class="learn-btn" onclick="startReveal('left')">
+                        Ver más
+                    </button>
+
+                    <div id="left-ideology-info" class="revealed-info">
+                        <strong>Ideología:</strong>
+                        {% if left_candidate.ideologia_cat %}
+                            {{ left_candidate.ideologia_cat }}
+                        {% else %}
+                            Sin información
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
 
             <div class="choose-row">
                 <button type="button" id="choose-left" class="choice-btn" onclick="chooseCandidate('{{ left_candidate.id }}', 'left')">
-                    Choose this candidate
+                    Votaría por opción 1
                 </button>
-            </div>
-
-            <div class="unlocked-info">
-                <div id="left-party-info" class="info-line"><strong>Party:</strong> {{ left_candidate.party }}</div>
-                <div id="left-age-info" class="info-line"><strong>Age:</strong> {{ left_candidate.age }}</div>
-                <div id="left-occupation-info" class="info-line"><strong>Occupation:</strong> {{ left_candidate.occupation }}</div>
             </div>
         </div>
 
-        <div class="profile-card">
-            <img src="{% static right_candidate.image_path %}" alt="Candidate on right">
+        <div class="profile-card" id="right-card">
+            <div class="option-label">Opción 2</div>
 
-            <div class="unlock-stack" id="right-unlock-stack"></div>
+            <img src="{% static right_candidate.image_path %}" alt="Opción 2">
+
+            <div class="learn-row">
+                {% if info_condition == 'timer_mostrar_mas' %}
+                    <button type="button" id="learn-right" class="learn-btn" onclick="startReveal('right')">
+                        Mostrar más
+                    </button>
+
+                    <div id="right-ideology-info" class="revealed-info">
+                        <strong>Ideología:</strong>
+                        {% if right_candidate.ideologia_cat %}
+                            {{ right_candidate.ideologia_cat }}
+                        {% else %}
+                            Sin información
+                        {% endif %}
+                    </div>
+                {% elif info_condition == 'captcha_ver_mas' %}
+                    <button type="button" id="learn-right" class="learn-btn" onclick="startReveal('right')">
+                        Ver más
+                    </button>
+
+                    <div id="right-cost-box" class="cost-box">
+                        <p><strong>Tarea breve:</strong> Para ver la información, escriba el resultado.</p>
+                        <label>{{ captcha_right_a }} + {{ captcha_right_b }} = <input type="number" id="right-cost-answer"></label>
+                        <button type="button" onclick="checkCostTask('right')">Enviar</button>
+                        <div id="right-cost-error" style="display:none; color:#b02a37; margin-top:8px;">
+                            Inténtelo nuevamente.
+                        </div>
+                    </div>
+
+                    <div id="right-ideology-info" class="revealed-info">
+                        <strong>Ideología:</strong>
+                        {% if right_candidate.ideologia_cat %}
+                            {{ right_candidate.ideologia_cat }}
+                        {% else %}
+                            Sin información
+                        {% endif %}
+                    </div>
+                {% elif info_condition == 'control_ver_mas' %}
+                    <button type="button" id="learn-right" class="learn-btn" onclick="startReveal('right')">
+                        Ver más
+                    </button>
+
+                    <div id="right-ideology-info" class="revealed-info">
+                        <strong>Ideología:</strong>
+                        {% if right_candidate.ideologia_cat %}
+                            {{ right_candidate.ideologia_cat }}
+                        {% else %}
+                            Sin información
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
 
             <div class="choose-row">
                 <button type="button" id="choose-right" class="choice-btn" onclick="chooseCandidate('{{ right_candidate.id }}', 'right')">
-                    Choose this candidate
+                    Votaría por opción 2
                 </button>
             </div>
-
-            <div class="unlocked-info">
-                <div id="right-party-info" class="info-line"><strong>Party:</strong> {{ right_candidate.party }}</div>
-                <div id="right-age-info" class="info-line"><strong>Age:</strong> {{ right_candidate.age }}</div>
-                <div id="right-occupation-info" class="info-line"><strong>Occupation:</strong> {{ right_candidate.occupation }}</div>
-            </div>
         </div>
     </div>
 
-    <div id="feedback-box" class="feedback-box">
-        <div id="feedback-text"></div>
-        <div style="margin-top: 10px;">
-            <strong>Accuracy payoff:</strong> <span id="accuracy-payoff-preview"></span><br>
-            <strong>Time penalty:</strong> <span id="time-penalty-preview"></span><br>
-            <strong>Info cost:</strong> <span id="info-cost-preview"></span><br>
-            <strong>Net change this task:</strong> <span id="net-change-preview"></span><br>
-            <strong>Balance after task:</strong> <span id="balance-after-preview"></span>
-        </div>
-    </div>
+    <input type="hidden" name="left_ideology_opened" id="id_left_ideology_opened" value="False">
+    <input type="hidden" name="right_ideology_opened" id="id_right_ideology_opened" value="False">
 
-    <input type="hidden" name="left_party_opened" id="id_left_party_opened" value="False">
-    <input type="hidden" name="left_age_opened" id="id_left_age_opened" value="False">
-    <input type="hidden" name="left_occupation_opened" id="id_left_occupation_opened" value="False">
-
-    <input type="hidden" name="right_party_opened" id="id_right_party_opened" value="False">
-    <input type="hidden" name="right_age_opened" id="id_right_age_opened" value="False">
-    <input type="hidden" name="right_occupation_opened" id="id_right_occupation_opened" value="False">
+    <input type="hidden" name="info_cost_task_completed" id="id_info_cost_task_completed" value="False">
+    <input type="hidden" name="info_cost_attempts" id="id_info_cost_attempts" value="0">
 
     <input type="hidden" name="decision_candidate_id" id="id_decision_candidate_id">
     <input type="hidden" name="decision_side" id="id_decision_side">
-    <input type="hidden" name="time_spent_seconds" id="id_time_spent_seconds" value="0">
-    <input type="hidden" name="info_cost_spent" id="id_info_cost_spent" value="0">
 
-    <div style="margin-top: 28px;">
-        <button id="next-btn" class="otree-btn-next btn btn-primary" disabled>Next</button>
+    <input type="hidden" name="time_spent_seconds" id="id_time_spent_seconds" value="0">
+    <input type="hidden" name="time_to_first_choice_seconds" id="id_time_to_first_choice_seconds" value="0">
+    <input type="hidden" name="choice_changes" id="id_choice_changes" value="0">
+    <input type="hidden" name="learn_more_clicks" id="id_learn_more_clicks" value="0">
+    <input type="hidden" name="mouse_distance_px" id="id_mouse_distance_px" value="0">
+    <input type="hidden" name="left_hover_seconds" id="id_left_hover_seconds" value="0">
+    <input type="hidden" name="right_hover_seconds" id="id_right_hover_seconds" value="0">
+
+    <div style="margin-top: 28px; text-align:center;">
+        <button id="next-btn" class="otree-btn-next btn btn-primary" disabled>
+            Continuar
+        </button>
     </div>
 </div>
 
@@ -203,139 +302,156 @@ Task {{ round_number }} of {{ total_rounds }}
     let timerInterval = null;
 
     let timedTask = {{ timed_task|json }};
-    let correctPayoff = {{ correct_payoff }};
-    let incorrectPayoff = {{ incorrect_payoff }};
-    let timePenaltyPerSecond = {{ time_penalty_per_second }};
-    let winnerSide = "{{ winner_side }}";
-    let winnerMetric = {{ winner_metric|json }};
-    let currentBalance = {{ current_balance }};
-
-    let attributeOrder = {{ attribute_order_json }};
-    let attributeCosts = {{ attribute_costs_json }};
-    let attributeWeights = {{ attribute_weights_json }};
-
-    let infoSpent = 0;
-    let feedbackShown = false;
-
-    const attributeLabels = {
-        party: 'Party',
-        age: 'Age',
-        occupation: 'Occupation'
+    let infoCondition = {{ info_condition|json }};
+    let captchaAnswers = {
+        left: {{ captcha_left_sum }},
+        right: {{ captcha_right_sum }}
     };
+    let firstChoiceMade = false;
+    let currentChoiceSide = null;
+    let choiceChanges = 0;
+    let learnMoreClicks = 0;
+    let infoCostAttempts = 0;
+
+    let mouseDistance = 0;
+    let lastMouseX = null;
+    let lastMouseY = null;
+
+    let leftHoverStart = null;
+    let rightHoverStart = null;
+    let leftHoverSeconds = 0;
+    let rightHoverSeconds = 0;
+
+    function elapsedSeconds() {
+        return (Date.now() - startTime) / 1000;
+    }
 
     function updateElapsedTime() {
-        const seconds = Math.floor((Date.now() - startTime) / 1000);
-        document.getElementById('id_time_spent_seconds').value = seconds;
+        const seconds = elapsedSeconds();
+        document.getElementById('id_time_spent_seconds').value = seconds.toFixed(3);
+
         if (timedTask) {
-            document.getElementById('timer').textContent = seconds;
+            document.getElementById('timer').textContent = Math.floor(seconds);
         }
+
         return seconds;
     }
 
-    function hiddenInputId(side, attr) {
-        return `id_${side}_${attr}_opened`;
+    function updateMouseDistance(event) {
+        if (lastMouseX !== null && lastMouseY !== null) {
+            const dx = event.clientX - lastMouseX;
+            const dy = event.clientY - lastMouseY;
+            mouseDistance += Math.sqrt(dx * dx + dy * dy);
+            document.getElementById('id_mouse_distance_px').value = mouseDistance.toFixed(2);
+        }
+
+        lastMouseX = event.clientX;
+        lastMouseY = event.clientY;
     }
 
-    function infoLineId(side, attr) {
-        return `${side}-${attr}-info`;
+    function startHover(side) {
+        if (side === 'left') {
+            leftHoverStart = Date.now();
+        } else {
+            rightHoverStart = Date.now();
+        }
     }
 
-    function unlockButtonId(side, attr) {
-        return `${side}-unlock-${attr}`;
+    function endHover(side) {
+        if (side === 'left' && leftHoverStart !== null) {
+            leftHoverSeconds += (Date.now() - leftHoverStart) / 1000;
+            leftHoverStart = null;
+            document.getElementById('id_left_hover_seconds').value = leftHoverSeconds.toFixed(3);
+        }
+
+        if (side === 'right' && rightHoverStart !== null) {
+            rightHoverSeconds += (Date.now() - rightHoverStart) / 1000;
+            rightHoverStart = null;
+            document.getElementById('id_right_hover_seconds').value = rightHoverSeconds.toFixed(3);
+        }
     }
 
-    function unlockAttribute(side, attr) {
-        const infoLine = document.getElementById(infoLineId(side, attr));
-        const input = document.getElementById(hiddenInputId(side, attr));
-        const btn = document.getElementById(unlockButtonId(side, attr));
+    function revealIdeology(side) {
+        document.getElementById(`${side}-ideology-info`).style.display = 'block';
+        document.getElementById(`id_${side}_ideology_opened`).value = 'True';
 
-        if (input.value === 'True') {
+        const button = document.getElementById(`learn-${side}`);
+        button.disabled = true;
+        button.textContent = 'Información mostrada';
+
+        const costBox = document.getElementById(`${side}-cost-box`);
+        if (costBox) {
+            costBox.style.display = 'none';
+        }
+    }
+
+    function startReveal(side) {
+        learnMoreClicks += 1;
+        document.getElementById('id_learn_more_clicks').value = learnMoreClicks;
+
+        if (infoCondition === 'captcha_ver_mas') {
+            document.getElementById(`${side}-cost-box`).style.display = 'block';
             return;
         }
 
-        infoLine.style.display = 'block';
-        input.value = 'True';
-        btn.disabled = true;
-
-        infoSpent += attributeCosts[attr];
-        document.getElementById('info-cost-total').textContent = infoSpent;
-        document.getElementById('id_info_cost_spent').value = infoSpent;
+        revealIdeology(side);
     }
 
-    function buildUnlockButtons(side) {
-        const container = document.getElementById(`${side}-unlock-stack`);
-        container.innerHTML = '';
+    function checkCostTask(side) {
+        infoCostAttempts += 1;
+        document.getElementById('id_info_cost_attempts').value = infoCostAttempts;
 
-        attributeOrder.forEach(attr => {
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.id = unlockButtonId(side, attr);
-            btn.className = 'unlock-btn';
-            btn.textContent = `Unlock ${attr} (-${attributeCosts[attr]} points)`;
-            btn.onclick = function() {
-                unlockAttribute(side, attr);
-            };
-            container.appendChild(btn);
-        });
+        const answer = parseInt(document.getElementById(`${side}-cost-answer`).value, 10);
+
+        if (answer === captchaAnswers[side]) {
+            document.getElementById('id_info_cost_task_completed').value = 'True';
+            revealIdeology(side);
+        } else {
+            document.getElementById(`${side}-cost-error`).style.display = 'block';
+        }
     }
 
     function chooseCandidate(candidateId, side) {
-        updateElapsedTime();
+        const seconds = updateElapsedTime();
+
+        if (!firstChoiceMade) {
+            firstChoiceMade = true;
+            document.getElementById('id_time_to_first_choice_seconds').value = seconds.toFixed(3);
+        }
+
+        if (currentChoiceSide !== null && currentChoiceSide !== side) {
+            choiceChanges += 1;
+            document.getElementById('id_choice_changes').value = choiceChanges;
+        }
+
+        currentChoiceSide = side;
 
         document.getElementById('id_decision_candidate_id').value = candidateId;
         document.getElementById('id_decision_side').value = side;
 
         document.getElementById('choose-left').classList.remove('selected-choice');
         document.getElementById('choose-right').classList.remove('selected-choice');
-        document.getElementById('choose-' + side).classList.add('selected-choice');
+        document.getElementById(`choose-${side}`).classList.add('selected-choice');
 
-        showFeedback(side);
         document.getElementById('next-btn').disabled = false;
     }
 
-    function showFeedback(chosenSide) {
-        if (feedbackShown) {
-            return;
-        }
+    document.addEventListener('mousemove', updateMouseDistance);
 
-        const seconds = updateElapsedTime();
-        const correct = (chosenSide === winnerSide);
+    document.getElementById('left-card').addEventListener('mouseenter', function() {
+        startHover('left');
+    });
 
-        let accuracyPayoff = correct ? correctPayoff : incorrectPayoff;
-        let timePenalty = 0;
+    document.getElementById('left-card').addEventListener('mouseleave', function() {
+        endHover('left');
+    });
 
-        if (correct && timedTask) {
-            timePenalty = seconds * timePenaltyPerSecond;
-        }
+    document.getElementById('right-card').addEventListener('mouseenter', function() {
+        startHover('right');
+    });
 
-        let netChange = accuracyPayoff - timePenalty - infoSpent;
-        let balanceAfter = Math.max(0, currentBalance + netChange);
-
-        const box = document.getElementById('feedback-box');
-        const text = document.getElementById('feedback-text');
-
-        box.style.display = 'block';
-
-        if (correct) {
-            box.classList.add('correct-box');
-            text.innerHTML = `<strong>Correct.</strong> The candidate you chose had the higher {{ metric_label }}.`;
-        } else {
-            box.classList.add('wrong-box');
-            text.innerHTML = `<strong>Incorrect.</strong> The candidate on the ${winnerSide} had the higher {{ metric_label }} (${winnerMetric}).`;
-        }
-
-        document.getElementById('accuracy-payoff-preview').textContent = accuracyPayoff;
-        document.getElementById('time-penalty-preview').textContent = `-${timePenalty}`;
-        document.getElementById('info-cost-preview').textContent = `-${infoSpent}`;
-        document.getElementById('net-change-preview').textContent = netChange;
-        document.getElementById('balance-after-preview').textContent = balanceAfter;
-
-        feedbackShown = true;
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        buildUnlockButtons('left');
-        buildUnlockButtons('right');
+    document.getElementById('right-card').addEventListener('mouseleave', function() {
+        endHover('right');
     });
 
     if (timedTask) {
@@ -344,6 +460,9 @@ Task {{ round_number }} of {{ total_rounds }}
 
     document.querySelector('form').addEventListener('submit', function() {
         updateElapsedTime();
+        endHover('left');
+        endHover('right');
+
         if (timerInterval) {
             clearInterval(timerInterval);
         }

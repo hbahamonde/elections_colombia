@@ -1,251 +1,132 @@
 from otree.api import *
 import csv
+import json
 import random
 from pathlib import Path
 
 
 doc = """
-Conjoint with:
-- pooled candidate draw
-- task-level timer randomization
-- attribute-level unlocking
-- randomized attribute order by subject
-- dynamic attribute pricing
-- running balance with endowment
+Image conjoint experiment.
+
+Participants choose between two candidate photos. Photos are stored in:
+_static/conjoint/images/
+
+Candidate metadata is read from:
+_static/conjoint/data/dataset.csv
+
+Participants only see ideology when assigned to an information treatment.
+The backend records candidate IDs and the full CSV row for each candidate shown.
 """
 
 
-def first_nonempty(row, keys):
-    for key in keys:
-        value = (row.get(key, '') or '').strip()
-        if value != '':
-            return value
-    return ''
+def clean_value(value):
+    if value is None:
+        return ''
+    return str(value).strip()
+
+
+def clean_candidate_id(value):
+    value = clean_value(value)
+
+    if value.endswith('.0'):
+        value = value[:-2]
+
+    return Path(value).stem
 
 
 def load_candidate_data():
-    data_path = (
-        Path(__file__).resolve().parent.parent
-        / '_static'
-        / 'conjoint'
-        / 'data'
-        / 'dataset.csv'
-    )
+    app_root = Path(__file__).resolve().parent.parent
+
+    data_path = app_root / '_static' / 'conjoint' / 'data' / 'dataset.csv'
+    image_dir = app_root / '_static' / 'conjoint' / 'images'
 
     if not data_path.exists():
         raise FileNotFoundError(f'dataset.csv not found at: {data_path}')
 
-    rows = {}
-    with open(data_path, encoding='utf-8-sig') as f:
+    if not image_dir.exists():
+        raise FileNotFoundError(f'image folder not found at: {image_dir}')
+
+    candidates = {}
+
+    with open(data_path, encoding='utf-8-sig', newline='') as f:
         reader = csv.DictReader(f)
-        for row in reader:
-            candidate_id = str(row['ID']).strip()
 
-            vote_share_raw = row.get('porcentajedevotos', '') or '0'
-            try:
-                vote_share = float(str(vote_share_raw).replace(',', '.'))
-            except:
-                vote_share = 0.0
+        if reader.fieldnames is None:
+            raise ValueError('dataset.csv has no header row.')
 
-            votes_raw = row.get('Votos', '0') or '0'
-            try:
-                votes = int(float(votes_raw))
-            except:
-                votes = 0
+        required_columns = ['ID', 'ideologia_cat']
+        missing_columns = [
+            column for column in required_columns
+            if column not in reader.fieldnames
+        ]
 
-            occupation = first_nonempty(
-                row,
-                [
-                    'occupation',
-                    'OCCUPATION',
-                    'ocupacion',
-                    'OCUPACION',
-                    'ammatti',
-                    'AMMATTI',
-                ],
+        if missing_columns:
+            raise ValueError(
+                f'dataset.csv is missing required columns: {missing_columns}'
             )
 
-            rows[candidate_id] = {
-                'id': candidate_id,
-                'party': row.get('PARTIDO', '').strip(),
-                'age': row.get('age', '').strip() or row.get('EDAD', '').strip(),
-                'occupation': occupation,
-                'votes': votes,
-                'vote_share': vote_share,
-                'municipality': row.get('MUNICIPIO', '').strip(),
-                'year': row.get('year', '').strip() or row.get('year2', '').strip(),
+        for raw_row in reader:
+            row = {
+                clean_value(key): clean_value(value)
+                for key, value in raw_row.items()
             }
-    return rows
+
+            candidate_id = clean_candidate_id(row.get('ID'))
+
+            if candidate_id == '':
+                continue
+
+            image_filename = f'{candidate_id}.jpg'
+            image_path = image_dir / image_filename
+
+            if not image_path.exists():
+                continue
+
+            candidates[candidate_id] = {
+                'id': candidate_id,
+                'image_filename': image_filename,
+                'image_path': f'conjoint/images/{image_filename}',
+                'ideologia_cat': clean_value(row.get('ideologia_cat')),
+                'nombre': clean_value(row.get('NOMBRE')),
+                'partido': clean_value(row.get('PARTIDO')),
+                'genero': clean_value(row.get('GENERO')),
+                'edad': clean_value(row.get('EDAD')),
+                'votos': clean_value(row.get('Votos')),
+                'dataset_row_json': json.dumps(row, ensure_ascii=False),
+            }
+
+    if len(candidates) < 2:
+        available_images = sorted(path.name for path in image_dir.glob('*.jpg'))
+
+        raise ValueError(
+            'Need at least two candidate rows with matching photos. '
+            f'dataset.csv is at {data_path}. '
+            f'Images are expected in {image_dir}. '
+            f'Currently found these jpg files: {available_images}'
+        )
+
+    return candidates
 
 
 CANDIDATE_DATA = load_candidate_data()
 
 
-# Temporary toy profile values for development.
-# These let the Finnish-version app run even before the Finnish metadata file is available.
-# Replace these with real Finnish values later.
-TOY_PROFILE_OVERRIDES = {
-    '110108': {
-        'party': 'Party A',
-        'age': '42',
-        'occupation': 'Teacher',
-    },
-    '110702': {
-        'party': 'Party B',
-        'age': '51',
-        'occupation': 'Engineer',
-    },
-    '113701': {
-        'party': 'Party C',
-        'age': '36',
-        'occupation': 'Nurse',
-    },
-    '119102': {
-        'party': 'Party A',
-        'age': '47',
-        'occupation': 'Lawyer',
-    },
-}
+class C(BaseConstants):
+    NAME_IN_URL = 'conjoint'
+    PLAYERS_PER_GROUP = None
+    NUM_ROUNDS = 4
 
+    INITIAL_ENDOWMENT = 100
 
-def apply_toy_profile_overrides():
-    for candidate_id, override in TOY_PROFILE_OVERRIDES.items():
-        if candidate_id not in CANDIDATE_DATA:
-            CANDIDATE_DATA[candidate_id] = {
-                'id': candidate_id,
-                'party': '',
-                'age': '',
-                'occupation': '',
-                'votes': 0,
-                'vote_share': 0.0,
-                'municipality': '',
-                'year': '',
-            }
-
-        CANDIDATE_DATA[candidate_id]['party'] = override['party']
-        CANDIDATE_DATA[candidate_id]['age'] = override['age']
-        CANDIDATE_DATA[candidate_id]['occupation'] = override['occupation']
-
-
-apply_toy_profile_overrides()
-
-def available_candidate_ids():
-    image_dir = (
-        Path(__file__).resolve().parent.parent
-        / '_static'
-        / 'conjoint'
-        / 'images'
-    )
-
-    available = []
-    for candidate_id, row in CANDIDATE_DATA.items():
-        image_path = image_dir / f'{candidate_id}.jpg'
-
-        if not image_path.exists():
-            continue
-
-        party = (row.get('party', '') or '').strip()
-        age = (row.get('age', '') or '').strip()
-        occupation = (row.get('occupation', '') or '').strip()
-
-        if party != '' and age != '' and occupation != '':
-            available.append(candidate_id)
-
-    return available
-
-
-class Constants(BaseConstants):
-    name_in_url = 'conjoint'
-    players_per_group = None
-    num_rounds = 2
-
-    compare_metric = 'vote_share'
-    timer_probability = 0.5
-
-    initial_endowment = 100
-    correct_payoff = 30
-    incorrect_payoff = -15
-    time_penalty_per_second = 1
-
-    # default dynamic pricing structure
-    default_info_cost_unit = 2
-    default_attribute_weights = {
-        'party': 3,
-        'occupation': 2,
-        'age': 1,
-    }
-
-    attribute_keys = ['party', 'age', 'occupation']
-
-
-def get_attribute_weights(session):
-    weights = Constants.default_attribute_weights.copy()
-
-    for attr in weights.keys():
-        config_key = f'weight_{attr}'
-        if config_key in session.config and session.config[config_key] is not None:
-            weights[attr] = int(session.config[config_key])
-
-    return weights
-
-
-def get_attribute_costs(session):
-    weights = get_attribute_weights(session)
-    base_unit = session.config.get('info_cost_unit', Constants.default_info_cost_unit)
-
-    costs = {}
-    for attr, weight in weights.items():
-        direct_cost_key = f'cost_{attr}'
-        if direct_cost_key in session.config and session.config[direct_cost_key] is not None:
-            costs[attr] = int(session.config[direct_cost_key])
-        else:
-            costs[attr] = int(base_unit * weight)
-
-    return costs
+    TREATMENT_ARMS = [
+        'timer_mostrar_mas',
+        'captcha_ver_mas',
+        'control_ver_mas',
+    ]
 
 
 class Subsession(BaseSubsession):
     pass
-
-
-def draw_candidates_for_game():
-    candidate_pool = available_candidate_ids()
-    needed = 2 * Constants.num_rounds
-
-    if len(candidate_pool) < needed:
-        raise ValueError(
-            f'Not enough eligible candidates with images and metadata. '
-            f'Need at least {needed}, found {len(candidate_pool)}.'
-        )
-
-    return random.sample(candidate_pool, needed)
-
-
-def creating_session(subsession):
-    if subsession.round_number != 1:
-        return
-
-    for player in subsession.get_players():
-        if 'initial_endowment' not in player.participant.vars:
-            player.participant.vars['initial_endowment'] = Constants.initial_endowment
-
-        if 'point_balance' not in player.participant.vars:
-            player.participant.vars['point_balance'] = Constants.initial_endowment
-
-        if 'timed_tasks' not in player.participant.vars:
-            player.participant.vars['timed_tasks'] = [
-                random.random() < Constants.timer_probability
-                for _ in range(Constants.num_rounds)
-            ]
-
-        if 'drawn_candidates' not in player.participant.vars:
-            player.participant.vars['drawn_candidates'] = draw_candidates_for_game()
-
-        if 'attribute_order' not in player.participant.vars:
-            player.participant.vars['attribute_order'] = random.sample(
-                Constants.attribute_keys,
-                len(Constants.attribute_keys),
-            )
 
 
 class Group(BaseGroup):
@@ -253,106 +134,190 @@ class Group(BaseGroup):
 
 
 class Player(BasePlayer):
+    treatment_arm = models.StringField()
+    timed_task = models.BooleanField(initial=False)
+    info_condition = models.StringField()
+
     left_candidate_id = models.StringField()
     right_candidate_id = models.StringField()
 
-    timed_task = models.BooleanField(initial=False)
+    left_image_path = models.StringField()
+    right_image_path = models.StringField()
 
-    left_party_opened = models.BooleanField(initial=False)
-    left_age_opened = models.BooleanField(initial=False)
-    left_occupation_opened = models.BooleanField(initial=False)
+    left_ideologia_cat = models.StringField(blank=True)
+    right_ideologia_cat = models.StringField(blank=True)
 
-    right_party_opened = models.BooleanField(initial=False)
-    right_age_opened = models.BooleanField(initial=False)
-    right_occupation_opened = models.BooleanField(initial=False)
+    left_nombre = models.StringField(blank=True)
+    right_nombre = models.StringField(blank=True)
+
+    left_partido = models.StringField(blank=True)
+    right_partido = models.StringField(blank=True)
+
+    left_genero = models.StringField(blank=True)
+    right_genero = models.StringField(blank=True)
+
+    left_edad = models.StringField(blank=True)
+    right_edad = models.StringField(blank=True)
+
+    left_votos = models.StringField(blank=True)
+    right_votos = models.StringField(blank=True)
+
+    left_dataset_row_json = models.LongStringField(blank=True)
+    right_dataset_row_json = models.LongStringField(blank=True)
+
+    left_ideology_opened = models.BooleanField(initial=False)
+    right_ideology_opened = models.BooleanField(initial=False)
+
+    info_cost_task_completed = models.BooleanField(initial=False)
+    info_cost_attempts = models.IntegerField(initial=0)
+
+    captcha_left_a = models.IntegerField(initial=0)
+    captcha_left_b = models.IntegerField(initial=0)
+    captcha_right_a = models.IntegerField(initial=0)
+    captcha_right_b = models.IntegerField(initial=0)
 
     decision_candidate_id = models.StringField(blank=True)
+
     decision_side = models.StringField(blank=True)
 
     time_spent_seconds = models.FloatField(initial=0)
+    time_to_first_choice_seconds = models.FloatField(initial=0)
 
-    info_cost_spent = models.IntegerField(initial=0)
-    time_penalty_applied = models.IntegerField(initial=0)
-    accuracy_payoff = models.IntegerField(initial=0)
-    task_net_change = models.IntegerField(initial=0)
+    choice_changes = models.IntegerField(initial=0)
+    learn_more_clicks = models.IntegerField(initial=0)
+
+    mouse_distance_px = models.FloatField(initial=0)
+    left_hover_seconds = models.FloatField(initial=0)
+    right_hover_seconds = models.FloatField(initial=0)
+
     balance_after_task = models.IntegerField(initial=0)
 
-    correct = models.BooleanField(initial=False)
-    points_earned = models.IntegerField(initial=0)
+
+def available_candidate_ids():
+    return list(CANDIDATE_DATA.keys())
 
 
-def ensure_randomization(player):
-    if 'initial_endowment' not in player.participant.vars:
-        player.participant.vars['initial_endowment'] = Constants.initial_endowment
+def draw_candidates_for_participant():
+    ids = available_candidate_ids()
+    random.shuffle(ids)
 
-    if 'point_balance' not in player.participant.vars:
-        player.participant.vars['point_balance'] = Constants.initial_endowment
+    needed = C.NUM_ROUNDS * 2
 
-    if 'timed_tasks' not in player.participant.vars:
-        player.participant.vars['timed_tasks'] = [
-            random.random() < Constants.timer_probability
-            for _ in range(Constants.num_rounds)
-        ]
+    if len(ids) >= needed:
+        return ids[:needed]
 
-    if 'drawn_candidates' not in player.participant.vars:
-        player.participant.vars['drawn_candidates'] = draw_candidates_for_game()
+    sampled = []
 
-    if 'attribute_order' not in player.participant.vars:
-        player.participant.vars['attribute_order'] = random.sample(
-            Constants.attribute_keys,
-            len(Constants.attribute_keys),
-        )
+    while len(sampled) < needed:
+        sampled.extend(random.sample(ids, 2))
+
+    return sampled[:needed]
 
 
-def get_candidates_for_round(player):
-    ensure_randomization(player)
+def creating_session(subsession):
+    for player in subsession.get_players():
+        participant = player.participant
+
+        if 'point_balance' not in participant.vars:
+            participant.vars['point_balance'] = C.INITIAL_ENDOWMENT
+
+        if 'treatment_arm' not in participant.vars:
+            participant.vars['treatment_arm'] = random.choice(C.TREATMENT_ARMS)
+
+        if 'drawn_candidates' not in participant.vars:
+            participant.vars['drawn_candidates'] = draw_candidates_for_participant()
+
+
+def ensure_participant_vars(player):
+    participant = player.participant
+
+    if 'point_balance' not in participant.vars:
+        participant.vars['point_balance'] = C.INITIAL_ENDOWMENT
+
+    if 'treatment_arm' not in participant.vars:
+        participant.vars['treatment_arm'] = random.choice(C.TREATMENT_ARMS)
+
+    if 'drawn_candidates' not in participant.vars:
+        participant.vars['drawn_candidates'] = draw_candidates_for_participant()
+
+
+def assign_candidates(player):
+    ensure_participant_vars(player)
+
+    if (
+        player.field_maybe_none('left_candidate_id')
+        and player.field_maybe_none('right_candidate_id')
+    ):
+        return
+
+    treatment_arm = player.participant.vars['treatment_arm']
+
+    player.treatment_arm = treatment_arm
+    player.timed_task = treatment_arm == 'timer_mostrar_mas'
+    player.info_condition = treatment_arm
+
+    if player.captcha_left_a == 0:
+        player.captcha_left_a = random.randint(2, 20)
+        player.captcha_left_b = random.randint(2, 20)
+
+    if player.captcha_right_a == 0:
+        player.captcha_right_a = random.randint(2, 20)
+        player.captcha_right_b = random.randint(2, 20)
+
+        while (
+            player.captcha_right_a == player.captcha_left_a
+            and player.captcha_right_b == player.captcha_left_b
+        ):
+            player.captcha_right_a = random.randint(2, 20)
+            player.captcha_right_b = random.randint(2, 20)
 
     drawn = player.participant.vars['drawn_candidates']
-    start_idx = (player.round_number - 1) * 2
-    end_idx = start_idx + 2
-
-    round_candidates = drawn[start_idx:end_idx]
-
-    if len(round_candidates) != 2:
-        raise ValueError(
-            f'Round {player.round_number} does not have exactly 2 candidates assigned.'
-        )
-
-    return round_candidates
 
 
-def assign_positions(player):
-    round_candidates = get_candidates_for_round(player)
-    shuffled = random.sample(list(round_candidates), 2)
+    start = (player.round_number - 1) * 2
+    pair = drawn[start:start + 2]
 
-    player.left_candidate_id = shuffled[0]
-    player.right_candidate_id = shuffled[1]
-    player.timed_task = player.participant.vars['timed_tasks'][player.round_number - 1]
+    if len(pair) < 2:
+        pair = random.sample(available_candidate_ids(), 2)
+
+    left_id, right_id = random.sample(pair, 2)
+
+    left = CANDIDATE_DATA[left_id]
+    right = CANDIDATE_DATA[right_id]
+
+    player.left_candidate_id = left_id
+    player.right_candidate_id = right_id
+
+    player.left_image_path = left['image_path']
+    player.right_image_path = right['image_path']
+
+    player.left_ideologia_cat = left['ideologia_cat']
+    player.right_ideologia_cat = right['ideologia_cat']
+
+    player.left_nombre = left['nombre']
+    player.right_nombre = right['nombre']
+
+    player.left_partido = left['partido']
+    player.right_partido = right['partido']
+
+    player.left_genero = left['genero']
+    player.right_genero = right['genero']
+
+    player.left_edad = left['edad']
+    player.right_edad = right['edad']
+
+    player.left_votos = left['votos']
+    player.right_votos = right['votos']
+
+    player.left_dataset_row_json = left['dataset_row_json']
+    player.right_dataset_row_json = right['dataset_row_json']
 
 
 def candidate_payload(candidate_id):
-    row = CANDIDATE_DATA[candidate_id]
-    return dict(
-        id=row['id'],
-        image_path=f'conjoint/images/{row["id"]}.jpg',
-        party=row['party'],
-        age=row['age'],
-        occupation=row['occupation'],
-        votes=row['votes'],
-        vote_share=row['vote_share'],
-        municipality=row['municipality'],
-        year=row['year'],
-    )
+    candidate = CANDIDATE_DATA[candidate_id]
 
-
-def get_metric_value(candidate_id):
-    row = CANDIDATE_DATA[candidate_id]
-    if Constants.compare_metric == 'vote_share':
-        return row['vote_share']
-    return row['votes']
-
-
-def get_metric_label():
-    if Constants.compare_metric == 'vote_share':
-        return 'vote share'
-    return 'votes'
+    return {
+        'id': candidate['id'],
+        'image_path': candidate['image_path'],
+        'ideologia_cat': candidate['ideologia_cat'],
+    }

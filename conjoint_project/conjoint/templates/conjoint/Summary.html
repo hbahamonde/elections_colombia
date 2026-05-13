@@ -1,41 +1,58 @@
 {{ block title }}
-Summary
+Resumen
 {{ endblock }}
 
 {{ block content }}
 
-<p><strong>Initial endowment:</strong> {{ initial_endowment }}</p>
-<p><strong>Final balance:</strong> {{ final_balance }}</p>
-<p><strong>Timer pattern across tasks:</strong> {{ timed_tasks }}</p>
-<p><strong>Attribute order shown to this subject:</strong> {{ attribute_order }}</p>
-<p><strong>Comparison metric:</strong> {{ metric_label }}</p>
+<p><strong>Tratamiento:</strong> {{ treatment_arm }}</p>
 
 <table class="table">
     <thead>
         <tr>
-            <th>Task</th>
-            <th>Timed?</th>
-            <th>Time spent</th>
-            <th>Correct?</th>
-            <th>Accuracy payoff</th>
-            <th>Time penalty</th>
-            <th>Info cost</th>
-            <th>Net change</th>
-            <th>Balance after task</th>
+            <th>Ronda</th>
+            <th>Tratamiento</th>
+            <th>Cronómetro</th>
+            <th>Condición información</th>
+            <th>ID opción 1</th>
+            <th>ID opción 2</th>
+            <th>ID elegido</th>
+            <th>Lado elegido</th>
+            <th>Ideología opción 1 abierta</th>
+            <th>Ideología opción 2 abierta</th>
+            <th>Captcha completado</th>
+            <th>Intentos captcha</th>
+            <th>Tiempo total</th>
+            <th>Tiempo hasta primera elección</th>
+            <th>Cambios de elección</th>
+            <th>Clicks en ver más</th>
+            <th>Distancia mouse</th>
+            <th>Hover opción 1</th>
+            <th>Hover opción 2</th>
         </tr>
     </thead>
+
     <tbody>
         {% for p in rounds %}
         <tr>
             <td>{{ p.round_number }}</td>
+            <td>{{ p.treatment_arm }}</td>
             <td>{{ p.timed_task }}</td>
+            <td>{{ p.info_condition }}</td>
+            <td>{{ p.left_candidate_id }}</td>
+            <td>{{ p.right_candidate_id }}</td>
+            <td>{{ p.decision_candidate_id }}</td>
+            <td>{{ p.decision_side }}</td>
+            <td>{{ p.left_ideology_opened }}</td>
+            <td>{{ p.right_ideology_opened }}</td>
+            <td>{{ p.info_cost_task_completed }}</td>
+            <td>{{ p.info_cost_attempts }}</td>
             <td>{{ p.time_spent_seconds }}</td>
-            <td>{{ p.correct }}</td>
-            <td>{{ p.accuracy_payoff }}</td>
-            <td>{{ p.time_penalty_applied }}</td>
-            <td>{{ p.info_cost_spent }}</td>
-            <td>{{ p.task_net_change }}</td>
-            <td>{{ p.balance_after_task }}</td>
+            <td>{{ p.time_to_first_choice_seconds }}</td>
+            <td>{{ p.choice_changes }}</td>
+            <td>{{ p.learn_more_clicks }}</td>
+            <td>{{ p.mouse_distance_px }}</td>
+            <td>{{ p.left_hover_seconds }}</td>
+            <td>{{ p.right_hover_seconds }}</td>
         </tr>
         {% endfor %}
     </tbody>
