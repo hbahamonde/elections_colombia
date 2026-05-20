@@ -6,17 +6,101 @@ from pathlib import Path
 
 
 doc = """
-Image conjoint experiment.
+Visual conjoint experiment.
 
-Participants choose between two candidate photos. Photos are stored in:
-_static/conjoint/images/
-
-Candidate metadata is read from:
+Participants choose between two candidate photos. Candidate metadata is read from:
 _static/conjoint/data/dataset.csv
 
-Participants only see ideology when assigned to an information treatment.
-The backend records candidate IDs and the full CSV row for each candidate shown.
+Candidate photos are stored in:
+_static/conjoint/images/
+
+The backend records:
+- randomized treatment assignment
+- left/right candidate IDs
+- image paths
+- all candidate-level metadata from dataset.csv
+- full candidate CSV rows as JSON backups
+- information acquisition behavior
+- captcha/math-task behavior
+- timing and mouse-tracking metadata
+- final choice
 """
+
+
+DATASET_COLUMNS = [
+    'ID',
+    'DEPARTAMENTO',
+    'COD_DPTO',
+    'MUNICIPIO',
+    'COD_MCPIO',
+    'Cod_candidato',
+    'NOMBRE',
+    'Votos',
+    'PARTIDO',
+    'COD_PARTIDO',
+    'GENERO',
+    'EDAD',
+    'age (estimada)',
+    'gender (estimado)',
+    'blurness',
+    'facequality',
+    'yaw_angle',
+    'pitch_angle',
+    'roll_angle',
+    'BD',
+    'alto',
+    'ancho',
+    'fhwr',
+    'alto_rot',
+    'ancho_rot',
+    'fhwr_rot',
+    'alto_correg',
+    'ancho_correg',
+    'fhwr_correg',
+    'ranking',
+    'partidoFE',
+    'ideologia_cat',
+    'fhwr_cat',
+    'combo_id',
+]
+
+
+FIELD_NAME_MAP = {
+    'ID': 'id',
+    'DEPARTAMENTO': 'departamento',
+    'COD_DPTO': 'cod_dpto',
+    'MUNICIPIO': 'municipio',
+    'COD_MCPIO': 'cod_mcpio',
+    'Cod_candidato': 'cod_candidato',
+    'NOMBRE': 'nombre',
+    'Votos': 'votos',
+    'PARTIDO': 'partido',
+    'COD_PARTIDO': 'cod_partido',
+    'GENERO': 'genero',
+    'EDAD': 'edad',
+    'age (estimada)': 'age_estimada',
+    'gender (estimado)': 'gender_estimado',
+    'blurness': 'blurness',
+    'facequality': 'facequality',
+    'yaw_angle': 'yaw_angle',
+    'pitch_angle': 'pitch_angle',
+    'roll_angle': 'roll_angle',
+    'BD': 'bd',
+    'alto': 'alto',
+    'ancho': 'ancho',
+    'fhwr': 'fhwr',
+    'alto_rot': 'alto_rot',
+    'ancho_rot': 'ancho_rot',
+    'fhwr_rot': 'fhwr_rot',
+    'alto_correg': 'alto_correg',
+    'ancho_correg': 'ancho_correg',
+    'fhwr_correg': 'fhwr_correg',
+    'ranking': 'ranking',
+    'partidoFE': 'partido_fe',
+    'ideologia_cat': 'ideologia_cat',
+    'fhwr_cat': 'fhwr_cat',
+    'combo_id': 'combo_id',
+}
 
 
 def clean_value(value):
@@ -34,11 +118,22 @@ def clean_candidate_id(value):
     return Path(value).stem
 
 
-def load_candidate_data():
-    app_root = Path(__file__).resolve().parent.parent
+def find_image_for_candidate(candidate_id, image_dir):
+    allowed_extensions = ['.jpg', '.jpeg', '.png', '.webp']
 
-    data_path = app_root / '_static' / 'conjoint' / 'data' / 'dataset.csv'
-    image_dir = app_root / '_static' / 'conjoint' / 'images'
+    for ext in allowed_extensions:
+        image_path = image_dir / f'{candidate_id}{ext}'
+        if image_path.exists():
+            return image_path.name
+
+    return None
+
+
+def load_candidate_data():
+    project_root = Path(__file__).resolve().parent.parent
+
+    data_path = project_root / '_static' / 'conjoint' / 'data' / 'dataset.csv'
+    image_dir = project_root / '_static' / 'conjoint' / 'images'
 
     if not data_path.exists():
         raise FileNotFoundError(f'dataset.csv not found at: {data_path}')
@@ -54,15 +149,14 @@ def load_candidate_data():
         if reader.fieldnames is None:
             raise ValueError('dataset.csv has no header row.')
 
-        required_columns = ['ID', 'ideologia_cat']
         missing_columns = [
-            column for column in required_columns
+            column for column in DATASET_COLUMNS
             if column not in reader.fieldnames
         ]
 
         if missing_columns:
             raise ValueError(
-                f'dataset.csv is missing required columns: {missing_columns}'
+                f'dataset.csv is missing these expected columns: {missing_columns}'
             )
 
         for raw_row in reader:
@@ -76,33 +170,32 @@ def load_candidate_data():
             if candidate_id == '':
                 continue
 
-            image_filename = f'{candidate_id}.jpg'
-            image_path = image_dir / image_filename
+            image_filename = find_image_for_candidate(candidate_id, image_dir)
 
-            if not image_path.exists():
+            if image_filename is None:
                 continue
 
-            candidates[candidate_id] = {
+            row['ID'] = candidate_id
+            row['_image_filename'] = image_filename
+            row['_image_path'] = f'conjoint/images/{image_filename}'
+
+            candidate = {
                 'id': candidate_id,
                 'image_filename': image_filename,
                 'image_path': f'conjoint/images/{image_filename}',
-                'ideologia_cat': clean_value(row.get('ideologia_cat')),
-                'nombre': clean_value(row.get('NOMBRE')),
-                'partido': clean_value(row.get('PARTIDO')),
-                'genero': clean_value(row.get('GENERO')),
-                'edad': clean_value(row.get('EDAD')),
-                'votos': clean_value(row.get('Votos')),
                 'dataset_row_json': json.dumps(row, ensure_ascii=False),
             }
 
-    if len(candidates) < 2:
-        available_images = sorted(path.name for path in image_dir.glob('*.jpg'))
+            for original_name, field_name in FIELD_NAME_MAP.items():
+                candidate[field_name] = clean_value(row.get(original_name))
 
+            candidates[candidate_id] = candidate
+
+    if len(candidates) < 2:
         raise ValueError(
-            'Need at least two candidate rows with matching photos. '
+            'Need at least two candidate rows with matching image files. '
             f'dataset.csv is at {data_path}. '
-            f'Images are expected in {image_dir}. '
-            f'Currently found these jpg files: {available_images}'
+            f'Images are expected in {image_dir}.'
         )
 
     return candidates
@@ -144,23 +237,75 @@ class Player(BasePlayer):
     left_image_path = models.StringField()
     right_image_path = models.StringField()
 
-    left_ideologia_cat = models.StringField(blank=True)
-    right_ideologia_cat = models.StringField(blank=True)
-
+    left_id = models.StringField(blank=True)
+    left_departamento = models.StringField(blank=True)
+    left_cod_dpto = models.StringField(blank=True)
+    left_municipio = models.StringField(blank=True)
+    left_cod_mcpio = models.StringField(blank=True)
+    left_cod_candidato = models.StringField(blank=True)
     left_nombre = models.StringField(blank=True)
-    right_nombre = models.StringField(blank=True)
-
-    left_partido = models.StringField(blank=True)
-    right_partido = models.StringField(blank=True)
-
-    left_genero = models.StringField(blank=True)
-    right_genero = models.StringField(blank=True)
-
-    left_edad = models.StringField(blank=True)
-    right_edad = models.StringField(blank=True)
-
     left_votos = models.StringField(blank=True)
+    left_partido = models.StringField(blank=True)
+    left_cod_partido = models.StringField(blank=True)
+    left_genero = models.StringField(blank=True)
+    left_edad = models.StringField(blank=True)
+    left_age_estimada = models.StringField(blank=True)
+    left_gender_estimado = models.StringField(blank=True)
+    left_blurness = models.StringField(blank=True)
+    left_facequality = models.StringField(blank=True)
+    left_yaw_angle = models.StringField(blank=True)
+    left_pitch_angle = models.StringField(blank=True)
+    left_roll_angle = models.StringField(blank=True)
+    left_bd = models.StringField(blank=True)
+    left_alto = models.StringField(blank=True)
+    left_ancho = models.StringField(blank=True)
+    left_fhwr = models.StringField(blank=True)
+    left_alto_rot = models.StringField(blank=True)
+    left_ancho_rot = models.StringField(blank=True)
+    left_fhwr_rot = models.StringField(blank=True)
+    left_alto_correg = models.StringField(blank=True)
+    left_ancho_correg = models.StringField(blank=True)
+    left_fhwr_correg = models.StringField(blank=True)
+    left_ranking = models.StringField(blank=True)
+    left_partido_fe = models.StringField(blank=True)
+    left_ideologia_cat = models.StringField(blank=True)
+    left_fhwr_cat = models.StringField(blank=True)
+    left_combo_id = models.StringField(blank=True)
+
+    right_id = models.StringField(blank=True)
+    right_departamento = models.StringField(blank=True)
+    right_cod_dpto = models.StringField(blank=True)
+    right_municipio = models.StringField(blank=True)
+    right_cod_mcpio = models.StringField(blank=True)
+    right_cod_candidato = models.StringField(blank=True)
+    right_nombre = models.StringField(blank=True)
     right_votos = models.StringField(blank=True)
+    right_partido = models.StringField(blank=True)
+    right_cod_partido = models.StringField(blank=True)
+    right_genero = models.StringField(blank=True)
+    right_edad = models.StringField(blank=True)
+    right_age_estimada = models.StringField(blank=True)
+    right_gender_estimado = models.StringField(blank=True)
+    right_blurness = models.StringField(blank=True)
+    right_facequality = models.StringField(blank=True)
+    right_yaw_angle = models.StringField(blank=True)
+    right_pitch_angle = models.StringField(blank=True)
+    right_roll_angle = models.StringField(blank=True)
+    right_bd = models.StringField(blank=True)
+    right_alto = models.StringField(blank=True)
+    right_ancho = models.StringField(blank=True)
+    right_fhwr = models.StringField(blank=True)
+    right_alto_rot = models.StringField(blank=True)
+    right_ancho_rot = models.StringField(blank=True)
+    right_fhwr_rot = models.StringField(blank=True)
+    right_alto_correg = models.StringField(blank=True)
+    right_ancho_correg = models.StringField(blank=True)
+    right_fhwr_correg = models.StringField(blank=True)
+    right_ranking = models.StringField(blank=True)
+    right_partido_fe = models.StringField(blank=True)
+    right_ideologia_cat = models.StringField(blank=True)
+    right_fhwr_cat = models.StringField(blank=True)
+    right_combo_id = models.StringField(blank=True)
 
     left_dataset_row_json = models.LongStringField(blank=True)
     right_dataset_row_json = models.LongStringField(blank=True)
@@ -177,7 +322,6 @@ class Player(BasePlayer):
     captcha_right_b = models.IntegerField(initial=0)
 
     decision_candidate_id = models.StringField(blank=True)
-
     decision_side = models.StringField(blank=True)
 
     time_spent_seconds = models.FloatField(initial=0)
@@ -199,12 +343,10 @@ def available_candidate_ids():
 
 def draw_candidates_for_participant():
     ids = available_candidate_ids()
-    random.shuffle(ids)
-
     needed = C.NUM_ROUNDS * 2
 
     if len(ids) >= needed:
-        return ids[:needed]
+        return random.sample(ids, needed)
 
     sampled = []
 
@@ -214,6 +356,19 @@ def draw_candidates_for_participant():
     return sampled[:needed]
 
 
+def assign_treatment(player):
+    participant = player.participant
+
+    demo_treatment_arm = player.session.config.get('demo_treatment_arm')
+
+    if demo_treatment_arm in C.TREATMENT_ARMS:
+        participant.vars['treatment_arm'] = demo_treatment_arm
+        return
+
+    if 'treatment_arm' not in participant.vars:
+        participant.vars['treatment_arm'] = random.choice(C.TREATMENT_ARMS)
+
+
 def creating_session(subsession):
     for player in subsession.get_players():
         participant = player.participant
@@ -221,12 +376,22 @@ def creating_session(subsession):
         if 'point_balance' not in participant.vars:
             participant.vars['point_balance'] = C.INITIAL_ENDOWMENT
 
-        if 'treatment_arm' not in participant.vars:
-            participant.vars['treatment_arm'] = random.choice(C.TREATMENT_ARMS)
+        assign_treatment(player)
 
         if 'drawn_candidates' not in participant.vars:
             participant.vars['drawn_candidates'] = draw_candidates_for_participant()
 
+
+def ensure_participant_vars(player):
+    participant = player.participant
+
+    if 'point_balance' not in participant.vars:
+        participant.vars['point_balance'] = C.INITIAL_ENDOWMENT
+
+    assign_treatment(player)
+
+    if 'drawn_candidates' not in participant.vars:
+        participant.vars['drawn_candidates'] = draw_candidates_for_participant()
 
 def ensure_participant_vars(player):
     participant = player.participant
@@ -239,6 +404,14 @@ def ensure_participant_vars(player):
 
     if 'drawn_candidates' not in participant.vars:
         participant.vars['drawn_candidates'] = draw_candidates_for_participant()
+
+
+def save_candidate_to_player(player, side, candidate):
+    setattr(player, f'{side}_image_path', candidate['image_path'])
+    setattr(player, f'{side}_dataset_row_json', candidate['dataset_row_json'])
+
+    for field_name in FIELD_NAME_MAP.values():
+        setattr(player, f'{side}_{field_name}', candidate.get(field_name, ''))
 
 
 def assign_candidates(player):
@@ -273,7 +446,6 @@ def assign_candidates(player):
 
     drawn = player.participant.vars['drawn_candidates']
 
-
     start = (player.round_number - 1) * 2
     pair = drawn[start:start + 2]
 
@@ -288,29 +460,8 @@ def assign_candidates(player):
     player.left_candidate_id = left_id
     player.right_candidate_id = right_id
 
-    player.left_image_path = left['image_path']
-    player.right_image_path = right['image_path']
-
-    player.left_ideologia_cat = left['ideologia_cat']
-    player.right_ideologia_cat = right['ideologia_cat']
-
-    player.left_nombre = left['nombre']
-    player.right_nombre = right['nombre']
-
-    player.left_partido = left['partido']
-    player.right_partido = right['partido']
-
-    player.left_genero = left['genero']
-    player.right_genero = right['genero']
-
-    player.left_edad = left['edad']
-    player.right_edad = right['edad']
-
-    player.left_votos = left['votos']
-    player.right_votos = right['votos']
-
-    player.left_dataset_row_json = left['dataset_row_json']
-    player.right_dataset_row_json = right['dataset_row_json']
+    save_candidate_to_player(player, 'left', left)
+    save_candidate_to_player(player, 'right', right)
 
 
 def candidate_payload(candidate_id):

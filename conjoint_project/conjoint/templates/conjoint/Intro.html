@@ -4,27 +4,47 @@ Estudio de candidatos
 
 {{ block content }}
 
-<p>
-    En este estudio verá pares de fotografías de candidatos.
-</p>
+<div style="max-width: 760px; margin: 0 auto;">
 
-<p>
-    En cada pantalla, le pediremos responder la siguiente pregunta:
-</p>
+    <p>
+        En este estudio verá pares de fotografías de candidatos.
+    </p>
 
-<p style="font-size: 20px;">
-    <strong>¿Por quién votaría usted?</strong>
-</p>
+    <p>
+        En cada pantalla, le pediremos responder la siguiente pregunta:
+    </p>
 
-<p>
-    Algunas personas podrán ver información adicional sobre los candidatos antes de responder.
-    Otras personas deberán realizar una breve tarea antes de poder ver esa información.
-</p>
+    <p style="font-size: 22px; text-align: center; margin: 28px 0;">
+        <strong>¿Por quién votaría usted?</strong>
+    </p>
 
-<p>
-    No hay respuestas correctas o incorrectas. Nos interesa conocer sus decisiones.
-</p>
+    <p>
+        Algunas personas podrán ver información adicional sobre los candidatos antes de responder.
+        En algunos casos, ver esa información requerirá completar una tarea breve.
+    </p>
 
-{{ next_button }}
+    <div style="
+        margin: 24px 0;
+        padding: 16px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        background: #f8f9fa;
+    ">
+        <p style="font-size: 18px; margin-bottom: 8px;">
+            <strong>Sus puntos iniciales:</strong> {{ initial_endowment }}
+        </p>
+
+        <p style="margin-bottom: 0;">
+            Sus puntos se mostrarán durante el estudio.
+        </p>
+    </div>
+
+    <p>
+        No hay respuestas correctas o incorrectas. Nos interesa conocer sus decisiones.
+    </p>
+
+    {{ next_button }}
+
+</div>
 
 {{ endblock }}

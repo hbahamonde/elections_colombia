@@ -2,10 +2,34 @@ from os import environ
 
 SESSION_CONFIGS = [
     dict(
-        name='conjoint_demo',
-        display_name='Conjoint Demo',
-        num_demo_participants=30,
+        name='conjoint_random',
+        display_name='Conjoint experiment - RANDOM assignment',
         app_sequence=['conjoint'],
+        num_demo_participants=1,
+    ),
+
+    dict(
+        name='conjoint_demo_timer',
+        display_name='Conjoint DEMO - Timer / Mostrar más',
+        app_sequence=['conjoint'],
+        num_demo_participants=1,
+        demo_treatment_arm='timer_mostrar_mas',
+    ),
+
+    dict(
+        name='conjoint_demo_math',
+        display_name='Conjoint DEMO - Math problem / Ver más',
+        app_sequence=['conjoint'],
+        num_demo_participants=1,
+        demo_treatment_arm='captcha_ver_mas',
+    ),
+
+    dict(
+        name='conjoint_demo_control',
+        display_name='Conjoint DEMO - Control / Ver más',
+        app_sequence=['conjoint'],
+        num_demo_participants=1,
+        demo_treatment_arm='control_ver_mas',
     ),
 ]
 

@@ -4,58 +4,77 @@ Resumen
 
 {{ block content }}
 
-<p><strong>Tratamiento:</strong> {{ treatment_arm }}</p>
+<div style="max-width: 850px; margin: 0 auto;">
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Ronda</th>
-            <th>Tratamiento</th>
-            <th>Cronómetro</th>
-            <th>Condición información</th>
-            <th>ID opción 1</th>
-            <th>ID opción 2</th>
-            <th>ID elegido</th>
-            <th>Lado elegido</th>
-            <th>Ideología opción 1 abierta</th>
-            <th>Ideología opción 2 abierta</th>
-            <th>Captcha completado</th>
-            <th>Intentos captcha</th>
-            <th>Tiempo total</th>
-            <th>Tiempo hasta primera elección</th>
-            <th>Cambios de elección</th>
-            <th>Clicks en ver más</th>
-            <th>Distancia mouse</th>
-            <th>Hover opción 1</th>
-            <th>Hover opción 2</th>
-        </tr>
-    </thead>
+    <p>
+        Gracias por participar. Usted ha completado todas las decisiones del estudio.
+    </p>
 
-    <tbody>
-        {% for p in rounds %}
-        <tr>
-            <td>{{ p.round_number }}</td>
-            <td>{{ p.treatment_arm }}</td>
-            <td>{{ p.timed_task }}</td>
-            <td>{{ p.info_condition }}</td>
-            <td>{{ p.left_candidate_id }}</td>
-            <td>{{ p.right_candidate_id }}</td>
-            <td>{{ p.decision_candidate_id }}</td>
-            <td>{{ p.decision_side }}</td>
-            <td>{{ p.left_ideology_opened }}</td>
-            <td>{{ p.right_ideology_opened }}</td>
-            <td>{{ p.info_cost_task_completed }}</td>
-            <td>{{ p.info_cost_attempts }}</td>
-            <td>{{ p.time_spent_seconds }}</td>
-            <td>{{ p.time_to_first_choice_seconds }}</td>
-            <td>{{ p.choice_changes }}</td>
-            <td>{{ p.learn_more_clicks }}</td>
-            <td>{{ p.mouse_distance_px }}</td>
-            <td>{{ p.left_hover_seconds }}</td>
-            <td>{{ p.right_hover_seconds }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    <div style="
+        margin: 24px 0;
+        padding: 18px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        background: #f8f9fa;
+    ">
+        <p style="font-size: 20px; margin-bottom: 8px;">
+            <strong>Puntos iniciales:</strong> {{ initial_endowment }}
+        </p>
+
+        <p style="font-size: 20px; margin-bottom: 0;">
+            <strong>Puntos finales:</strong> {{ final_balance }}
+        </p>
+    </div>
+
+    <p>
+        A continuación se muestra un resumen breve de sus decisiones.
+    </p>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Decisión</th>
+                <th>Elección</th>
+                <th>Información vista</th>
+                <th>Tiempo</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for p in rounds %}
+            <tr>
+                <td>{{ p.round_number }}</td>
+
+                <td>
+                    {% if p.decision_side == 'left' %}
+                        Opción 1
+                    {% elif p.decision_side == 'right' %}
+                        Opción 2
+                    {% else %}
+                        Sin respuesta
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if p.left_ideology_opened and p.right_ideology_opened %}
+                        Ambas opciones
+                    {% elif p.left_ideology_opened %}
+                        Opción 1
+                    {% elif p.right_ideology_opened %}
+                        Opción 2
+                    {% else %}
+                        Ninguna
+                    {% endif %}
+                </td>
+
+                <td>
+                    {{ p.time_spent_seconds }} segundos
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
 
 {{ endblock }}
