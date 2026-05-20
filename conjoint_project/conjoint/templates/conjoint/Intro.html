@@ -4,23 +4,27 @@ Estudio de candidatos
 
 {{ block content }}
 
-<div style="max-width: 760px; margin: 0 auto;">
+<div style="max-width: 850px; margin: 0 auto; line-height: 1.5;">
 
     <p>
-        En este estudio verá pares de fotografías de candidatos.
+        En este estudio verá pares de fotografías de candidatos(as). En cada pantalla,
+        le pediremos tomar una decisión de voto.
+    </p>
+
+    <p style="font-size: 21px; text-align: center; margin: 26px 0;">
+        <strong>Pensando en las elecciones para la alcaldía de su comuna, ¿a quién le daría su voto?</strong>
     </p>
 
     <p>
-        En cada pantalla, le pediremos responder la siguiente pregunta:
-    </p>
-
-    <p style="font-size: 22px; text-align: center; margin: 28px 0;">
-        <strong>¿Por quién votaría usted?</strong>
+        En algunas pantallas podrá ver información adicional sobre las ideas programáticas
+        de cada candidato(a). Usted puede decidir si quiere desbloquear esa información
+        o si prefiere votar solo mirando las fotografías.
     </p>
 
     <p>
-        Algunas personas podrán ver información adicional sobre los candidatos antes de responder.
-        En algunos casos, ver esa información requerirá completar una tarea breve.
+        En algunos casos, desbloquear la información será inmediato. En otros casos,
+        deberá resolver una tarea breve antes de verla. Si aparece un cronómetro,
+        intente responder antes de que el tiempo llegue a cero.
     </p>
 
     <div style="
@@ -30,12 +34,15 @@ Estudio de candidatos
         border-radius: 10px;
         background: #f8f9fa;
     ">
-        <p style="font-size: 18px; margin-bottom: 8px;">
-            <strong>Sus puntos iniciales:</strong> {{ initial_endowment }}
+        <p style="margin-bottom: 8px;">
+            Antes de comenzar el estudio principal, realizará
+            <strong>{{ num_practice_rounds }} rondas de práctica</strong>.
         </p>
 
         <p style="margin-bottom: 0;">
-            Sus puntos se mostrarán durante el estudio.
+            Después de la práctica, completará
+            <strong>{{ num_main_rounds }} decisiones principales</strong>.
+            Las rondas de práctica sirven solo para familiarizarse con la pantalla.
         </p>
     </div>
 

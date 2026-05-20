@@ -1,0 +1,43 @@
+{{ block title }}
+Preguntas finales
+{{ endblock }}
+
+{{ block content }}
+
+<div style="max-width: 850px; margin: 0 auto; line-height: 1.5;">
+
+    <p>
+        Para terminar, responda las siguientes preguntas generales.
+    </p>
+
+    <div style="margin: 24px 0;">
+        <p><strong>¿Votó usted en la última elección municipal?</strong></p>
+        {{ formfield 'voted_last_municipal' }}
+    </div>
+
+    <div style="margin: 24px 0;">
+        <p>
+            <strong>En una escala de 1 a 7, donde 1 significa “nada interesado” y 7 significa “muy interesado”, ¿cuán interesado está usted en la política?</strong>
+        </p>
+        {{ formfield 'political_interest' }}
+    </div>
+
+    <div style="margin: 24px 0;">
+        <p>
+            <strong>¿Con qué frecuencia habla usted de política o sigue noticias políticas?</strong>
+        </p>
+        {{ formfield 'politics_frequency' }}
+    </div>
+
+    <div style="margin: 24px 0;">
+        <p>
+            <strong>En política, las personas a veces hablan de “izquierda” y “derecha”. En una escala de 0 a 10, donde 0 significa “izquierda” y 10 significa “derecha”, ¿dónde se ubicaría usted?</strong>
+        </p>
+        {{ formfield 'left_right_self_placement' }}
+    </div>
+
+    {{ next_button }}
+
+</div>
+
+{{ endblock }}

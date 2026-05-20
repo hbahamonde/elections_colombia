@@ -1,5 +1,9 @@
 {{ block title }}
-Decisión {{ round_number }} de {{ total_rounds }}
+{% if is_practice_round %}
+    Práctica {{ round_number }} de {{ num_practice_rounds }}
+{% else %}
+    Decisión {{ main_round_number }} de {{ num_main_rounds }}
+{% endif %}
 {{ endblock }}
 
 {{ block content }}
@@ -21,11 +25,30 @@ Decisión {{ round_number }} de {{ total_rounds }}
         background: #f8f9fa;
     }
 
+    .practice-badge {
+        display: inline-block;
+        padding: 4px 9px;
+        border-radius: 999px;
+        background: #fff3cd;
+        border: 1px solid #ffe69c;
+        font-weight: 700;
+        margin-right: 8px;
+    }
+
     .question {
         text-align: center;
         font-size: 24px;
         font-weight: 700;
         margin: 22px 0;
+    }
+
+    .instruction-box {
+        margin: 16px auto 20px auto;
+        padding: 14px 16px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background: #f8f9fa;
+        max-width: 850px;
     }
 
     .profiles {
@@ -64,7 +87,7 @@ Decisión {{ round_number }} de {{ total_rounds }}
     }
 
     .learn-btn {
-        width: 260px;
+        width: 280px;
         padding: 10px 16px;
         border: 1px solid #666;
         border-radius: 8px;
@@ -77,7 +100,7 @@ Decisión {{ round_number }} de {{ total_rounds }}
     }
 
     .choice-btn {
-        width: 260px;
+        width: 280px;
         padding: 12px 16px;
         border: none;
         border-radius: 8px;
@@ -108,11 +131,17 @@ Decisión {{ round_number }} de {{ total_rounds }}
         color: #b02a37;
     }
 
+    .timer-expired {
+        color: #b02a37;
+        font-weight: 700;
+        margin-left: 10px;
+    }
+
     .cost-box {
         display: none;
         margin: 12px auto;
         padding: 12px;
-        max-width: 380px;
+        max-width: 420px;
         border: 1px solid #ddd;
         border-radius: 8px;
         background: #f8f9fa;
@@ -129,18 +158,29 @@ Decisión {{ round_number }} de {{ total_rounds }}
 <div class="task-wrapper">
     <div class="top-bar">
         <div>
-            <strong>Por favor observe ambos candidatos antes de responder.</strong>
+            {% if is_practice_round %}
+                <span class="practice-badge">Práctica</span>
+            {% endif %}
+            <strong>Observe ambas opciones antes de responder.</strong>
         </div>
 
         <div>
             {% if timed_task %}
-                <span class="timer-box">Tiempo: <span id="timer">0</span> segundos</span>
+            <span class="timer-box">Tiempo restante: <span id="timer">{{ countdown_seconds }}</span> segundos</span>                <span id="timer-expired-message" class="timer-expired" style="display:none;">Tiempo terminado</span>
+            {% else %}
+                <span>Puede responder cuando esté listo(a).</span>
             {% endif %}
         </div>
     </div>
 
     <div class="question">
-        ¿Por quién votaría usted?
+        Pensando en las elecciones para la alcaldía de su comuna, ¿a quién le daría su voto?
+    </div>
+
+    <div class="instruction-box">
+        Puede votar directamente por una de las dos opciones. Si desea conocer las ideas programáticas
+        de un(a) candidato(a), presione <strong>Desbloquear información</strong>. Usted decide si quiere
+        desbloquear esa información o no antes de votar.
     </div>
 
     <div class="profiles">
@@ -152,11 +192,11 @@ Decisión {{ round_number }} de {{ total_rounds }}
             <div class="learn-row">
                 {% if info_condition == 'timer_mostrar_mas' %}
                     <button type="button" id="learn-left" class="learn-btn" onclick="startReveal('left')">
-                        Mostrar más
+                        Desbloquear información
                     </button>
 
                     <div id="left-ideology-info" class="revealed-info">
-                        <strong>Ideología:</strong>
+                        <strong>Ideas programáticas:</strong>
                         {% if left_candidate.ideologia_cat %}
                             {{ left_candidate.ideologia_cat }}
                         {% else %}
@@ -165,11 +205,11 @@ Decisión {{ round_number }} de {{ total_rounds }}
                     </div>
                 {% elif info_condition == 'captcha_ver_mas' %}
                     <button type="button" id="learn-left" class="learn-btn" onclick="startReveal('left')">
-                        Ver más
+                        Desbloquear información
                     </button>
 
                     <div id="left-cost-box" class="cost-box">
-                        <p><strong>Tarea breve:</strong> Para ver la información, escriba el resultado.</p>
+                        <p><strong>Tarea breve:</strong> Para desbloquear la información, escriba el resultado.</p>
                         <label>{{ captcha_left_a }} + {{ captcha_left_b }} = <input type="number" id="left-cost-answer"></label>
                         <button type="button" onclick="checkCostTask('left')">Enviar</button>
                         <div id="left-cost-error" style="display:none; color:#b02a37; margin-top:8px;">
@@ -178,7 +218,7 @@ Decisión {{ round_number }} de {{ total_rounds }}
                     </div>
 
                     <div id="left-ideology-info" class="revealed-info">
-                        <strong>Ideología:</strong>
+                        <strong>Ideas programáticas:</strong>
                         {% if left_candidate.ideologia_cat %}
                             {{ left_candidate.ideologia_cat }}
                         {% else %}
@@ -187,11 +227,11 @@ Decisión {{ round_number }} de {{ total_rounds }}
                     </div>
                 {% elif info_condition == 'control_ver_mas' %}
                     <button type="button" id="learn-left" class="learn-btn" onclick="startReveal('left')">
-                        Ver más
+                        Desbloquear información
                     </button>
 
                     <div id="left-ideology-info" class="revealed-info">
-                        <strong>Ideología:</strong>
+                        <strong>Ideas programáticas:</strong>
                         {% if left_candidate.ideologia_cat %}
                             {{ left_candidate.ideologia_cat }}
                         {% else %}
@@ -203,7 +243,7 @@ Decisión {{ round_number }} de {{ total_rounds }}
 
             <div class="choose-row">
                 <button type="button" id="choose-left" class="choice-btn" onclick="chooseCandidate('{{ left_candidate.id }}', 'left')">
-                    Votaría por opción 1
+                    Le daría mi voto a opción 1
                 </button>
             </div>
         </div>
@@ -216,11 +256,11 @@ Decisión {{ round_number }} de {{ total_rounds }}
             <div class="learn-row">
                 {% if info_condition == 'timer_mostrar_mas' %}
                     <button type="button" id="learn-right" class="learn-btn" onclick="startReveal('right')">
-                        Mostrar más
+                        Desbloquear información
                     </button>
 
                     <div id="right-ideology-info" class="revealed-info">
-                        <strong>Ideología:</strong>
+                        <strong>Ideas programáticas:</strong>
                         {% if right_candidate.ideologia_cat %}
                             {{ right_candidate.ideologia_cat }}
                         {% else %}
@@ -229,11 +269,11 @@ Decisión {{ round_number }} de {{ total_rounds }}
                     </div>
                 {% elif info_condition == 'captcha_ver_mas' %}
                     <button type="button" id="learn-right" class="learn-btn" onclick="startReveal('right')">
-                        Ver más
+                        Desbloquear información
                     </button>
 
                     <div id="right-cost-box" class="cost-box">
-                        <p><strong>Tarea breve:</strong> Para ver la información, escriba el resultado.</p>
+                        <p><strong>Tarea breve:</strong> Para desbloquear la información, escriba el resultado.</p>
                         <label>{{ captcha_right_a }} + {{ captcha_right_b }} = <input type="number" id="right-cost-answer"></label>
                         <button type="button" onclick="checkCostTask('right')">Enviar</button>
                         <div id="right-cost-error" style="display:none; color:#b02a37; margin-top:8px;">
@@ -242,7 +282,7 @@ Decisión {{ round_number }} de {{ total_rounds }}
                     </div>
 
                     <div id="right-ideology-info" class="revealed-info">
-                        <strong>Ideología:</strong>
+                        <strong>Ideas programáticas:</strong>
                         {% if right_candidate.ideologia_cat %}
                             {{ right_candidate.ideologia_cat }}
                         {% else %}
@@ -251,11 +291,11 @@ Decisión {{ round_number }} de {{ total_rounds }}
                     </div>
                 {% elif info_condition == 'control_ver_mas' %}
                     <button type="button" id="learn-right" class="learn-btn" onclick="startReveal('right')">
-                        Ver más
+                        Desbloquear información
                     </button>
 
                     <div id="right-ideology-info" class="revealed-info">
-                        <strong>Ideología:</strong>
+                        <strong>Ideas programáticas:</strong>
                         {% if right_candidate.ideologia_cat %}
                             {{ right_candidate.ideologia_cat }}
                         {% else %}
@@ -267,7 +307,7 @@ Decisión {{ round_number }} de {{ total_rounds }}
 
             <div class="choose-row">
                 <button type="button" id="choose-right" class="choice-btn" onclick="chooseCandidate('{{ right_candidate.id }}', 'right')">
-                    Votaría por opción 2
+                    Le daría mi voto a opción 2
                 </button>
             </div>
         </div>
@@ -289,6 +329,7 @@ Decisión {{ round_number }} de {{ total_rounds }}
     <input type="hidden" name="mouse_distance_px" id="id_mouse_distance_px" value="0">
     <input type="hidden" name="left_hover_seconds" id="id_left_hover_seconds" value="0">
     <input type="hidden" name="right_hover_seconds" id="id_right_hover_seconds" value="0">
+    <input type="hidden" name="countdown_expired" id="id_countdown_expired" value="False">
 
     <div style="margin-top: 28px; text-align:center;">
         <button id="next-btn" class="otree-btn-next btn btn-primary" disabled>
@@ -300,8 +341,10 @@ Decisión {{ round_number }} de {{ total_rounds }}
 <script>
     let startTime = Date.now();
     let timerInterval = null;
+    let countdownInterval = null;
 
     let timedTask = {{ timed_task|json }};
+    let countdownSeconds = {{ countdown_seconds }};
     let infoCondition = {{ info_condition|json }};
     let captchaAnswers = {
         left: {{ captcha_left_sum }},
@@ -329,12 +372,19 @@ Decisión {{ round_number }} de {{ total_rounds }}
     function updateElapsedTime() {
         const seconds = elapsedSeconds();
         document.getElementById('id_time_spent_seconds').value = seconds.toFixed(3);
-
-        if (timedTask) {
-            document.getElementById('timer').textContent = Math.floor(seconds);
-        }
-
         return seconds;
+    }
+
+    function updateCountdown() {
+        const elapsed = Math.floor(elapsedSeconds());
+        const remaining = Math.max(0, countdownSeconds - elapsed);
+        document.getElementById('timer').textContent = remaining;
+
+        if (remaining <= 0) {
+            document.getElementById('id_countdown_expired').value = 'True';
+            document.getElementById('timer-expired-message').style.display = 'inline';
+            clearInterval(countdownInterval);
+        }
     }
 
     function updateMouseDistance(event) {
@@ -377,7 +427,7 @@ Decisión {{ round_number }} de {{ total_rounds }}
 
         const button = document.getElementById(`learn-${side}`);
         button.disabled = true;
-        button.textContent = 'Información mostrada';
+        button.textContent = 'Información desbloqueada';
 
         const costBox = document.getElementById(`${side}-cost-box`);
         if (costBox) {
@@ -454,10 +504,58 @@ Decisión {{ round_number }} de {{ total_rounds }}
         endHover('right');
     });
 
-    if (timedTask) {
-        timerInterval = setInterval(updateElapsedTime, 1000);
+    timerInterval = setInterval(updateElapsedTime, 1000);
+
+        function autoAdvanceAfterTimeout() {
+    const seconds = updateElapsedTime();
+
+    endHover('left');
+    endHover('right');
+
+    if (!firstChoiceMade) {
+        document.getElementById('id_decision_candidate_id').value = 'timeout';
+        document.getElementById('id_decision_side').value = 'timeout';
+        document.getElementById('id_time_to_first_choice_seconds').value = '0';
+    } else {
+        document.getElementById('id_time_to_first_choice_seconds').value =
+            document.getElementById('id_time_to_first_choice_seconds').value || seconds.toFixed(3);
     }
 
+    document.getElementById('id_time_spent_seconds').value = seconds.toFixed(3);
+    document.getElementById('id_choice_changes').value = choiceChanges;
+    document.getElementById('id_learn_more_clicks').value = learnMoreClicks;
+    document.getElementById('id_info_cost_attempts').value = infoCostAttempts;
+    document.getElementById('id_mouse_distance_px').value = mouseDistance.toFixed(2);
+    document.getElementById('id_left_hover_seconds').value = leftHoverSeconds.toFixed(3);
+    document.getElementById('id_right_hover_seconds').value = rightHoverSeconds.toFixed(3);
+
+    if (timerInterval) {
+        clearInterval(timerInterval);
+    }
+
+    document.getElementById('next-btn').disabled = false;
+    document.querySelector('form').submit();
+}
+
+    if (timedTask) {
+        let countdownRemaining = {{ countdown_seconds }};
+
+        document.getElementById('timer').textContent = countdownRemaining;
+
+        timerInterval = setInterval(function() {
+            updateElapsedTime();
+
+            countdownRemaining -= 1;
+
+            if (countdownRemaining <= 0) {
+                document.getElementById('timer').textContent = 0;
+                autoAdvanceAfterTimeout();
+                return;
+            }
+
+            document.getElementById('timer').textContent = countdownRemaining;
+        }, 1000);
+    }
     document.querySelector('form').addEventListener('submit', function() {
         updateElapsedTime();
         endHover('left');
@@ -465,6 +563,10 @@ Decisión {{ round_number }} de {{ total_rounds }}
 
         if (timerInterval) {
             clearInterval(timerInterval);
+        }
+
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
         }
     });
 </script>

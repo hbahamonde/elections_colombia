@@ -16,14 +16,17 @@ _static/conjoint/images/
 
 The backend records:
 - randomized treatment assignment
+- practice versus main-experiment round status
 - left/right candidate IDs
 - image paths
 - all candidate-level metadata from dataset.csv
 - full candidate CSV rows as JSON backups
 - information acquisition behavior
-- captcha/math-task behavior
+- math-task behavior
+- countdown/time-pressure behavior
 - timing and mouse-tracking metadata
-- final choice
+- post-choice follow-up answers
+- final political questionnaire answers
 """
 
 
@@ -101,6 +104,25 @@ FIELD_NAME_MAP = {
     'fhwr_cat': 'fhwr_cat',
     'combo_id': 'combo_id',
 }
+
+
+REALISTIC_VOTE_CHOICES = [
+    ['yes', 'Sí'],
+    ['no', 'No'],
+]
+
+
+POLITICS_FREQUENCY_CHOICES = [
+    ['never', 'Nunca'],
+    ['less_than_once_per_week', 'Menos de una vez por semana'],
+    ['once_or_twice_per_week', 'Una o dos veces por semana'],
+    ['several_times_per_week', 'Varias veces por semana'],
+    ['every_day', 'Todos los días'],
+]
+
+
+LIKERT_1_TO_7 = [[i, str(i)] for i in range(1, 8)]
+LEFT_RIGHT_0_TO_10 = [[i, str(i)] for i in range(0, 11)]
 
 
 def clean_value(value):
@@ -207,9 +229,12 @@ CANDIDATE_DATA = load_candidate_data()
 class C(BaseConstants):
     NAME_IN_URL = 'conjoint'
     PLAYERS_PER_GROUP = None
-    NUM_ROUNDS = 4
 
-    INITIAL_ENDOWMENT = 100
+    NUM_PRACTICE_ROUNDS = 5
+    NUM_MAIN_ROUNDS = 15
+    NUM_ROUNDS = NUM_PRACTICE_ROUNDS + NUM_MAIN_ROUNDS
+
+    COUNTDOWN_SECONDS = 10
 
     TREATMENT_ARMS = [
         'timer_mostrar_mas',
@@ -227,9 +252,14 @@ class Group(BaseGroup):
 
 
 class Player(BasePlayer):
+    is_practice_round = models.BooleanField(initial=False)
+    main_round_number = models.IntegerField(initial=0)
+
     treatment_arm = models.StringField()
     timed_task = models.BooleanField(initial=False)
     info_condition = models.StringField()
+    countdown_seconds = models.IntegerField(initial=C.COUNTDOWN_SECONDS)
+    countdown_expired = models.BooleanField(initial=False)
 
     left_candidate_id = models.StringField()
     right_candidate_id = models.StringField()
@@ -334,7 +364,43 @@ class Player(BasePlayer):
     left_hover_seconds = models.FloatField(initial=0)
     right_hover_seconds = models.FloatField(initial=0)
 
-    balance_after_task = models.IntegerField(initial=0)
+    realistic_vote = models.StringField(
+        choices=REALISTIC_VOTE_CHOICES,
+        widget=widgets.RadioSelect,
+        blank=True,
+    )
+    decision_factors = models.LongStringField(blank=True)
+    rushed_scale = models.IntegerField(
+        choices=LIKERT_1_TO_7,
+        widget=widgets.RadioSelectHorizontal,
+        blank=True,
+    )
+    info_cost_scale = models.IntegerField(
+        choices=LIKERT_1_TO_7,
+        widget=widgets.RadioSelectHorizontal,
+        blank=True,
+    )
+
+    voted_last_municipal = models.StringField(
+        choices=REALISTIC_VOTE_CHOICES,
+        widget=widgets.RadioSelect,
+        blank=True,
+    )
+    political_interest = models.IntegerField(
+        choices=LIKERT_1_TO_7,
+        widget=widgets.RadioSelectHorizontal,
+        blank=True,
+    )
+    politics_frequency = models.StringField(
+        choices=POLITICS_FREQUENCY_CHOICES,
+        widget=widgets.RadioSelect,
+        blank=True,
+    )
+    left_right_self_placement = models.IntegerField(
+        choices=LEFT_RIGHT_0_TO_10,
+        widget=widgets.RadioSelectHorizontal,
+        blank=True,
+    )
 
 
 def available_candidate_ids():
@@ -358,7 +424,6 @@ def draw_candidates_for_participant():
 
 def assign_treatment(player):
     participant = player.participant
-
     demo_treatment_arm = player.session.config.get('demo_treatment_arm')
 
     if demo_treatment_arm in C.TREATMENT_ARMS:
@@ -373,9 +438,6 @@ def creating_session(subsession):
     for player in subsession.get_players():
         participant = player.participant
 
-        if 'point_balance' not in participant.vars:
-            participant.vars['point_balance'] = C.INITIAL_ENDOWMENT
-
         assign_treatment(player)
 
         if 'drawn_candidates' not in participant.vars:
@@ -385,22 +447,7 @@ def creating_session(subsession):
 def ensure_participant_vars(player):
     participant = player.participant
 
-    if 'point_balance' not in participant.vars:
-        participant.vars['point_balance'] = C.INITIAL_ENDOWMENT
-
     assign_treatment(player)
-
-    if 'drawn_candidates' not in participant.vars:
-        participant.vars['drawn_candidates'] = draw_candidates_for_participant()
-
-def ensure_participant_vars(player):
-    participant = player.participant
-
-    if 'point_balance' not in participant.vars:
-        participant.vars['point_balance'] = C.INITIAL_ENDOWMENT
-
-    if 'treatment_arm' not in participant.vars:
-        participant.vars['treatment_arm'] = random.choice(C.TREATMENT_ARMS)
 
     if 'drawn_candidates' not in participant.vars:
         participant.vars['drawn_candidates'] = draw_candidates_for_participant()
@@ -425,9 +472,12 @@ def assign_candidates(player):
 
     treatment_arm = player.participant.vars['treatment_arm']
 
+    player.is_practice_round = player.round_number <= C.NUM_PRACTICE_ROUNDS
+    player.main_round_number = max(0, player.round_number - C.NUM_PRACTICE_ROUNDS)
     player.treatment_arm = treatment_arm
     player.timed_task = treatment_arm == 'timer_mostrar_mas'
     player.info_condition = treatment_arm
+    player.countdown_seconds = C.COUNTDOWN_SECONDS
 
     if player.captcha_left_a == 0:
         player.captcha_left_a = random.randint(2, 20)

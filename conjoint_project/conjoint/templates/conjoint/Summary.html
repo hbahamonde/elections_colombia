@@ -4,30 +4,14 @@ Resumen
 
 {{ block content }}
 
-<div style="max-width: 850px; margin: 0 auto;">
+<div style="max-width: 850px; margin: 0 auto; line-height: 1.5;">
 
     <p>
         Gracias por participar. Usted ha completado todas las decisiones del estudio.
     </p>
 
-    <div style="
-        margin: 24px 0;
-        padding: 18px;
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        background: #f8f9fa;
-    ">
-        <p style="font-size: 20px; margin-bottom: 8px;">
-            <strong>Puntos iniciales:</strong> {{ initial_endowment }}
-        </p>
-
-        <p style="font-size: 20px; margin-bottom: 0;">
-            <strong>Puntos finales:</strong> {{ final_balance }}
-        </p>
-    </div>
-
     <p>
-        A continuación se muestra un resumen breve de sus decisiones.
+        A continuación se muestra un resumen breve de sus decisiones principales.
     </p>
 
     <table class="table">
@@ -35,7 +19,7 @@ Resumen
             <tr>
                 <th>Decisión</th>
                 <th>Elección</th>
-                <th>Información vista</th>
+                <th>Información desbloqueada</th>
                 <th>Tiempo</th>
             </tr>
         </thead>
@@ -43,7 +27,7 @@ Resumen
         <tbody>
             {% for p in rounds %}
             <tr>
-                <td>{{ p.round_number }}</td>
+                <td>{{ p.main_round_number }}</td>
 
                 <td>
                     {% if p.decision_side == 'left' %}

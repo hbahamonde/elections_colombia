@@ -1,0 +1,130 @@
+{{ block title }}
+Preguntas sobre su decisión
+{{ endblock }}
+
+{{ block content }}
+
+<div style="max-width: 850px; margin: 0 auto; line-height: 1.5;">
+
+    <p>
+        <strong>Decisión {{ main_round_number }} de {{ num_main_rounds }}</strong>
+    </p>
+
+    <div style="margin: 22px 0;">
+        <p>
+            <strong>¿Habría votado usted por un(a) candidato(a) así en una elección real?</strong>
+        </p>
+
+        <label style="display:block; margin: 8px 0;">
+            <input type="radio" name="realistic_vote" value="yes">
+            Sí
+        </label>
+
+        <label style="display:block; margin: 8px 0;">
+            <input type="radio" name="realistic_vote" value="no">
+            No
+        </label>
+    </div>
+
+    <div id="factors-box" style="display:none; margin: 22px 0; padding: 16px; border: 1px solid #ddd; border-radius: 8px; background: #f8f9fa;">
+        <p>
+            <strong>¿Cuáles fueron los principales factores que consideró al tomar su decisión de voto?</strong>
+        </p>
+
+        <p style="margin-bottom: 10px;">Puede seleccionar más de una alternativa.</p>
+
+        <label><input type="checkbox" class="factor-option" value="ideas_programaticas"> Las ideas programáticas del candidato(a)</label><br>
+        <label><input type="checkbox" class="factor-option" value="experiencia_trayectoria"> Su experiencia o trayectoria</label><br>
+        <label><input type="checkbox" class="factor-option" value="apariencia_primera_impresion"> Su apariencia o primera impresión</label><br>
+        <label><input type="checkbox" class="factor-option" value="edad"> La edad del candidato(a)</label><br>
+        <label><input type="checkbox" class="factor-option" value="genero"> El género del candidato(a)</label><br>
+        <label><input type="checkbox" class="factor-option" value="cercania_local"> Su cercanía con la ciudad o el territorio</label><br>
+        <label><input type="checkbox" class="factor-option" value="otra_razon"> Otra razón</label>
+    </div>
+
+    <input type="hidden" name="decision_factors" id="id_decision_factors" value="">
+
+    {% if timed_task %}
+    <div style="margin: 26px 0;">
+        <p>
+            <strong>En una escala de 1 a 7, donde 1 significa “nada apurado” y 7 significa “muy apurado”, ¿qué tan apurado se sintió al tomar su decisión?</strong>
+        </p>
+
+        <div style="display:flex; gap: 14px; flex-wrap: wrap; align-items: center;">
+            {% for value in [1, 2, 3, 4, 5, 6, 7] %}
+                <label>
+                    <input type="radio" name="rushed_scale" value="{{ value }}">
+                    {{ value }}
+                </label>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if info_condition == 'captcha_ver_mas' %}
+    <div style="margin: 26px 0;">
+        <p>
+            <strong>En una escala de 1 a 7, donde 1 significa “no le costó nada” y 7 significa “le costó mucho”, ¿qué tanto le costó informarse sobre las ideas programáticas del (de la) candidato(a)?</strong>
+        </p>
+
+        <div style="display:flex; gap: 14px; flex-wrap: wrap; align-items: center;">
+            {% for value in [1, 2, 3, 4, 5, 6, 7] %}
+                <label>
+                    <input type="radio" name="info_cost_scale" value="{{ value }}">
+                    {{ value }}
+                </label>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {{ next_button }}
+
+</div>
+
+<script>
+    function getRealisticVoteValue() {
+        const selected = document.querySelector('input[name="realistic_vote"]:checked');
+        if (!selected) {
+            return '';
+        }
+        return selected.value;
+    }
+
+    function updateFactorsBox() {
+        const value = getRealisticVoteValue();
+        const box = document.getElementById('factors-box');
+
+        if (value === 'yes') {
+            box.style.display = 'block';
+        } else {
+            box.style.display = 'none';
+            document.querySelectorAll('.factor-option').forEach(function(checkbox) {
+                checkbox.checked = false;
+            });
+            document.getElementById('id_decision_factors').value = '';
+        }
+    }
+
+    function updateDecisionFactors() {
+        const selectedFactors = [];
+        document.querySelectorAll('.factor-option:checked').forEach(function(checkbox) {
+            selectedFactors.push(checkbox.value);
+        });
+        document.getElementById('id_decision_factors').value = selectedFactors.join(',');
+    }
+
+    document.querySelectorAll('input[name="realistic_vote"]').forEach(function(radio) {
+        radio.addEventListener('change', updateFactorsBox);
+    });
+
+    document.querySelectorAll('.factor-option').forEach(function(checkbox) {
+        checkbox.addEventListener('change', updateDecisionFactors);
+    });
+
+    document.querySelector('form').addEventListener('submit', function() {
+        updateDecisionFactors();
+    });
+</script>
+
+{{ endblock }}
