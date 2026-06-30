@@ -1,0 +1,17 @@
+{{ block title }}
+Preguntas de caracterización política
+{{ endblock }}
+
+{{ block content }}
+
+<div style="max-width: 750px; margin: 0 auto; line-height: 1.5;">
+    <p><strong>¿Votó usted en la última elección municipal de 2021?</strong></p>
+
+    <label style="display:block; margin: 8px 0;"><input type="radio" name="voted_last_municipal" value="yes"> Sí</label>
+    <label style="display:block; margin: 8px 0;"><input type="radio" name="voted_last_municipal" value="no"> No</label>
+    <label style="display:block; margin: 8px 0;"><input type="radio" name="voted_last_municipal" value="no"> No sé, no recuerdo</label>
+
+    {{ next_button }}
+</div>
+
+{{ endblock }}

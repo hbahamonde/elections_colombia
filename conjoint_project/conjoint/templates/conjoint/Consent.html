@@ -1,0 +1,157 @@
+{{ block title }}
+Consentimiento informado
+{{ endblock }}
+
+{{ block content }}
+
+<style>
+    .consent-wrapper {
+        max-width: 900px;
+        margin: 0 auto;
+        line-height: 1.55;
+    }
+
+    .consent-section {
+        margin-bottom: 18px;
+    }
+
+    .consent-section h4 {
+        margin-bottom: 8px;
+        font-size: 18px;
+    }
+
+    .consent-box {
+        margin: 26px 0;
+        padding: 18px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        background: #f8f9fa;
+    }
+</style>
+
+<div class="consent-wrapper">
+
+    <div class="consent-section">
+        <h4>Introducción</h4>
+        <p>
+            Usted ha sido invitado (a) a participar en el proyecto “Faces or Facts? Experimental Evidence on Time
+            Pressure, Information Costs, and Gender Bias in Electoral Choice”, cuyo objetivo es analizar cómo influyen algunas
+            variables a la hora de elegir por quién votar. La investigadora responsable de este estudio es Alejandra Marín Díaz
+            del Instituto de Ciencias Sociales de la Universidad de O’Higgins. Esta investigación está financiada por la
+            Universidad de O’Higgins, por medio del Fondo Individual Postdoc (FIP) 2507.
+        </p>
+        <p>
+            Se le invitó a participar de este estudio porque usted cumple con los siguientes criterios de participación: tiene entre
+            18 y 65 años (ambas edades inclusive), no es colombiano(a), no ha residido en Colombia y no ha participado en una
+            investigación similar a esta.
+        </p>
+    </div>
+
+    <div class="consent-section">
+        <h4>Participación</h4>
+        <p>
+            Su participación en este estudio consiste en responder algunas preguntas relacionadas con los
+            perfiles de candidatos que se le presentarán. Este estudio se realizará de manera online y le tomará alrededor de
+            30 minutos.
+        </p>
+    </div>
+
+    <div class="consent-section">
+        <h4>Compensación</h4>
+        <p>
+            Su participación es voluntaria. Al finalizar el estudio, recibirá una compensación fija administrada
+            por la empresa, destinada únicamente a agradecer el tiempo que usted invierta. Esta compensación no depende del
+            desempeño en la tarea, no requiere acumular puntos y no está diseñada como un incentivo económico relevante,
+            sino como un reconocimiento básico por su colaboración.
+        </p>
+    </div>
+
+    <div class="consent-section">
+        <h4>Beneficios</h4>
+        <p>
+            La participación en este estudio no contempla ningún tipo de beneficios directos reales para usted. Los
+            beneficios indirectos de esta investigación permitirán el avance del conocimiento científico respecto al tema del
+            proyecto, a través de la publicación y la difusión de los resultados que se obtengan, de manera totalmente anónima.
+        </p>
+    </div>
+
+    <div class="consent-section">
+        <h4>Riesgos</h4>
+        <p>
+            No se anticipa ningún tipo de riesgos relativamente a su participación en este estudio. Sin embargo, es
+            posible que pudiera sentirse cansado (a) en algún punto. Si por alguna razón, usted se siente incómodo (a) o
+            afectado (a) por el estudio, usted podrá suspender o renunciar a su participación en el estudio voluntariamente en
+            cualquier momento y se respetará su decisión.
+        </p>
+    </div>
+
+    <div class="consent-section">
+        <h4>Participación voluntaria</h4>
+        <p>
+            Su participación en esta investigación es completamente voluntaria. En el caso que decida
+            participar puede retirarse en cualquier momento, o negarse a participar en una parte del estudio, si así lo desea. Si
+            decide rechazar participar (o retirarse en algún momento) no implicará ningún tipo de perjuicio ni afectará de ninguna
+            forma la compensación mencionada anteriormente.
+        </p>
+    </div>
+
+    <div class="consent-section">
+        <h4>Confidencialidad</h4>
+        <p>
+            Toda la información derivada de su participación en este estudio será tratada con estricta
+            confidencialidad y resguardada de acuerdo con los principios éticos vigentes. Sus datos serán almacenados de forma
+            segura únicamente por las investigadoras de esta investigación. Estos datos se conservarán por un máximo de 5
+            años en sus computadores, después de ese tiempo, serán eliminados de manera definitiva.
+        </p>
+        <p>
+            Cualquier publicación o comunicación científica de los resultados de la investigación será completamente anónima
+            y utilizará únicamente datos agregados, de modo que no sea posible identificar a las personas participantes. Además,
+            su información no será usada ni por las investigadoras, ni por la empresa encargada de reclutar para ningún propósito
+            distinto a los descritos en este documento sin su consentimiento previo y explícito.
+        </p>
+    </div>
+
+    <div class="consent-section">
+        <h4>Derechos a conocer los resultados</h4>
+        <p>
+            Usted tiene derecho a conocer los resultados agregados del estudio, una vez
+            que el estudio haya concluido. Para eso, puede escribir directamente a la investigadora responsable vía correo
+            electrónico para informarla de su deseo de conocer los resultados agregados del estudio.
+        </p>
+    </div>
+
+    <div class="consent-section">
+        <h4>Datos de contacto</h4>
+        <p>
+            Si usted requiere cualquier otra información sobre su participación en este estudio puede
+            comunicarse con la investigadora responsable de este estudio.
+        </p>
+        <p>
+            Investigador Responsable: Alejandra Marín Díaz<br>
+            email: alejandra.marin@postdoc.uoh.cl
+        </p>
+        <p>
+            En el caso de dudas sobre sus derechos como participante se puede comunicar con el Comité Ético Científico UOH
+            a través de su correo electrónico (cec@uoh.cl), o contactar directamente a la Secretaría Ejecutiva: Inés Donoso (Tel.:
+            +569 57731093), o a la Presidenta: Gemma Rojo (Tel.: +56996232595)
+        </p>
+        <p>
+            La oficina del comité se encuentra ubicada en primer piso de la Universidad de O´Higgins, Campus Rancagua. Av.
+            Libertador Bernardo O´Higgins 611, Rancagua.
+        </p>
+    </div>
+
+    <div class="consent-box">
+        {{ formfield_errors 'consent_accepted' }}
+
+        <label>
+            <input type="checkbox" name="consent_accepted" value="True">
+            Declaro que he leído la información anterior y acepto participar voluntariamente en este estudio.
+        </label>
+    </div>
+
+    {{ next_button }}
+
+</div>
+
+{{ endblock }}

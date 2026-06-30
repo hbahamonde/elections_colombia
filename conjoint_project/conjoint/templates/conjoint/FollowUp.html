@@ -38,7 +38,7 @@ Preguntas sobre su decisión
         <label><input type="checkbox" class="factor-option" value="apariencia_primera_impresion"> Su apariencia o primera impresión</label><br>
         <label><input type="checkbox" class="factor-option" value="edad"> La edad del candidato(a)</label><br>
         <label><input type="checkbox" class="factor-option" value="genero"> El género del candidato(a)</label><br>
-        <label><input type="checkbox" class="factor-option" value="cercania_local"> Su cercanía con la ciudad o el territorio</label><br>
+        <label><input type="checkbox" class="factor-option" value="cercania_local"> Su cercanía con la comuna o el territorio</label><br>
         <label><input type="checkbox" class="factor-option" value="otra_razon"> Otra razón</label>
     </div>
 
@@ -51,12 +51,13 @@ Preguntas sobre su decisión
         </p>
 
         <div style="display:flex; gap: 14px; flex-wrap: wrap; align-items: center;">
-            {% for value in [1, 2, 3, 4, 5, 6, 7] %}
-                <label>
-                    <input type="radio" name="rushed_scale" value="{{ value }}">
-                    {{ value }}
-                </label>
-            {% endfor %}
+            <label><input type="radio" name="rushed_scale" value="1"> 1</label>
+            <label><input type="radio" name="rushed_scale" value="2"> 2</label>
+            <label><input type="radio" name="rushed_scale" value="3"> 3</label>
+            <label><input type="radio" name="rushed_scale" value="4"> 4</label>
+            <label><input type="radio" name="rushed_scale" value="5"> 5</label>
+            <label><input type="radio" name="rushed_scale" value="6"> 6</label>
+            <label><input type="radio" name="rushed_scale" value="7"> 7</label>
         </div>
     </div>
     {% endif %}
@@ -68,12 +69,13 @@ Preguntas sobre su decisión
         </p>
 
         <div style="display:flex; gap: 14px; flex-wrap: wrap; align-items: center;">
-            {% for value in [1, 2, 3, 4, 5, 6, 7] %}
-                <label>
-                    <input type="radio" name="info_cost_scale" value="{{ value }}">
-                    {{ value }}
-                </label>
-            {% endfor %}
+            <label><input type="radio" name="info_cost_scale" value="1"> 1</label>
+            <label><input type="radio" name="info_cost_scale" value="2"> 2</label>
+            <label><input type="radio" name="info_cost_scale" value="3"> 3</label>
+            <label><input type="radio" name="info_cost_scale" value="4"> 4</label>
+            <label><input type="radio" name="info_cost_scale" value="5"> 5</label>
+            <label><input type="radio" name="info_cost_scale" value="6"> 6</label>
+            <label><input type="radio" name="info_cost_scale" value="7"> 7</label>
         </div>
     </div>
     {% endif %}

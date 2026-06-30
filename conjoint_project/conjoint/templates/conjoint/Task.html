@@ -9,150 +9,25 @@
 {{ block content }}
 
 <style>
-    .task-wrapper {
-        max-width: 1150px;
-        margin: 0 auto;
-    }
-
-    .top-bar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 24px;
-        padding: 12px 16px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        background: #f8f9fa;
-    }
-
-    .practice-badge {
-        display: inline-block;
-        padding: 4px 9px;
-        border-radius: 999px;
-        background: #fff3cd;
-        border: 1px solid #ffe69c;
-        font-weight: 700;
-        margin-right: 8px;
-    }
-
-    .question {
-        text-align: center;
-        font-size: 24px;
-        font-weight: 700;
-        margin: 22px 0;
-    }
-
-    .instruction-box {
-        margin: 16px auto 20px auto;
-        padding: 14px 16px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        background: #f8f9fa;
-        max-width: 850px;
-    }
-
-    .profiles {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 28px;
-        margin-top: 20px;
-    }
-
-    .profile-card {
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        padding: 18px;
-        background: white;
-        text-align: center;
-    }
-
-    .profile-card img {
-        max-width: 100%;
-        max-height: 430px;
-        object-fit: contain;
-        border-radius: 6px;
-        margin-bottom: 16px;
-    }
-
-    .option-label {
-        font-size: 20px;
-        font-weight: 700;
-        margin-bottom: 12px;
-    }
-
-    .learn-row {
-        min-height: 54px;
-        margin-top: 8px;
-        margin-bottom: 10px;
-    }
-
-    .learn-btn {
-        width: 280px;
-        padding: 10px 16px;
-        border: 1px solid #666;
-        border-radius: 8px;
-        background: white;
-        cursor: pointer;
-    }
-
-    .choose-row {
-        margin-top: 14px;
-    }
-
-    .choice-btn {
-        width: 280px;
-        padding: 12px 16px;
-        border: none;
-        border-radius: 8px;
-        background: #0d6efd;
-        color: white;
-        cursor: pointer;
-        font-size: 17px;
-        font-weight: 700;
-    }
-
-    .selected-choice {
-        background: #198754 !important;
-    }
-
-    .revealed-info {
-        display: none;
-        margin-top: 12px;
-        padding: 12px;
-        border: 1px solid #d9d9d9;
-        border-radius: 8px;
-        background: #f5f5f5;
-        text-align: center;
-    }
-
-    .timer-box {
-        font-weight: 700;
-        font-size: 18px;
-        color: #b02a37;
-    }
-
-    .timer-expired {
-        color: #b02a37;
-        font-weight: 700;
-        margin-left: 10px;
-    }
-
-    .cost-box {
-        display: none;
-        margin: 12px auto;
-        padding: 12px;
-        max-width: 420px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        background: #f8f9fa;
-        text-align: left;
-    }
-
-    .cost-box input {
-        width: 80px;
-        margin-left: 6px;
-        margin-right: 8px;
-    }
+    .task-wrapper { max-width: 1150px; margin: 0 auto; }
+    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding: 12px 16px; border: 1px solid #ddd; border-radius: 8px; background: #f8f9fa; }
+    .practice-badge { display: inline-block; padding: 4px 9px; border-radius: 999px; background: #fff3cd; border: 1px solid #ffe69c; font-weight: 700; margin-right: 8px; }
+    .question { text-align: center; font-size: 24px; font-weight: 700; margin: 22px 0; }
+    .instruction-box { margin: 16px auto 20px auto; padding: 14px 16px; border: 1px solid #ddd; border-radius: 8px; background: #f8f9fa; max-width: 850px; }
+    .profiles { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 20px; }
+    .profile-card { border: 1px solid #ddd; border-radius: 10px; padding: 18px; background: white; text-align: center; }
+    .profile-card img { max-width: 100%; max-height: 430px; object-fit: contain; border-radius: 6px; margin-bottom: 16px; }
+    .option-label { font-size: 20px; font-weight: 700; margin-bottom: 12px; }
+    .learn-row { min-height: 54px; margin-top: 8px; margin-bottom: 10px; }
+    .learn-btn { width: 300px; padding: 10px 16px; border: 1px solid #666; border-radius: 8px; background: white; cursor: pointer; }
+    .choose-row { margin-top: 14px; }
+    .choice-btn { width: 280px; padding: 12px 16px; border: none; border-radius: 8px; background: #0d6efd; color: white; cursor: pointer; font-size: 17px; font-weight: 700; }
+    .selected-choice { background: #198754 !important; }
+    .revealed-info { display: none; margin-top: 12px; padding: 12px; border: 1px solid #d9d9d9; border-radius: 8px; background: #f5f5f5; text-align: center; }
+    .timer-box { font-weight: 700; font-size: 18px; color: #b02a37; }
+    .timer-expired { color: #b02a37; font-weight: 700; margin-left: 10px; }
+    .cost-box { display: none; margin: 12px auto; padding: 12px; max-width: 420px; border: 1px solid #ddd; border-radius: 8px; background: #f8f9fa; text-align: left; }
+    .cost-box input { width: 80px; margin-left: 6px; margin-right: 8px; }
 </style>
 
 <div class="task-wrapper">
@@ -161,12 +36,12 @@
             {% if is_practice_round %}
                 <span class="practice-badge">Práctica</span>
             {% endif %}
-            <strong>Observe ambas opciones antes de responder.</strong>
         </div>
 
         <div>
             {% if timed_task %}
-            <span class="timer-box">Tiempo restante: <span id="timer">{{ countdown_seconds }}</span> segundos</span>                <span id="timer-expired-message" class="timer-expired" style="display:none;">Tiempo terminado</span>
+                <span class="timer-box">Tiempo restante: <span id="timer">{{ countdown_seconds }}</span> segundos</span>
+                <span id="timer-expired-message" class="timer-expired" style="display:none;">Tiempo terminado</span>
             {% else %}
                 <span>Puede responder cuando esté listo(a).</span>
             {% endif %}
@@ -177,68 +52,35 @@
         Pensando en las elecciones para la alcaldía de su comuna, ¿a quién le daría su voto?
     </div>
 
-    <div class="instruction-box">
-        Puede votar directamente por una de las dos opciones. Si desea conocer las ideas programáticas
-        de un(a) candidato(a), presione <strong>Desbloquear información</strong>. Usted decide si quiere
-        desbloquear esa información o no antes de votar.
-    </div>
-
     <div class="profiles">
         <div class="profile-card" id="left-card">
             <div class="option-label">Opción 1</div>
-
             <img src="{% static left_candidate.image_path %}" alt="Opción 1">
 
             <div class="learn-row">
-                {% if info_condition == 'timer_mostrar_mas' %}
-                    <button type="button" id="learn-left" class="learn-btn" onclick="startReveal('left')">
-                        Desbloquear información
-                    </button>
+                <button type="button" id="learn-left" class="learn-btn" onclick="startReveal('left')">
+                    Ver con más detalle sus propuestas
+                </button>
 
-                    <div id="left-ideology-info" class="revealed-info">
-                        <strong>Ideas programáticas:</strong>
-                        {% if left_candidate.ideologia_cat %}
-                            {{ left_candidate.ideologia_cat }}
-                        {% else %}
-                            Sin información
-                        {% endif %}
-                    </div>
-                {% elif info_condition == 'captcha_ver_mas' %}
-                    <button type="button" id="learn-left" class="learn-btn" onclick="startReveal('left')">
-                        Desbloquear información
-                    </button>
-
+                {% if info_condition == 'captcha_ver_mas' %}
                     <div id="left-cost-box" class="cost-box">
-                        <p><strong>Tarea breve:</strong> Para desbloquear la información, escriba el resultado.</p>
+                        <p><strong>Tarea breve:</strong> Para ver la información, escriba el resultado.</p>
                         <label>{{ captcha_left_a }} + {{ captcha_left_b }} = <input type="number" id="left-cost-answer"></label>
                         <button type="button" onclick="checkCostTask('left')">Enviar</button>
                         <div id="left-cost-error" style="display:none; color:#b02a37; margin-top:8px;">
                             Inténtelo nuevamente.
                         </div>
                     </div>
-
-                    <div id="left-ideology-info" class="revealed-info">
-                        <strong>Ideas programáticas:</strong>
-                        {% if left_candidate.ideologia_cat %}
-                            {{ left_candidate.ideologia_cat }}
-                        {% else %}
-                            Sin información
-                        {% endif %}
-                    </div>
-                {% elif info_condition == 'control_ver_mas' %}
-                    <button type="button" id="learn-left" class="learn-btn" onclick="startReveal('left')">
-                        Desbloquear información
-                    </button>
-
-                    <div id="left-ideology-info" class="revealed-info">
-                        <strong>Ideas programáticas:</strong>
-                        {% if left_candidate.ideologia_cat %}
-                            {{ left_candidate.ideologia_cat }}
-                        {% else %}
-                            Sin información
-                        {% endif %}
-                    </div>
                 {% endif %}
+
+                <div id="left-ideology-info" class="revealed-info">
+                    <strong>Ideas programáticas:</strong>
+                    {% if left_candidate.ideologia_cat %}
+                        {{ left_candidate.ideologia_cat }}
+                    {% else %}
+                        Sin información
+                    {% endif %}
+                </div>
             </div>
 
             <div class="choose-row">
@@ -250,59 +92,32 @@
 
         <div class="profile-card" id="right-card">
             <div class="option-label">Opción 2</div>
-
             <img src="{% static right_candidate.image_path %}" alt="Opción 2">
 
             <div class="learn-row">
-                {% if info_condition == 'timer_mostrar_mas' %}
-                    <button type="button" id="learn-right" class="learn-btn" onclick="startReveal('right')">
-                        Desbloquear información
-                    </button>
+                <button type="button" id="learn-right" class="learn-btn" onclick="startReveal('right')">
+                    Ver con más detalle sus propuestas
+                </button>
 
-                    <div id="right-ideology-info" class="revealed-info">
-                        <strong>Ideas programáticas:</strong>
-                        {% if right_candidate.ideologia_cat %}
-                            {{ right_candidate.ideologia_cat }}
-                        {% else %}
-                            Sin información
-                        {% endif %}
-                    </div>
-                {% elif info_condition == 'captcha_ver_mas' %}
-                    <button type="button" id="learn-right" class="learn-btn" onclick="startReveal('right')">
-                        Desbloquear información
-                    </button>
-
+                {% if info_condition == 'captcha_ver_mas' %}
                     <div id="right-cost-box" class="cost-box">
-                        <p><strong>Tarea breve:</strong> Para desbloquear la información, escriba el resultado.</p>
+                        <p><strong>Tarea breve:</strong> Para ver la información, escriba el resultado.</p>
                         <label>{{ captcha_right_a }} + {{ captcha_right_b }} = <input type="number" id="right-cost-answer"></label>
                         <button type="button" onclick="checkCostTask('right')">Enviar</button>
                         <div id="right-cost-error" style="display:none; color:#b02a37; margin-top:8px;">
                             Inténtelo nuevamente.
                         </div>
                     </div>
-
-                    <div id="right-ideology-info" class="revealed-info">
-                        <strong>Ideas programáticas:</strong>
-                        {% if right_candidate.ideologia_cat %}
-                            {{ right_candidate.ideologia_cat }}
-                        {% else %}
-                            Sin información
-                        {% endif %}
-                    </div>
-                {% elif info_condition == 'control_ver_mas' %}
-                    <button type="button" id="learn-right" class="learn-btn" onclick="startReveal('right')">
-                        Desbloquear información
-                    </button>
-
-                    <div id="right-ideology-info" class="revealed-info">
-                        <strong>Ideas programáticas:</strong>
-                        {% if right_candidate.ideologia_cat %}
-                            {{ right_candidate.ideologia_cat }}
-                        {% else %}
-                            Sin información
-                        {% endif %}
-                    </div>
                 {% endif %}
+
+                <div id="right-ideology-info" class="revealed-info">
+                    <strong>Ideas programáticas:</strong>
+                    {% if right_candidate.ideologia_cat %}
+                        {{ right_candidate.ideologia_cat }}
+                    {% else %}
+                        Sin información
+                    {% endif %}
+                </div>
             </div>
 
             <div class="choose-row">
@@ -315,13 +130,10 @@
 
     <input type="hidden" name="left_ideology_opened" id="id_left_ideology_opened" value="False">
     <input type="hidden" name="right_ideology_opened" id="id_right_ideology_opened" value="False">
-
     <input type="hidden" name="info_cost_task_completed" id="id_info_cost_task_completed" value="False">
     <input type="hidden" name="info_cost_attempts" id="id_info_cost_attempts" value="0">
-
     <input type="hidden" name="decision_candidate_id" id="id_decision_candidate_id">
     <input type="hidden" name="decision_side" id="id_decision_side">
-
     <input type="hidden" name="time_spent_seconds" id="id_time_spent_seconds" value="0">
     <input type="hidden" name="time_to_first_choice_seconds" id="id_time_to_first_choice_seconds" value="0">
     <input type="hidden" name="choice_changes" id="id_choice_changes" value="0">
@@ -340,8 +152,9 @@
 
 <script>
     let startTime = Date.now();
-    let timerInterval = null;
+    let elapsedInterval = null;
     let countdownInterval = null;
+    let alreadySubmitted = false;
 
     let timedTask = {{ timed_task|json }};
     let countdownSeconds = {{ countdown_seconds }};
@@ -350,6 +163,7 @@
         left: {{ captcha_left_sum }},
         right: {{ captcha_right_sum }}
     };
+
     let firstChoiceMade = false;
     let currentChoiceSide = null;
     let choiceChanges = 0;
@@ -375,16 +189,15 @@
         return seconds;
     }
 
-    function updateCountdown() {
-        const elapsed = Math.floor(elapsedSeconds());
-        const remaining = Math.max(0, countdownSeconds - elapsed);
-        document.getElementById('timer').textContent = remaining;
-
-        if (remaining <= 0) {
-            document.getElementById('id_countdown_expired').value = 'True';
-            document.getElementById('timer-expired-message').style.display = 'inline';
-            clearInterval(countdownInterval);
-        }
+    function syncHiddenFields() {
+        const seconds = updateElapsedTime();
+        document.getElementById('id_time_spent_seconds').value = seconds.toFixed(3);
+        document.getElementById('id_choice_changes').value = choiceChanges;
+        document.getElementById('id_learn_more_clicks').value = learnMoreClicks;
+        document.getElementById('id_info_cost_attempts').value = infoCostAttempts;
+        document.getElementById('id_mouse_distance_px').value = mouseDistance.toFixed(2);
+        document.getElementById('id_left_hover_seconds').value = leftHoverSeconds.toFixed(3);
+        document.getElementById('id_right_hover_seconds').value = rightHoverSeconds.toFixed(3);
     }
 
     function updateMouseDistance(event) {
@@ -427,7 +240,7 @@
 
         const button = document.getElementById(`learn-${side}`);
         button.disabled = true;
-        button.textContent = 'Información desbloqueada';
+        button.textContent = 'Información mostrada';
 
         const costBox = document.getElementById(`${side}-cost-box`);
         if (costBox) {
@@ -486,6 +299,43 @@
         document.getElementById('next-btn').disabled = false;
     }
 
+    function stopIntervals() {
+        if (elapsedInterval) {
+            clearInterval(elapsedInterval);
+        }
+
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+        }
+    }
+
+    function autoAdvanceAfterTimeout() {
+        if (alreadySubmitted) {
+            return;
+        }
+
+        alreadySubmitted = true;
+
+        updateElapsedTime();
+        endHover('left');
+        endHover('right');
+        syncHiddenFields();
+
+        document.getElementById('id_countdown_expired').value = 'True';
+        document.getElementById('timer-expired-message').style.display = 'inline';
+
+        if (!firstChoiceMade) {
+            document.getElementById('id_decision_candidate_id').value = 'timeout';
+            document.getElementById('id_decision_side').value = 'timeout';
+            document.getElementById('id_time_to_first_choice_seconds').value = '0';
+        }
+
+        stopIntervals();
+
+        document.getElementById('next-btn').disabled = false;
+        document.querySelector('form').submit();
+    }
+
     document.addEventListener('mousemove', updateMouseDistance);
 
     document.getElementById('left-card').addEventListener('mouseenter', function() {
@@ -504,45 +354,13 @@
         endHover('right');
     });
 
-    timerInterval = setInterval(updateElapsedTime, 1000);
-
-        function autoAdvanceAfterTimeout() {
-    const seconds = updateElapsedTime();
-
-    endHover('left');
-    endHover('right');
-
-    if (!firstChoiceMade) {
-        document.getElementById('id_decision_candidate_id').value = 'timeout';
-        document.getElementById('id_decision_side').value = 'timeout';
-        document.getElementById('id_time_to_first_choice_seconds').value = '0';
-    } else {
-        document.getElementById('id_time_to_first_choice_seconds').value =
-            document.getElementById('id_time_to_first_choice_seconds').value || seconds.toFixed(3);
-    }
-
-    document.getElementById('id_time_spent_seconds').value = seconds.toFixed(3);
-    document.getElementById('id_choice_changes').value = choiceChanges;
-    document.getElementById('id_learn_more_clicks').value = learnMoreClicks;
-    document.getElementById('id_info_cost_attempts').value = infoCostAttempts;
-    document.getElementById('id_mouse_distance_px').value = mouseDistance.toFixed(2);
-    document.getElementById('id_left_hover_seconds').value = leftHoverSeconds.toFixed(3);
-    document.getElementById('id_right_hover_seconds').value = rightHoverSeconds.toFixed(3);
-
-    if (timerInterval) {
-        clearInterval(timerInterval);
-    }
-
-    document.getElementById('next-btn').disabled = false;
-    document.querySelector('form').submit();
-}
+    elapsedInterval = setInterval(updateElapsedTime, 1000);
 
     if (timedTask) {
-        let countdownRemaining = {{ countdown_seconds }};
-
+        let countdownRemaining = countdownSeconds;
         document.getElementById('timer').textContent = countdownRemaining;
 
-        timerInterval = setInterval(function() {
+        countdownInterval = setInterval(function() {
             updateElapsedTime();
 
             countdownRemaining -= 1;
@@ -556,18 +374,13 @@
             document.getElementById('timer').textContent = countdownRemaining;
         }, 1000);
     }
+
     document.querySelector('form').addEventListener('submit', function() {
         updateElapsedTime();
         endHover('left');
         endHover('right');
-
-        if (timerInterval) {
-            clearInterval(timerInterval);
-        }
-
-        if (countdownInterval) {
-            clearInterval(countdownInterval);
-        }
+        syncHiddenFields();
+        stopIntervals();
     });
 </script>
 

@@ -1,0 +1,19 @@
+{{ block title }}
+Preguntas generales
+{{ endblock }}
+
+{{ block content }}
+
+<div style="max-width: 750px; margin: 0 auto; line-height: 1.5;">
+    <p><strong>¿Con cuál de las siguientes opciones se identifica?</strong></p>
+
+    <label style="display:block; margin: 8px 0;"><input type="radio" name="gender_identity" value="mujer"> Mujer</label>
+    <label style="display:block; margin: 8px 0;"><input type="radio" name="gender_identity" value="hombre"> Hombre</label>
+    <label style="display:block; margin: 8px 0;"><input type="radio" name="gender_identity" value="otra"> Prefiero describirme de otra manera:</label>
+    <input type="text" name="gender_identity_other" style="width: 100%; max-width: 420px; margin: 6px 0 12px 24px;">
+    <label style="display:block; margin: 8px 0;"><input type="radio" name="gender_identity" value="prefiero_no_responder"> Prefiero no responder</label>
+
+    {{ next_button }}
+</div>
+
+{{ endblock }}

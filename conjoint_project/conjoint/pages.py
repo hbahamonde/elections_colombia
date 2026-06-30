@@ -1,6 +1,17 @@
 from otree.api import Page
 
-from .models import C, assign_candidates, candidate_payload
+from .models import C, assign_candidates, candidate_payload, ensure_participant_vars
+
+class Consent(Page):
+    form_model = 'player'
+    form_fields = ['consent_accepted']
+
+    def is_displayed(self):
+        return self.round_number == 1
+
+    def error_message(self, values):
+        if not values.get('consent_accepted'):
+            return 'Para participar en el estudio, debe aceptar el consentimiento informado.'
 
 
 class Intro(Page):
@@ -8,10 +19,19 @@ class Intro(Page):
         return self.round_number == 1
 
     def vars_for_template(self):
+        ensure_participant_vars(self.player)
+
+        treatment_arm = self.participant.vars.get('treatment_arm', '')
+
         return {
+            'is_practice_done_page': False,
             'num_practice_rounds': C.NUM_PRACTICE_ROUNDS,
             'num_main_rounds': C.NUM_MAIN_ROUNDS,
             'countdown_seconds': C.COUNTDOWN_SECONDS,
+            'treatment_arm': treatment_arm,
+            'is_timer_group': treatment_arm == 'timer_mostrar_mas',
+            'is_info_cost_group': treatment_arm == 'captcha_ver_mas',
+            'is_control_group': treatment_arm == 'control_ver_mas',
         }
 
 
@@ -67,6 +87,29 @@ class Task(Page):
             return 'Por favor, seleccione una opción antes de continuar.'
 
 
+class PracticeDone(Page):
+    template_name = 'conjoint/Intro.html'
+
+    def is_displayed(self):
+        return self.round_number == C.NUM_PRACTICE_ROUNDS
+
+    def vars_for_template(self):
+        ensure_participant_vars(self.player)
+
+        treatment_arm = self.participant.vars.get('treatment_arm', '')
+
+        return {
+            'is_practice_done_page': True,
+            'num_practice_rounds': C.NUM_PRACTICE_ROUNDS,
+            'num_main_rounds': C.NUM_MAIN_ROUNDS,
+            'countdown_seconds': C.COUNTDOWN_SECONDS,
+            'treatment_arm': treatment_arm,
+            'is_timer_group': treatment_arm == 'timer_mostrar_mas',
+            'is_info_cost_group': treatment_arm == 'captcha_ver_mas',
+            'is_control_group': treatment_arm == 'control_ver_mas',
+        }
+
+
 class FollowUp(Page):
     form_model = 'player'
 
@@ -102,45 +145,136 @@ class FollowUp(Page):
             return 'Por favor, indique qué tanto le costó informarse.'
 
 
-class Questionnaire(Page):
-    form_model = 'player'
+class GeneralQuestionsIntro(Page):
+    def is_displayed(self):
+        return self.round_number == C.NUM_ROUNDS
 
-    form_fields = [
-        'voted_last_municipal',
-        'political_interest',
-        'politics_frequency',
-        'left_right_self_placement',
-    ]
+
+class Age(Page):
+    form_model = 'player'
+    form_fields = ['age_years']
 
     def is_displayed(self):
         return self.round_number == C.NUM_ROUNDS
 
     def error_message(self, values):
-        required_fields = [
-            'voted_last_municipal',
-            'political_interest',
-            'politics_frequency',
-            'left_right_self_placement',
-        ]
+        age = values.get('age_years')
 
-        if any(values.get(field) in [None, ''] for field in required_fields):
-            return 'Por favor, responda todas las preguntas antes de continuar.'
+        if age is None:
+            return 'Por favor, indique su edad.'
+
+        if age < 18 or age > 80:
+            return 'Por favor, indique una edad entre 18 y 80 años.'
+
+
+class Gender(Page):
+    form_model = 'player'
+    form_fields = ['gender_identity', 'gender_identity_other']
+
+    def is_displayed(self):
+        return self.round_number == C.NUM_ROUNDS
+
+    def error_message(self, values):
+        if not values.get('gender_identity'):
+            return 'Por favor, seleccione una opción.'
+
+        if values.get('gender_identity') == 'otra' and not values.get('gender_identity_other'):
+            return 'Por favor, describa la opción con la que se identifica.'
+
+
+class Occupation(Page):
+    form_model = 'player'
+    form_fields = ['occupation_status', 'occupation_status_other']
+
+    def is_displayed(self):
+        return self.round_number == C.NUM_ROUNDS
+
+    def error_message(self, values):
+        if not values.get('occupation_status'):
+            return 'Por favor, seleccione una opción.'
+
+        if values.get('occupation_status') == 'otra' and not values.get('occupation_status_other'):
+            return 'Por favor, describa su situación ocupacional.'
+
+
+class Education(Page):
+    form_model = 'player'
+    form_fields = ['education_level']
+
+    def is_displayed(self):
+        return self.round_number == C.NUM_ROUNDS
+
+    def error_message(self, values):
+        if not values.get('education_level'):
+            return 'Por favor, seleccione una opción.'
+
+
+class VotedLastMunicipal(Page):
+    form_model = 'player'
+    form_fields = ['voted_last_municipal']
+
+    def is_displayed(self):
+        return self.round_number == C.NUM_ROUNDS
+
+    def error_message(self, values):
+        if not values.get('voted_last_municipal'):
+            return 'Por favor, seleccione una opción.'
+
+
+class PoliticalInterest(Page):
+    form_model = 'player'
+    form_fields = ['political_interest']
+
+    def is_displayed(self):
+        return self.round_number == C.NUM_ROUNDS
+
+    def error_message(self, values):
+        if values.get('political_interest') is None:
+            return 'Por favor, seleccione una opción.'
+
+
+class PoliticsFrequency(Page):
+    form_model = 'player'
+    form_fields = ['politics_frequency']
+
+    def is_displayed(self):
+        return self.round_number == C.NUM_ROUNDS
+
+    def error_message(self, values):
+        if not values.get('politics_frequency'):
+            return 'Por favor, seleccione una opción.'
+
+
+class LeftRightPlacement(Page):
+    form_model = 'player'
+    form_fields = ['left_right_self_placement']
+
+    def is_displayed(self):
+        return self.round_number == C.NUM_ROUNDS
+
+    def error_message(self, values):
+        if not values.get('left_right_self_placement'):
+            return 'Por favor, seleccione una opción.'
 
 
 class Summary(Page):
     def is_displayed(self):
         return self.round_number == C.NUM_ROUNDS
 
-    def vars_for_template(self):
-        main_rounds = [
-            p for p in self.player.in_all_rounds()
-            if not p.is_practice_round
-        ]
-
-        return {
-            'rounds': main_rounds,
-            'num_main_rounds': C.NUM_MAIN_ROUNDS,
-        }
-
-
-page_sequence = [Intro, Task, FollowUp, Questionnaire, Summary]
+page_sequence = [
+    Consent,
+    Intro,
+    Task,
+    PracticeDone,
+    FollowUp,
+    GeneralQuestionsIntro,
+    Age,
+    Gender,
+    Occupation,
+    Education,
+    VotedLastMunicipal,
+    PoliticalInterest,
+    PoliticsFrequency,
+    LeftRightPlacement,
+    Summary,
+]

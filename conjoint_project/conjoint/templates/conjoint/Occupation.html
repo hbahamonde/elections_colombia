@@ -1,0 +1,24 @@
+{{ block title }}
+Preguntas generales
+{{ endblock }}
+
+{{ block content }}
+
+<div style="max-width: 850px; margin: 0 auto; line-height: 1.5;">
+    <p><strong>¿Cuál es su situación ocupacional principal actualmente?</strong></p>
+
+    <label style="display:block; margin: 8px 0;"><input type="radio" name="occupation_status" value="tiempo_completo"> Trabaja remuneradamente a tiempo completo</label>
+    <label style="display:block; margin: 8px 0;"><input type="radio" name="occupation_status" value="tiempo_parcial"> Trabaja remuneradamente a tiempo parcial</label>
+    <label style="display:block; margin: 8px 0;"><input type="radio" name="occupation_status" value="cuenta_propia"> Trabaja por cuenta propia o de manera independiente</label>
+    <label style="display:block; margin: 8px 0;"><input type="radio" name="occupation_status" value="estudia"> Estudia</label>
+    <label style="display:block; margin: 8px 0;"><input type="radio" name="occupation_status" value="labores_domesticas_cuidado"> Realiza labores domésticas o de cuidado no remuneradas</label>
+    <label style="display:block; margin: 8px 0;"><input type="radio" name="occupation_status" value="jubilado_pensionado"> Está jubilado(a) o pensionado(a)</label>
+    <label style="display:block; margin: 8px 0;"><input type="radio" name="occupation_status" value="desempleado_busca"> Está desempleado(a) y buscando trabajo</label>
+    <label style="display:block; margin: 8px 0;"><input type="radio" name="occupation_status" value="desempleado_no_busca"> Está desempleado(a) y no busca trabajo actualmente</label>
+    <label style="display:block; margin: 8px 0;"><input type="radio" name="occupation_status" value="otra"> Otra situación:</label>
+    <input type="text" name="occupation_status_other" style="width: 100%; max-width: 520px; margin: 6px 0 12px 24px;">
+
+    {{ next_button }}
+</div>
+
+{{ endblock }}

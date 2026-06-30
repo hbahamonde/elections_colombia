@@ -1,0 +1,19 @@
+{{ block title }}
+Preguntas de caracterización política
+{{ endblock }}
+
+{{ block content }}
+
+<div style="max-width: 850px; margin: 0 auto; line-height: 1.5;">
+    <p><strong>¿Con qué frecuencia habla usted de política o sigue noticias políticas?</strong></p>
+
+    <label style="display:block; margin: 8px 0;"><input type="radio" name="politics_frequency" value="never"> Nunca</label>
+    <label style="display:block; margin: 8px 0;"><input type="radio" name="politics_frequency" value="less_than_once_per_week"> Menos de una vez por semana</label>
+    <label style="display:block; margin: 8px 0;"><input type="radio" name="politics_frequency" value="once_or_twice_per_week"> Una o dos veces por semana</label>
+    <label style="display:block; margin: 8px 0;"><input type="radio" name="politics_frequency" value="several_times_per_week"> Varias veces por semana</label>
+    <label style="display:block; margin: 8px 0;"><input type="radio" name="politics_frequency" value="every_day"> Todos los días</label>
+
+    {{ next_button }}
+</div>
+
+{{ endblock }}

@@ -1,64 +1,38 @@
 {{ block title }}
-Resumen
+Finalización
 {{ endblock }}
 
 {{ block content }}
 
-<div style="max-width: 850px; margin: 0 auto; line-height: 1.5;">
-
+<div style="max-width: 850px; margin: 0 auto; line-height: 1.55;">
     <p>
-        Gracias por participar. Usted ha completado todas las decisiones del estudio.
+        Ha finalizado su participación en este estudio.
     </p>
 
     <p>
-        A continuación se muestra un resumen breve de sus decisiones principales.
+        Muchas gracias por su tiempo y colaboración.
     </p>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Decisión</th>
-                <th>Elección</th>
-                <th>Información desbloqueada</th>
-                <th>Tiempo</th>
-            </tr>
-        </thead>
+    <p>
+        El objetivo general de esta investigación es comprender cómo las personas evalúan a
+        candidatos(as) políticos(as) cuando disponen de distintos tipos y cantidades de información.
+    </p>
 
-        <tbody>
-            {% for p in rounds %}
-            <tr>
-                <td>{{ p.main_round_number }}</td>
+    <p>
+        Toda la información recopilada será analizada de manera agregada y confidencial,
+        exclusivamente con fines académicos. Sus respuestas no podrán ser asociadas a su
+        identidad.
+    </p>
 
-                <td>
-                    {% if p.decision_side == 'left' %}
-                        Opción 1
-                    {% elif p.decision_side == 'right' %}
-                        Opción 2
-                    {% else %}
-                        Sin respuesta
-                    {% endif %}
-                </td>
+    <p>
+        Si tiene preguntas sobre esta investigación o desea obtener más información sobre el
+        estudio, puede comunicarse con la investigadora principal Alejandra Marín a través del
+        siguiente correo alejandra.marin@postdoc.uoh.cl.
+    </p>
 
-                <td>
-                    {% if p.left_ideology_opened and p.right_ideology_opened %}
-                        Ambas opciones
-                    {% elif p.left_ideology_opened %}
-                        Opción 1
-                    {% elif p.right_ideology_opened %}
-                        Opción 2
-                    {% else %}
-                        Ninguna
-                    {% endif %}
-                </td>
-
-                <td>
-                    {{ p.time_spent_seconds }} segundos
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
+    <p>
+        Muchas gracias por su participación.
+    </p>
 </div>
 
 {{ endblock }}

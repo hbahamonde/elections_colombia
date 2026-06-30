@@ -1,0 +1,25 @@
+{{ block title }}
+Preguntas de caracterización política
+{{ endblock }}
+
+{{ block content }}
+
+<div style="max-width: 850px; margin: 0 auto; line-height: 1.5;">
+    <p>
+        <strong>En una escala de 1 a 7, donde 1 significa “Nada interesado” y 7 significa “muy interesado”, ¿Cuán interesado está usted en la política?</strong>
+    </p>
+
+    <div style="display:flex; gap: 14px; flex-wrap: wrap; align-items: center; margin: 20px 0;">
+        <label><input type="radio" name="political_interest" value="1"> 1</label>
+        <label><input type="radio" name="political_interest" value="2"> 2</label>
+        <label><input type="radio" name="political_interest" value="3"> 3</label>
+        <label><input type="radio" name="political_interest" value="4"> 4</label>
+        <label><input type="radio" name="political_interest" value="5"> 5</label>
+        <label><input type="radio" name="political_interest" value="6"> 6</label>
+        <label><input type="radio" name="political_interest" value="7"> 7</label>
+    </div>
+
+    {{ next_button }}
+</div>
+
+{{ endblock }}

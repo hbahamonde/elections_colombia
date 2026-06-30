@@ -1,31 +1,178 @@
 {{ block title }}
-Estudio de candidatos
+Instrucciones
 {{ endblock }}
 
 {{ block content }}
 
-<div style="max-width: 850px; margin: 0 auto; line-height: 1.5;">
+<div style="max-width: 850px; margin: 0 auto; line-height: 1.55;">
 
-    <p>
-        En este estudio verá pares de fotografías de candidatos(as). En cada pantalla,
-        le pediremos tomar una decisión de voto.
-    </p>
+        {% if is_practice_done_page %}
 
-    <p style="font-size: 21px; text-align: center; margin: 26px 0;">
-        <strong>Pensando en las elecciones para la alcaldía de su comuna, ¿a quién le daría su voto?</strong>
-    </p>
+        <p style="font-size: 22px; text-align: center; margin-bottom: 24px;">
+            <strong>Ha terminado la práctica.</strong>
+        </p>
 
-    <p>
-        En algunas pantallas podrá ver información adicional sobre las ideas programáticas
-        de cada candidato(a). Usted puede decidir si quiere desbloquear esa información
-        o si prefiere votar solo mirando las fotografías.
-    </p>
+        <p>
+            Ya completó las rondas de práctica. Al hacer clic en <strong>Siguiente</strong>,
+            comenzará el estudio principal.
+        </p>
 
-    <p>
-        En algunos casos, desbloquear la información será inmediato. En otros casos,
-        deberá resolver una tarea breve antes de verla. Si aparece un cronómetro,
-        intente responder antes de que el tiempo llegue a cero.
-    </p>
+        <p>
+            En esta parte completará <strong>{{ num_main_rounds }} decisiones principales</strong>.
+            Sus respuestas serán registradas como parte del estudio.
+        </p>
+
+        <div style="
+            margin: 24px 0;
+            padding: 16px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background: #f8f9fa;
+        ">
+            <p style="margin-top: 0;"><strong>Recuerde:</strong></p>
+
+            {% if is_control_group %}
+                <ul>
+                    <li>Verá pares de candidatos(as) hipotéticos(as) que podrían postular a la alcaldía de su comuna.</li>
+                    <li>Cada candidato(a) será presentado(a) mediante una fotografía y una breve descripción de algunas de sus características e ideas.</li>
+                    <li>Su tarea es elegir a quién le daría su voto en las elecciones para la alcaldía de su comuna</li>
+                    <li>No existen respuestas correctas o incorrectas.</li>
+                    <li>Responda de forma honesta y espontánea.</li>
+                    <li>La información presentada ha sido construida únicamente con fines de investigación.</li>
+                </ul>
+
+            {% elif is_timer_group %}
+                <ul>
+                    <li>Verá pares de candidatos(as) hipotéticos(as) que podrían postular a la alcaldía de su comuna.</li>
+                    <li>Cada candidato(a) será presentado(a) mediante una fotografía y una breve descripción de algunas de sus características e ideas.</li>
+                    <li>Su tarea es elegir a quién le daría su voto en las elecciones para la alcaldía de su comuna</li>
+                    <li>Para cada decisión contará con un tiempo limitado visible en pantalla.</li>
+                    <li>Le pedimos tomar su decisión dentro del tiempo disponible.</li>
+                    <li>Una vez finalizado el tiempo, la plataforma avanzará automáticamente a la siguiente tarea.</li>
+                    <li>Responda utilizando la información disponible en ese momento.</li>
+                </ul>
+
+            {% elif is_info_cost_group %}
+                <ul>
+                    <li>Verá pares de candidatos(as) hipotéticos(as) que podrían postular a la alcaldía de su comuna.</li>
+                    <li>Cada candidato(a) será presentado(a) mediante una fotografía y una breve descripción de algunas de sus características e ideas.</li>
+                    <li>Su tarea es elegir a quién le daría su voto en las elecciones para la alcaldía de su comuna</li>
+                    <li>En cada perfil encontrará la opción <strong>“Ver con más detalle sus propuestas”</strong>.</li>
+                    <li>Puede decidir usando solo la información visible inicialmente o acceder a información complementaria.</li>
+                    <li>Para ver la información adicional, deberá completar un paso adicional dentro de la plataforma.</li>
+                    <li>Responda de forma honesta, como si se tratara de una elección real.</li>
+                </ul>
+            {% endif %}
+        </div>
+
+        {{ next_button }}
+
+    {% else %}
+
+    {% if is_control_group %}
+        <p>
+            A continuación verá una serie de pares de candidatos(as) hipotéticos(as) que podrían
+            postular a la alcaldía de su comuna.
+        </p>
+
+        <p>
+            Cada candidato(a) será presentado(a) mediante una fotografía y una breve descripción de
+            algunas de sus características e ideas. Su tarea consiste en revisar la información
+            disponible y seleccionar, en cada caso, al candidato(a) por quien tendría mayor probabilidad
+            de votar si la elección se realizara hoy.
+        </p>
+
+        <p>
+            No existen respuestas correctas o incorrectas. Nos interesa conocer su opinión personal. Le
+            pedimos responder de la forma más honesta y espontánea posible.
+        </p>
+
+        <p>
+            La información presentada en cada perfil ha sido construida únicamente con fines de
+            investigación.
+        </p>
+    {% elif is_timer_group %}
+        <p>
+            A continuación verá una serie de pares de candidatos(as) hipotéticos(as) que podrían
+            postular a la alcaldía de su comuna.
+        </p>
+
+        <p>
+            Cada candidato(a) será presentado(a) mediante una fotografía y una breve descripción de
+            algunas de sus características e ideas Su tarea consiste en revisar la información disponible
+            y seleccionar, en cada caso, al candidato(a) por quien tendría mayor probabilidad de votar si
+            la elección se realizara hoy.
+        </p>
+
+        <p>
+            No existen respuestas correctas o incorrectas. Nos interesa conocer su opinión personal. Le
+            pedimos responder de la forma más honesta y espontánea posible. Responda de la manera
+            que considere más adecuada utilizando la información disponible en ese momento.
+        </p>
+
+        <p>
+            La información presentada en cada perfil ha sido construida únicamente con fines de
+            investigación.
+        </p>
+
+        <p>
+            Para cada decisión contará con un tiempo limitado, visible en la pantalla mediante un
+            contador.
+        </p>
+
+        <p>
+            Le pedimos tomar su decisión dentro del tiempo disponible. Una vez finalizado el tiempo, la
+            plataforma avanzará automáticamente a la siguiente tarea.
+        </p>
+    {% elif is_info_cost_group %}
+        <p>
+            A continuación verá una serie de pares de candidatos(as) hipotéticos(as) que podrían
+            postular a la alcaldía de su comuna.
+        </p>
+
+        <p>
+            Cada candidato(a) será presentado(a) mediante una fotografía y una breve descripción de
+            algunas de sus características e ideas.
+        </p>
+
+        <p>
+            Su tarea consiste en revisar la información disponible y seleccionar, en cada caso, al
+            candidato(a) por quien tendría mayor probabilidad de votar si la elección se realizara hoy.
+        </p>
+
+        <p>
+            En cada perfil encontrará además una opción denominada "Ver con más detalle sus
+            propuestas". Si decide utilizarla, podrá acceder a información adicional sobre las ideas y
+            propuestas del candidato(a). Para ello deberá completar un paso adicional dentro de la
+            plataforma.
+        </p>
+
+        <p>
+            Puede tomar sus decisiones utilizando únicamente la información visible inicialmente o
+            acceder a la información complementaria cuando lo estime conveniente.
+        </p>
+
+        <p>
+            No existen respuestas correctas o incorrectas. Nos interesa conocer su opinión personal. Le
+            pedimos responder de la forma más honesta posible, considerando cada decisión como si
+            se tratara de una elección real.
+        </p>
+
+        <p>
+            La información presentada en cada perfil ha sido construida únicamente con fines de
+            investigación.
+        </p>
+    {% else %}
+        <p>
+            A continuación verá una serie de pares de candidatos(as) hipotéticos(as) que podrían
+            postular a la alcaldía de su comuna.
+        </p>
+
+        <p>
+            Su tarea consiste en revisar la información disponible y seleccionar, en cada caso, al
+            candidato(a) por quien tendría mayor probabilidad de votar si la elección se realizara hoy.
+        </p>
+    {% endif %}
 
     <div style="
         margin: 24px 0;
@@ -46,11 +193,9 @@ Estudio de candidatos
         </p>
     </div>
 
-    <p>
-        No hay respuestas correctas o incorrectas. Nos interesa conocer sus decisiones.
-    </p>
-
     {{ next_button }}
+
+    {% endif %}
 
 </div>
 

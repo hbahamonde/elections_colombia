@@ -1,0 +1,20 @@
+{{ block title }}
+Preguntas generales
+{{ endblock }}
+
+{{ block content }}
+
+<div style="max-width: 850px; margin: 0 auto; line-height: 1.5;">
+    <p><strong>¿Cuál es el nivel educacional más alto que ha completado?</strong></p>
+
+    <label style="display:block; margin: 8px 0;"><input type="radio" name="education_level" value="basica_o_menos"> Educación básica o menos</label>
+    <label style="display:block; margin: 8px 0;"><input type="radio" name="education_level" value="media_incompleta"> Educación media incompleta</label>
+    <label style="display:block; margin: 8px 0;"><input type="radio" name="education_level" value="media_completa"> Educación media completa</label>
+    <label style="display:block; margin: 8px 0;"><input type="radio" name="education_level" value="tecnica_profesional_incompleta"> Educación técnica o profesional incompleta</label>
+    <label style="display:block; margin: 8px 0;"><input type="radio" name="education_level" value="tecnica_profesional_completa"> Educación técnica o profesional completa</label>
+    <label style="display:block; margin: 8px 0;"><input type="radio" name="education_level" value="postgrado"> Estudios de postgrado</label>
+
+    {{ next_button }}
+</div>
+
+{{ endblock }}

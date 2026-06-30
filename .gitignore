@@ -331,3 +331,7 @@ TSWLatexianTemp*
 #*Notes.bib
 
 .DS_Store
+
+*.jpg
+
+conjoint_project/_static/conjoint/images/

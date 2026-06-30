@@ -1,0 +1,18 @@
+{{ block title }}
+Preguntas generales
+{{ endblock }}
+
+{{ block content }}
+
+<div style="max-width: 750px; margin: 0 auto; line-height: 1.5;">
+    <p><strong>¿Cuántos años cumplidos tiene?</strong></p>
+
+    <div style="margin: 18px 0;">
+        <input type="number" name="age_years" min="18" max="65" style="width: 120px;">
+        <span>años</span>
+    </div>
+
+    {{ next_button }}
+</div>
+
+{{ endblock }}

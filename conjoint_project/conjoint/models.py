@@ -15,6 +15,7 @@ Candidate photos are stored in:
 _static/conjoint/images/
 
 The backend records:
+- informed consent
 - randomized treatment assignment
 - practice versus main-experiment round status
 - left/right candidate IDs
@@ -26,45 +27,19 @@ The backend records:
 - countdown/time-pressure behavior
 - timing and mouse-tracking metadata
 - post-choice follow-up answers
-- final political questionnaire answers
+- demographic questionnaire answers
+- political questionnaire answers
 """
 
 
 DATASET_COLUMNS = [
-    'ID',
-    'DEPARTAMENTO',
-    'COD_DPTO',
-    'MUNICIPIO',
-    'COD_MCPIO',
-    'Cod_candidato',
-    'NOMBRE',
-    'Votos',
-    'PARTIDO',
-    'COD_PARTIDO',
-    'GENERO',
-    'EDAD',
-    'age (estimada)',
-    'gender (estimado)',
-    'blurness',
-    'facequality',
-    'yaw_angle',
-    'pitch_angle',
-    'roll_angle',
-    'BD',
-    'alto',
-    'ancho',
-    'fhwr',
-    'alto_rot',
-    'ancho_rot',
-    'fhwr_rot',
-    'alto_correg',
-    'ancho_correg',
-    'fhwr_correg',
-    'ranking',
-    'partidoFE',
-    'ideologia_cat',
-    'fhwr_cat',
-    'combo_id',
+    'ID', 'DEPARTAMENTO', 'COD_DPTO', 'MUNICIPIO', 'COD_MCPIO',
+    'Cod_candidato', 'NOMBRE', 'Votos', 'PARTIDO', 'COD_PARTIDO',
+    'GENERO', 'EDAD', 'age (estimada)', 'gender (estimado)', 'blurness',
+    'facequality', 'yaw_angle', 'pitch_angle', 'roll_angle', 'BD',
+    'alto', 'ancho', 'fhwr', 'alto_rot', 'ancho_rot', 'fhwr_rot',
+    'alto_correg', 'ancho_correg', 'fhwr_correg', 'ranking',
+    'partidoFE', 'ideologia_cat', 'fhwr_cat', 'combo_id',
 ]
 
 
@@ -106,11 +81,40 @@ FIELD_NAME_MAP = {
 }
 
 
-REALISTIC_VOTE_CHOICES = [
+YES_NO_CHOICES = [
     ['yes', 'Sí'],
     ['no', 'No'],
 ]
 
+REALISTIC_VOTE_CHOICES = YES_NO_CHOICES
+
+GENDER_CHOICES = [
+    ['mujer', 'Mujer'],
+    ['hombre', 'Hombre'],
+    ['otra', 'Prefiero describirme de otra manera'],
+    ['prefiero_no_responder', 'Prefiero no responder'],
+]
+
+OCCUPATION_CHOICES = [
+    ['tiempo_completo', 'Trabaja remuneradamente a tiempo completo'],
+    ['tiempo_parcial', 'Trabaja remuneradamente a tiempo parcial'],
+    ['cuenta_propia', 'Trabaja por cuenta propia o de manera independiente'],
+    ['estudia', 'Estudia'],
+    ['labores_domesticas_cuidado', 'Realiza labores domésticas o de cuidado no remuneradas'],
+    ['jubilado_pensionado', 'Está jubilado(a) o pensionado(a)'],
+    ['desempleado_busca', 'Está desempleado(a) y buscando trabajo'],
+    ['desempleado_no_busca', 'Está desempleado(a) y no busca trabajo actualmente'],
+    ['otra', 'Otra situación'],
+]
+
+EDUCATION_CHOICES = [
+    ['basica_o_menos', 'Educación básica o menos'],
+    ['media_incompleta', 'Educación media incompleta'],
+    ['media_completa', 'Educación media completa'],
+    ['tecnica_profesional_incompleta', 'Educación técnica o profesional incompleta'],
+    ['tecnica_profesional_completa', 'Educación técnica o profesional completa'],
+    ['postgrado', 'Estudios de postgrado'],
+]
 
 POLITICS_FREQUENCY_CHOICES = [
     ['never', 'Nunca'],
@@ -120,9 +124,12 @@ POLITICS_FREQUENCY_CHOICES = [
     ['every_day', 'Todos los días'],
 ]
 
-
 LIKERT_1_TO_7 = [[i, str(i)] for i in range(1, 8)]
-LEFT_RIGHT_0_TO_10 = [[i, str(i)] for i in range(0, 11)]
+LEFT_RIGHT_CHOICES = [[str(i), str(i)] for i in range(0, 11)] + [
+    ['no_sabe', 'No sabe'],
+    ['no_responde', 'No responde'],
+    ['ninguno', 'Ninguno'],
+]
 
 
 def clean_value(value):
@@ -252,6 +259,8 @@ class Group(BaseGroup):
 
 
 class Player(BasePlayer):
+    consent_accepted = models.BooleanField(initial=False)
+
     is_practice_round = models.BooleanField(initial=False)
     main_round_number = models.IntegerField(initial=0)
 
@@ -381,8 +390,27 @@ class Player(BasePlayer):
         blank=True,
     )
 
+    age_years = models.IntegerField(min=18, max=65, blank=True)
+    gender_identity = models.StringField(
+        choices=GENDER_CHOICES,
+        widget=widgets.RadioSelect,
+        blank=True,
+    )
+    gender_identity_other = models.StringField(blank=True)
+    occupation_status = models.StringField(
+        choices=OCCUPATION_CHOICES,
+        widget=widgets.RadioSelect,
+        blank=True,
+    )
+    occupation_status_other = models.StringField(blank=True)
+    education_level = models.StringField(
+        choices=EDUCATION_CHOICES,
+        widget=widgets.RadioSelect,
+        blank=True,
+    )
+
     voted_last_municipal = models.StringField(
-        choices=REALISTIC_VOTE_CHOICES,
+        choices=YES_NO_CHOICES,
         widget=widgets.RadioSelect,
         blank=True,
     )
@@ -396,9 +424,9 @@ class Player(BasePlayer):
         widget=widgets.RadioSelect,
         blank=True,
     )
-    left_right_self_placement = models.IntegerField(
-        choices=LEFT_RIGHT_0_TO_10,
-        widget=widgets.RadioSelectHorizontal,
+    left_right_self_placement = models.StringField(
+        choices=LEFT_RIGHT_CHOICES,
+        widget=widgets.RadioSelect,
         blank=True,
     )
 

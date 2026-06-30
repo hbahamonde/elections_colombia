@@ -1,0 +1,35 @@
+{{ block title }}
+Preguntas de caracterización política
+{{ endblock }}
+
+{{ block content }}
+
+<div style="max-width: 900px; margin: 0 auto; line-height: 1.5;">
+    <p>
+        <strong>En política, las personas a veces hablan de “izquierda” y “derecha”. En una escala de 0 a 10, donde 0 significa “izquierda” y 10 significa “derecha”, ¿dónde se ubicaría usted?</strong>
+    </p>
+
+    <div style="display:flex; gap: 14px; flex-wrap: wrap; align-items: center; margin: 20px 0;">
+        <label><input type="radio" name="left_right_self_placement" value="0"> 0</label>
+        <label><input type="radio" name="left_right_self_placement" value="1"> 1</label>
+        <label><input type="radio" name="left_right_self_placement" value="2"> 2</label>
+        <label><input type="radio" name="left_right_self_placement" value="3"> 3</label>
+        <label><input type="radio" name="left_right_self_placement" value="4"> 4</label>
+        <label><input type="radio" name="left_right_self_placement" value="5"> 5</label>
+        <label><input type="radio" name="left_right_self_placement" value="6"> 6</label>
+        <label><input type="radio" name="left_right_self_placement" value="7"> 7</label>
+        <label><input type="radio" name="left_right_self_placement" value="8"> 8</label>
+        <label><input type="radio" name="left_right_self_placement" value="9"> 9</label>
+        <label><input type="radio" name="left_right_self_placement" value="10"> 10</label>
+    </div>
+
+    <div style="margin: 20px 0;">
+        <label style="display:block; margin: 8px 0;"><input type="radio" name="left_right_self_placement" value="no_sabe"> No sabe</label>
+        <label style="display:block; margin: 8px 0;"><input type="radio" name="left_right_self_placement" value="no_responde"> No responde</label>
+        <label style="display:block; margin: 8px 0;"><input type="radio" name="left_right_self_placement" value="ninguno"> Ninguno</label>
+    </div>
+
+    {{ next_button }}
+</div>
+
+{{ endblock }}
