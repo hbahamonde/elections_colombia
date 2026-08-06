@@ -1,0 +1,438 @@
+<style>
+    .quota-dashboard {
+        --quota-ink: #172033;
+        --quota-muted: #667085;
+        --quota-line: #e4e7ec;
+        --quota-soft: #f7f8fa;
+        --quota-accent: #176b5b;
+        --quota-accent-soft: #dff3ed;
+        --quota-full: #a33a2b;
+        color: var(--quota-ink);
+        font-size: 0.95rem;
+    }
+
+    .quota-header,
+    .quota-header-actions,
+    .quota-section-heading,
+    .quota-row-heading {
+        display: flex;
+        align-items: center;
+    }
+
+    .quota-header {
+        justify-content: space-between;
+        gap: 1rem;
+        margin: 0 0 1.25rem;
+    }
+
+    .quota-header h2,
+    .quota-card h3,
+    .quota-section-heading h3 {
+        margin: 0;
+        color: var(--quota-ink);
+    }
+
+    .quota-header p,
+    .quota-note,
+    .quota-empty {
+        color: var(--quota-muted);
+    }
+
+    .quota-header p {
+        margin: 0.3rem 0 0;
+    }
+
+    .quota-live-dot {
+        display: inline-block;
+        width: 0.55rem;
+        height: 0.55rem;
+        margin-right: 0.4rem;
+        border-radius: 50%;
+        background: #16a36a;
+        box-shadow: 0 0 0 0.22rem rgba(22, 163, 106, 0.14);
+    }
+
+    .quota-header-actions {
+        flex: 0 0 auto;
+        gap: 0.75rem;
+    }
+
+    .quota-refresh-status {
+        color: var(--quota-muted);
+        font-size: 0.82rem;
+        white-space: nowrap;
+    }
+
+    .quota-refresh-button {
+        padding: 0.45rem 0.8rem;
+        border: 1px solid var(--quota-line);
+        border-radius: 0.45rem;
+        background: white;
+        color: var(--quota-ink);
+        font-weight: 600;
+    }
+
+    .quota-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.8rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .quota-summary-card,
+    .quota-card {
+        border: 1px solid var(--quota-line);
+        border-radius: 0.7rem;
+        background: white;
+    }
+
+    .quota-summary-card {
+        padding: 0.9rem 1rem;
+    }
+
+    .quota-summary-label {
+        color: var(--quota-muted);
+        font-size: 0.78rem;
+        font-weight: 650;
+        letter-spacing: 0.035em;
+        text-transform: uppercase;
+    }
+
+    .quota-summary-value {
+        margin-top: 0.15rem;
+        font-size: 1.8rem;
+        font-weight: 750;
+        line-height: 1.15;
+    }
+
+    .quota-card-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.9rem;
+    }
+
+    .quota-card {
+        padding: 1rem;
+    }
+
+    .quota-card h3,
+    .quota-section-heading h3 {
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    .quota-card-meta {
+        margin: 0.2rem 0 0.9rem;
+        color: var(--quota-muted);
+        font-size: 0.8rem;
+    }
+
+    .quota-row {
+        padding: 0.55rem 0;
+        border-top: 1px solid var(--quota-line);
+    }
+
+    .quota-row-heading {
+        justify-content: space-between;
+        gap: 0.7rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .quota-row-label {
+        overflow: hidden;
+        font-weight: 600;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .quota-row-count {
+        flex: 0 0 auto;
+        color: var(--quota-muted);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .quota-bar {
+        height: 0.42rem;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #eef0f3;
+    }
+
+    .quota-bar-fill {
+        height: 100%;
+        border-radius: inherit;
+        background: var(--quota-accent);
+    }
+
+    .quota-row.is-full .quota-bar-fill {
+        background: var(--quota-full);
+    }
+
+    .quota-full-badge {
+        margin-left: 0.35rem;
+        padding: 0.12rem 0.35rem;
+        border-radius: 999px;
+        background: #fbe8e4;
+        color: var(--quota-full);
+        font-size: 0.67rem;
+        font-weight: 750;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .quota-section {
+        margin-top: 1.35rem;
+    }
+
+    .quota-section-heading {
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 0.6rem;
+    }
+
+    .quota-table-wrap {
+        overflow-x: auto;
+        border: 1px solid var(--quota-line);
+        border-radius: 0.7rem;
+    }
+
+    .quota-table {
+        width: 100%;
+        margin: 0;
+        border-collapse: collapse;
+        font-size: 0.86rem;
+    }
+
+    .quota-table th,
+    .quota-table td {
+        padding: 0.65rem 0.75rem;
+        border-bottom: 1px solid var(--quota-line);
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    .quota-table th {
+        background: var(--quota-soft);
+        color: #475467;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.035em;
+        text-transform: uppercase;
+    }
+
+    .quota-table tbody tr:last-child th,
+    .quota-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .quota-table .quota-number {
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .quota-status {
+        display: inline-block;
+        padding: 0.2rem 0.48rem;
+        border-radius: 999px;
+        background: #edf0f4;
+        color: #475467;
+        font-size: 0.73rem;
+        font-weight: 650;
+    }
+
+    .quota-status.is-screened {
+        background: var(--quota-accent-soft);
+        color: #135b4d;
+    }
+
+    .quota-note {
+        margin: 0.9rem 0 0;
+        padding: 0.8rem 0.9rem;
+        border-left: 3px solid #d0d5dd;
+        background: var(--quota-soft);
+        font-size: 0.82rem;
+    }
+
+    @media (max-width: 900px) {
+        .quota-summary-grid,
+        .quota-card-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 600px) {
+        .quota-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .quota-summary-grid,
+        .quota-card-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="quota-dashboard">
+    <div class="quota-header">
+        <div>
+            <h2><span class="quota-live-dot" aria-hidden="true"></span>Monitoreo de cuotas</h2>
+            <p>Sesión {{ session.code }} · actualizado {{ generated_at }} UTC</p>
+        </div>
+        <div class="quota-header-actions">
+            <span id="quota-refresh-status" class="quota-refresh-status" aria-live="polite">
+                Actualización en 10 s
+            </span>
+            <button class="quota-refresh-button" type="button" onclick="window.location.reload()">
+                Actualizar ahora
+            </button>
+        </div>
+    </div>
+
+    <div class="quota-summary-grid">
+        <div class="quota-summary-card">
+            <div class="quota-summary-label">Asignados</div>
+            <div class="quota-summary-value">{{ summary.assigned }}</div>
+        </div>
+        <div class="quota-summary-card">
+            <div class="quota-summary-label">Iniciaron</div>
+            <div class="quota-summary-value">{{ summary.started }}</div>
+        </div>
+        <div class="quota-summary-card">
+            <div class="quota-summary-label">Perfil completo</div>
+            <div class="quota-summary-value">{{ summary.profile_complete }}</div>
+        </div>
+        <div class="quota-summary-card">
+            <div class="quota-summary-label">Página final</div>
+            <div class="quota-summary-value">{{ summary.reached_final_page }}</div>
+        </div>
+    </div>
+
+    <div class="quota-card-grid">
+        {{ for dimension in quota_dimensions }}
+        <section class="quota-card">
+            <h3>{{ dimension.label }}</h3>
+            <p class="quota-card-meta">
+                {{ dimension.answered }} respuestas · {{ dimension.missing }} sin respuesta
+            </p>
+
+            {{ for row in dimension.rows }}
+            <div class="quota-row {{ if row.is_full }}is-full{{ endif }}">
+                <div class="quota-row-heading">
+                    <span class="quota-row-label" title="{{ row.label }}">{{ row.label }}</span>
+                    <span class="quota-row-count">
+                        {{ row.count }} ({{ row.share }}%)
+                        {{ if row.target }} / {{ row.target }}{{ endif }}
+                        {{ if row.is_full }}<span class="quota-full-badge">Llena</span>{{ endif }}
+                    </span>
+                </div>
+                <div class="quota-bar" role="img" aria-label="{{ row.label }}: {{ row.count }} respuestas">
+                    <div class="quota-bar-fill" style="width: {{ row.bar_width }}%"></div>
+                </div>
+            </div>
+            {{ endfor }}
+        </section>
+        {{ endfor }}
+    </div>
+
+    <section class="quota-section">
+        <div class="quota-section-heading">
+            <h3>Intersección edad × género</h3>
+            <span class="quota-card-meta">Cada persona se cuenta una sola vez</span>
+        </div>
+        <div class="quota-table-wrap">
+            <table class="quota-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Edad</th>
+                        {{ for gender in intersection.gender_columns }}
+                        <th class="quota-number" scope="col">{{ gender.label }}</th>
+                        {{ endfor }}
+                        <th class="quota-number" scope="col">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ for age_row in intersection.rows }}
+                    <tr>
+                        <th scope="row">{{ age_row.label }}</th>
+                        {{ for cell in age_row.cells }}
+                        <td class="quota-number">
+                            {{ cell.count }}
+                            {{ if cell.is_full }}<span class="quota-full-badge">Llena</span>{{ endif }}
+                        </td>
+                        {{ endfor }}
+                        <td class="quota-number"><strong>{{ age_row.total }}</strong></td>
+                    </tr>
+                    {{ endfor }}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="quota-section">
+        <div class="quota-section-heading">
+            <h3>Estado de participantes</h3>
+            <span class="quota-card-meta">Actividad más reciente primero</span>
+        </div>
+        <div class="quota-table-wrap">
+            <table class="quota-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Código</th>
+                        <th scope="col">Estado</th>
+                        <th scope="col">Página actual</th>
+                        <th class="quota-number" scope="col">Ronda</th>
+                        <th scope="col">Edad</th>
+                        <th scope="col">Género</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ for item in participant_rows }}
+                    <tr>
+                        <td>{{ item.code }}</td>
+                        <td><span class="quota-status {{ if item.profile_complete }}is-screened{{ endif }}">{{ item.status }}</span></td>
+                        <td>{{ item.current_page }}</td>
+                        <td class="quota-number">{{ item.round_number }}</td>
+                        <td>{{ item.age_band }}</td>
+                        <td>{{ item.gender }}</td>
+                    </tr>
+                    {{ endfor }}
+                    {{ if no_participants }}
+                    <tr>
+                        <td class="quota-empty" colspan="6">Todavía no hay participantes en esta sesión.</td>
+                    </tr>
+                    {{ endif }}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    {{ if targets_configured }}
+    <p class="quota-note">Las categorías marcadas “Llena” alcanzaron el objetivo configurado para esta sesión.</p>
+    {{ else }}
+    <p class="quota-note">
+        Este reporte muestra conteos y porcentajes. No hay objetivos numéricos configurados todavía;
+        cuando se agreguen, el tablero marcará automáticamente las cuotas llenas.
+    </p>
+    {{ endif }}
+</div>
+
+<script>
+    (function () {
+        const refreshEverySeconds = 10;
+        const status = document.getElementById('quota-refresh-status');
+        let remaining = refreshEverySeconds;
+
+        window.setInterval(function () {
+            if (document.hidden) return;
+
+            remaining -= 1;
+            if (remaining <= 0) {
+                status.textContent = 'Actualizando…';
+                window.location.reload();
+                return;
+            }
+            status.textContent = 'Actualización en ' + remaining + ' s';
+        }, 1000);
+    }());
+</script>

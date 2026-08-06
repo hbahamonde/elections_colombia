@@ -147,7 +147,7 @@ class FollowUp(Page):
 
 class GeneralQuestionsIntro(Page):
     def is_displayed(self):
-        return self.round_number == C.NUM_ROUNDS
+        return self.round_number == C.SCREENING_ROUND
 
 
 class Age(Page):
@@ -155,7 +155,7 @@ class Age(Page):
     form_fields = ['age_years']
 
     def is_displayed(self):
-        return self.round_number == C.NUM_ROUNDS
+        return self.round_number == C.SCREENING_ROUND
 
     def error_message(self, values):
         age = values.get('age_years')
@@ -172,7 +172,7 @@ class Gender(Page):
     form_fields = ['gender_identity', 'gender_identity_other']
 
     def is_displayed(self):
-        return self.round_number == C.NUM_ROUNDS
+        return self.round_number == C.SCREENING_ROUND
 
     def error_message(self, values):
         if not values.get('gender_identity'):
@@ -187,7 +187,7 @@ class Occupation(Page):
     form_fields = ['occupation_status', 'occupation_status_other']
 
     def is_displayed(self):
-        return self.round_number == C.NUM_ROUNDS
+        return self.round_number == C.SCREENING_ROUND
 
     def error_message(self, values):
         if not values.get('occupation_status'):
@@ -202,7 +202,7 @@ class Education(Page):
     form_fields = ['education_level']
 
     def is_displayed(self):
-        return self.round_number == C.NUM_ROUNDS
+        return self.round_number == C.SCREENING_ROUND
 
     def error_message(self, values):
         if not values.get('education_level'):
@@ -214,7 +214,7 @@ class VotedLastMunicipal(Page):
     form_fields = ['voted_last_municipal']
 
     def is_displayed(self):
-        return self.round_number == C.NUM_ROUNDS
+        return self.round_number == C.SCREENING_ROUND
 
     def error_message(self, values):
         if not values.get('voted_last_municipal'):
@@ -226,7 +226,7 @@ class PoliticalInterest(Page):
     form_fields = ['political_interest']
 
     def is_displayed(self):
-        return self.round_number == C.NUM_ROUNDS
+        return self.round_number == C.SCREENING_ROUND
 
     def error_message(self, values):
         if values.get('political_interest') is None:
@@ -238,7 +238,7 @@ class PoliticsFrequency(Page):
     form_fields = ['politics_frequency']
 
     def is_displayed(self):
-        return self.round_number == C.NUM_ROUNDS
+        return self.round_number == C.SCREENING_ROUND
 
     def error_message(self, values):
         if not values.get('politics_frequency'):
@@ -250,7 +250,7 @@ class LeftRightPlacement(Page):
     form_fields = ['left_right_self_placement']
 
     def is_displayed(self):
-        return self.round_number == C.NUM_ROUNDS
+        return self.round_number == C.SCREENING_ROUND
 
     def error_message(self, values):
         if not values.get('left_right_self_placement'):
@@ -263,10 +263,6 @@ class Summary(Page):
 
 page_sequence = [
     Consent,
-    Intro,
-    Task,
-    PracticeDone,
-    FollowUp,
     GeneralQuestionsIntro,
     Age,
     Gender,
@@ -276,5 +272,9 @@ page_sequence = [
     PoliticalInterest,
     PoliticsFrequency,
     LeftRightPlacement,
+    Intro,
+    Task,
+    PracticeDone,
+    FollowUp,
     Summary,
 ]

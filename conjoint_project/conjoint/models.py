@@ -2,6 +2,8 @@ from otree.api import *
 import csv
 import json
 import random
+from collections import Counter
+from datetime import datetime, timezone
 from pathlib import Path
 
 
@@ -132,6 +134,57 @@ LEFT_RIGHT_CHOICES = [[str(i), str(i)] for i in range(0, 11)] + [
 ]
 
 
+# Stable keys make these bands usable both in the dashboard and in future
+# quota rules. Keep the keys unchanged if you later translate the labels.
+AGE_BAND_CHOICES = [
+    ['18_29', '18–29'],
+    ['30_44', '30–44'],
+    ['45_59', '45–59'],
+    ['60_plus', '60+'],
+]
+
+
+# Fields displayed in the session's admin report. Add future screening fields
+# (for example, country_of_residence) here after adding them to Player.
+QUOTA_DIMENSIONS = [
+    dict(key='age_band', label='Edad', choices=AGE_BAND_CHOICES),
+    dict(key='gender_identity', label='Género', choices=GENDER_CHOICES),
+    dict(key='education_level', label='Educación', choices=EDUCATION_CHOICES),
+    dict(key='occupation_status', label='Ocupación', choices=OCCUPATION_CHOICES),
+    dict(
+        key='voted_last_municipal',
+        label='Votó en la última municipal',
+        choices=YES_NO_CHOICES,
+    ),
+    dict(
+        key='political_interest',
+        label='Interés político',
+        choices=LIKERT_1_TO_7,
+    ),
+    dict(
+        key='politics_frequency',
+        label='Frecuencia de conversación política',
+        choices=POLITICS_FREQUENCY_CHOICES,
+    ),
+    dict(
+        key='left_right_self_placement',
+        label='Ubicación izquierda–derecha',
+        choices=LEFT_RIGHT_CHOICES,
+    ),
+]
+
+QUOTA_REQUIRED_FIELDS = [
+    'age_years',
+    'gender_identity',
+    'education_level',
+    'occupation_status',
+    'voted_last_municipal',
+    'political_interest',
+    'politics_frequency',
+    'left_right_self_placement',
+]
+
+
 def clean_value(value):
     if value is None:
         return ''
@@ -237,6 +290,7 @@ class C(BaseConstants):
     NAME_IN_URL = 'conjoint'
     PLAYERS_PER_GROUP = None
 
+    SCREENING_ROUND = 1
     NUM_PRACTICE_ROUNDS = 5
     NUM_MAIN_ROUNDS = 15
     NUM_ROUNDS = NUM_PRACTICE_ROUNDS + NUM_MAIN_ROUNDS
@@ -251,7 +305,8 @@ class C(BaseConstants):
 
 
 class Subsession(BaseSubsession):
-    pass
+    def vars_for_admin_report(self):
+        return build_admin_report_context(self)
 
 
 class Group(BaseGroup):
@@ -390,7 +445,7 @@ class Player(BasePlayer):
         blank=True,
     )
 
-    age_years = models.IntegerField(min=18, max=65, blank=True)
+    age_years = models.IntegerField(min=18, max=80, blank=True)
     gender_identity = models.StringField(
         choices=GENDER_CHOICES,
         widget=widgets.RadioSelect,
@@ -550,3 +605,196 @@ def candidate_payload(candidate_id):
         'image_path': candidate['image_path'],
         'ideologia_cat': candidate['ideologia_cat'],
     }
+
+
+def age_band_key(age):
+    if age is None:
+        return None
+    if age <= 29:
+        return '18_29'
+    if age <= 44:
+        return '30_44'
+    if age <= 59:
+        return '45_59'
+    return '60_plus'
+
+
+def player_field(player, field_name):
+    return player.field_maybe_none(field_name)
+
+
+def profile_is_complete(player):
+    return all(
+        player_field(player, field) not in (None, '')
+        for field in QUOTA_REQUIRED_FIELDS
+    )
+
+
+def has_any_profile_answer(player):
+    return any(
+        player_field(player, field) not in (None, '')
+        for field in QUOTA_REQUIRED_FIELDS
+    )
+
+
+def quota_value(player, dimension_key):
+    if dimension_key == 'age_band':
+        return age_band_key(player_field(player, 'age_years'))
+    return player_field(player, dimension_key)
+
+
+def quota_target(targets, dimension_key, category_key):
+    dimension_targets = targets.get(dimension_key, {})
+    target = dimension_targets.get(category_key)
+    if isinstance(target, int) and not isinstance(target, bool) and target > 0:
+        return target
+    return None
+
+
+def build_quota_dimension(players, dimension, targets):
+    values = [quota_value(player, dimension['key']) for player in players]
+    counts = Counter(value for value in values if value not in (None, ''))
+    answered = sum(counts.values())
+    rows = []
+
+    for key, label in dimension['choices']:
+        count = counts[key]
+        target = quota_target(targets, dimension['key'], key)
+        share = round((count / answered) * 100) if answered else 0
+        target_progress = round((count / target) * 100) if target else None
+        rows.append(
+            dict(
+                key=key,
+                label=label,
+                count=count,
+                share=share,
+                target=target,
+                is_full=target is not None and count >= target,
+                bar_width=min(target_progress if target_progress is not None else share, 100),
+            )
+        )
+
+    return dict(
+        key=dimension['key'],
+        label=dimension['label'],
+        answered=answered,
+        missing=len(players) - answered,
+        rows=rows,
+    )
+
+
+def build_age_gender_intersection(players, targets):
+    gender_columns = [dict(key=key, label=label) for key, label in GENDER_CHOICES]
+    counts = Counter()
+
+    for player in players:
+        age_key = age_band_key(player_field(player, 'age_years'))
+        gender_key = player_field(player, 'gender_identity')
+        if age_key and gender_key:
+            counts[(age_key, gender_key)] += 1
+
+    rows = []
+    for age_key, age_label in AGE_BAND_CHOICES:
+        cells = []
+        for gender in gender_columns:
+            count = counts[(age_key, gender['key'])]
+            target_key = f"{age_key}__{gender['key']}"
+            target = quota_target(targets, 'age_gender', target_key)
+            cells.append(
+                dict(
+                    count=count,
+                    target=target,
+                    is_full=target is not None and count >= target,
+                )
+            )
+        rows.append(
+            dict(
+                key=age_key,
+                label=age_label,
+                cells=cells,
+                total=sum(cell['count'] for cell in cells),
+            )
+        )
+
+    return dict(gender_columns=gender_columns, rows=rows)
+
+
+def participant_status(participant, complete):
+    if complete:
+        return 'Perfil completo'
+    if not participant.visited:
+        return 'No inició'
+    if participant._index_in_pages >= participant._max_page_index:
+        return 'Página final'
+    return 'En curso'
+
+
+def build_admin_report_context(subsession):
+    """Build a one-participant-per-row quota snapshot for the admin report."""
+    screening_players = list(
+        subsession.in_round(C.SCREENING_ROUND).get_players()
+    )
+
+    # Sessions created before the questionnaire was moved stored these fields
+    # in the last round. Keep those historical sessions visible in the report.
+    if C.SCREENING_ROUND != C.NUM_ROUNDS:
+        legacy_players = {
+            player.participant.id: player
+            for player in subsession.in_round(C.NUM_ROUNDS).get_players()
+        }
+        players = [
+            player
+            if has_any_profile_answer(player)
+            else legacy_players.get(player.participant.id, player)
+            for player in screening_players
+        ]
+    else:
+        players = screening_players
+
+    targets = subsession.session.config.get('quota_targets', {}) or {}
+
+    age_labels = dict(AGE_BAND_CHOICES)
+    gender_labels = dict(GENDER_CHOICES)
+    participant_rows = []
+
+    for player in players:
+        participant = player.participant
+        complete = profile_is_complete(player)
+        age_key = age_band_key(player_field(player, 'age_years'))
+        gender_key = player_field(player, 'gender_identity')
+        participant_rows.append(
+            dict(
+                code=participant.code,
+                status=participant_status(participant, complete),
+                profile_complete=complete,
+                current_page=participant._current_page_name or '—',
+                round_number=participant._round_number or '—',
+                age_band=age_labels.get(age_key, '—'),
+                gender=gender_labels.get(gender_key, '—'),
+                last_request=participant._last_request_timestamp or 0,
+            )
+        )
+
+    participant_rows.sort(key=lambda item: item['last_request'], reverse=True)
+    profile_complete_count = sum(profile_is_complete(player) for player in players)
+
+    return dict(
+        generated_at=datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S'),
+        summary=dict(
+            assigned=len(players),
+            started=sum(bool(player.participant.visited) for player in players),
+            profile_complete=profile_complete_count,
+            reached_final_page=sum(
+                player.participant._index_in_pages >= player.participant._max_page_index
+                for player in players
+            ),
+        ),
+        quota_dimensions=[
+            build_quota_dimension(players, dimension, targets)
+            for dimension in QUOTA_DIMENSIONS
+        ],
+        intersection=build_age_gender_intersection(players, targets),
+        participant_rows=participant_rows,
+        no_participants=not participant_rows,
+        targets_configured=any(bool(value) for value in targets.values()),
+    )
