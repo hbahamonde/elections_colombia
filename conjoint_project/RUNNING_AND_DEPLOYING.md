@@ -49,30 +49,62 @@ Local testing and online deployment are different:
 - An online study runs `prodserver`, uses PostgreSQL, and has a public HTTPS
   address.
 
-For DigitalOcean App Platform, use one application service and one managed
-PostgreSQL database for all the oTree experiments in this project.
+For Render, the repository's `render.yaml` Blueprint defines one paid Web
+Service and one paid PostgreSQL database. It connects them through Render's
+private network and deploys the Web Service automatically whenever a commit is
+pushed to the `main` branch.
 
-### DigitalOcean configuration
+### First Render deployment
 
-1. Push the project to its existing GitHub repository.
-2. Create a DigitalOcean managed PostgreSQL database.
-3. Create an App Platform application from the GitHub repository.
-4. Set the source directory to `conjoint_project`.
-5. Use `pip install -r requirements.txt` as the build command.
-6. Use `otree prodserver 0.0.0.0:$PORT` as the run command.
-7. Connect the database's `DATABASE_URL` to the application.
-8. Add these encrypted environment variables:
+1. Commit and push `render.yaml` and the `conjoint_project` changes to `main`.
+2. In the correct Render workspace, select **New > Blueprint**.
+3. Connect GitHub and select `hbahamonde/elections_colombia`.
+4. Leave the Blueprint path as `render.yaml` and select the `main` branch.
+5. Review the two resources before approving them:
 
-   - `OTREE_ADMIN_PASSWORD`: a long unique password
-   - `OTREE_AUTH_LEVEL`: `STUDY`
-   - `OTREE_PRODUCTION`: `1`
-   - `OTREE_SECRET_KEY`: a long random secret
+   - `colombia-conjoint`: Starter Web Service, Virginia, one instance;
+   - `colombia-conjoint-db`: Basic-256mb PostgreSQL, Virginia, 1 GB storage.
 
-9. Deploy the application.
-10. Open its oTree admin page and create a fresh data-collection session.
+6. When Render requests `OTREE_ADMIN_PASSWORD`, enter a long unique password
+   and store it in the team's password manager. Do not commit it to GitHub.
+7. Approve the Blueprint and wait until both resources report healthy/live.
+8. Open the Web Service's `onrender.com` URL and sign in to oTree as `admin`.
+9. Create a new production session and test the entire participant flow.
+
+The Blueprint intentionally disables database storage autoscaling and database
+access from the public internet. This keeps billing predictable and allows only
+Render services in the workspace to connect to PostgreSQL. The database can be
+expanded manually later, but its storage cannot be reduced.
+
+### Routine deployments with GitKraken
+
+1. Test the project locally.
+2. Review the changed files in GitKraken.
+3. Commit only the intended source-code changes.
+4. Push the commit to `origin/main`.
+5. Render automatically builds and deploys that commit. The existing Web
+   Service stays live if the new build or startup fails.
+6. Confirm the deployed commit and status on the Web Service's **Deploys** page.
+
+Do not use **Manual Deploy > Deploy a specific commit** for ordinary updates;
+Render disables automatic deployments when that option is used.
 
 Never upload `db.sqlite3` to the online service. oTree will use PostgreSQL when
 `DATABASE_URL` is set.
 
 Before inviting respondents, verify the complete participant flow, the admin
 quota report, data export, and database backup/restore procedure.
+
+## Monitoring access
+
+The quota monitor is located at **Admin > session > Report > conjoint** and
+refreshes every 10 seconds. It reads PostgreSQL directly, so new screening
+answers appear as participants submit the initial questionnaire pages.
+
+oTree has one administrative credential rather than separate read-only user
+roles. Anyone given the oTree administrator password can access more than the
+quota report, including participant-level data and exports. Give that password
+only to organizations covered by the study's data-access agreement. If the
+marketing company must see aggregates but must not have administrative access,
+deploy a separate read-only quota view before fieldwork instead of sharing the
+oTree administrator password.

@@ -1,0 +1,40 @@
+version: "1"
+
+services:
+  - type: web
+    name: colombia-conjoint
+    runtime: python
+    plan: starter
+    region: virginia
+    rootDir: conjoint_project
+    buildCommand: pip install -r requirements.txt
+    startCommand: otree prodserver 0.0.0.0:$PORT
+    healthCheckPath: /
+    autoDeployTrigger: commit
+    numInstances: 1
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: colombia-conjoint-db
+          property: connectionString
+      - key: OTREE_ADMIN_PASSWORD
+        sync: false
+      - key: OTREE_AUTH_LEVEL
+        value: STUDY
+      - key: OTREE_PRODUCTION
+        value: "1"
+      - key: OTREE_SECRET_KEY
+        generateValue: true
+      - key: PYTHON_VERSION
+        value: 3.14.3
+
+databases:
+  - name: colombia-conjoint-db
+    plan: basic-256mb
+    region: virginia
+    diskSizeGB: 1
+    storageAutoscalingEnabled: false
+    ipAllowList: []
+    postgresMajorVersion: "17"
+    databaseName: colombia_conjoint
+    user: colombia_conjoint
