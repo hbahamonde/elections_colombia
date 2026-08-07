@@ -69,6 +69,11 @@ if [[ "$requirements_hash" != "$installed_hash" ]] || \
     print -r -- "$requirements_hash" > "$requirements_stamp"
 fi
 
+# oTree does not add new model columns to an existing SQLite database. This
+# idempotent migration preserves existing local responses and adds only the
+# fields required by the Colombia eligibility screener.
+python migrate_screening_fields.py
+
 if [[ "$skip_browser" == false ]]; then
     (
         for attempt in {1..30}; do

@@ -2,6 +2,8 @@ from otree.api import *
 import csv
 import json
 import random
+import re
+import unicodedata
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
@@ -29,6 +31,7 @@ The backend records:
 - countdown/time-pressure behavior
 - timing and mouse-tracking metadata
 - post-choice follow-up answers
+- Colombia eligibility-screening answers and exclusion reason
 - demographic questionnaire answers
 - political questionnaire answers
 """
@@ -88,6 +91,21 @@ YES_NO_CHOICES = [
     ['no', 'No'],
 ]
 
+LIVED_IN_COLOMBIA_CHOICES = [
+    ['yes', 'Sí'],
+    ['no', 'No'],
+    ['currently', 'Actualmente vivo en Colombia'],
+    ['prefer_not_to_answer', 'Prefiero no responder'],
+]
+
+SCREENING_EXCLUSION_LABELS = {
+    'residence_colombia': 'Residencia actual en Colombia',
+    'nationality_colombian': 'Nacionalidad colombiana',
+    'lived_colombia': 'Vivió en Colombia',
+    'currently_in_colombia': 'Actualmente vive en Colombia',
+    'lived_prefer_not_to_answer': 'No respondió experiencia de residencia',
+}
+
 REALISTIC_VOTE_CHOICES = YES_NO_CHOICES
 
 GENDER_CHOICES = [
@@ -111,10 +129,11 @@ OCCUPATION_CHOICES = [
 
 EDUCATION_CHOICES = [
     ['basica_o_menos', 'Educación básica o menos'],
-    ['media_incompleta', 'Educación media incompleta'],
     ['media_completa', 'Educación media completa'],
-    ['tecnica_profesional_incompleta', 'Educación técnica o profesional incompleta'],
-    ['tecnica_profesional_completa', 'Educación técnica o profesional completa'],
+    [
+        'tecnica_profesional_completa',
+        'Educación técnica superior o profesional completa',
+    ],
     ['postgrado', 'Estudios de postgrado'],
 ]
 
@@ -316,6 +335,16 @@ class Group(BaseGroup):
 class Player(BasePlayer):
     consent_accepted = models.BooleanField(initial=False)
 
+    country_of_residence = models.StringField(blank=True)
+    nationality = models.StringField(blank=True)
+    lived_in_colombia = models.StringField(
+        choices=LIVED_IN_COLOMBIA_CHOICES,
+        widget=widgets.RadioSelect,
+        blank=True,
+    )
+    screening_excluded = models.BooleanField(initial=False)
+    screening_exclusion_reason = models.StringField(blank=True)
+
     is_practice_round = models.BooleanField(initial=False)
     main_round_number = models.IntegerField(initial=0)
 
@@ -445,7 +474,7 @@ class Player(BasePlayer):
         blank=True,
     )
 
-    age_years = models.IntegerField(min=18, max=80, blank=True)
+    age_years = models.IntegerField(min=18, max=65, blank=True)
     gender_identity = models.StringField(
         choices=GENDER_CHOICES,
         widget=widgets.RadioSelect,
@@ -507,11 +536,6 @@ def draw_candidates_for_participant():
 
 def assign_treatment(player):
     participant = player.participant
-    demo_treatment_arm = player.session.config.get('demo_treatment_arm')
-
-    if demo_treatment_arm in C.TREATMENT_ARMS:
-        participant.vars['treatment_arm'] = demo_treatment_arm
-        return
 
     if 'treatment_arm' not in participant.vars:
         participant.vars['treatment_arm'] = random.choice(C.TREATMENT_ARMS)
@@ -619,6 +643,36 @@ def age_band_key(age):
     return '60_plus'
 
 
+def normalize_screening_text(value):
+    value = unicodedata.normalize('NFKD', clean_value(value).casefold())
+    return ''.join(
+        character
+        for character in value
+        if not unicodedata.combining(character)
+    )
+
+
+def mentions_colombia(value):
+    """Match Colombia/colombiano/colombiana in a free-text response."""
+    return bool(re.search(r'\bcolomb', normalize_screening_text(value)))
+
+
+def screen_out(player, reason):
+    player.screening_excluded = True
+    player.screening_exclusion_reason = reason
+    player.participant.vars['screening_excluded'] = True
+    player.participant.vars['screening_exclusion_reason'] = reason
+
+
+def player_was_screened_out(player):
+    stored_on_player = player_field(player, 'screening_excluded')
+    return bool(stored_on_player or player.participant.vars.get('screening_excluded'))
+
+
+def player_is_eligible(player):
+    return not player_was_screened_out(player)
+
+
 def player_field(player, field_name):
     return player.field_maybe_none(field_name)
 
@@ -719,7 +773,9 @@ def build_age_gender_intersection(players, targets):
     return dict(gender_columns=gender_columns, rows=rows)
 
 
-def participant_status(participant, complete):
+def participant_status(participant, complete, screened_out):
+    if screened_out:
+        return 'Excluido por filtro'
     if complete:
         return 'Perfil completo'
     if not participant.visited:
@@ -731,6 +787,9 @@ def participant_status(participant, complete):
 
 def build_admin_report_context(subsession):
     """Build a one-participant-per-row quota snapshot for the admin report."""
+    is_official = bool(
+        subsession.session.config.get('official_data_collection', False)
+    )
     screening_players = list(
         subsession.in_round(C.SCREENING_ROUND).get_players()
     )
@@ -759,13 +818,20 @@ def build_admin_report_context(subsession):
 
     for player in players:
         participant = player.participant
+        screened_out = player_was_screened_out(player)
         complete = profile_is_complete(player)
         age_key = age_band_key(player_field(player, 'age_years'))
         gender_key = player_field(player, 'gender_identity')
         participant_rows.append(
             dict(
                 code=participant.code,
-                status=participant_status(participant, complete),
+                status=participant_status(participant, complete, screened_out),
+                screened_out=screened_out,
+                exclusion_reason=SCREENING_EXCLUSION_LABELS.get(
+                    player_field(player, 'screening_exclusion_reason')
+                    or participant.vars.get('screening_exclusion_reason'),
+                    '—',
+                ),
                 profile_complete=complete,
                 current_page=participant._current_page_name or '—',
                 round_number=participant._round_number or '—',
@@ -776,13 +842,20 @@ def build_admin_report_context(subsession):
         )
 
     participant_rows.sort(key=lambda item: item['last_request'], reverse=True)
-    profile_complete_count = sum(profile_is_complete(player) for player in players)
+    eligible_players = [player for player in players if player_is_eligible(player)]
+    screened_out_count = len(players) - len(eligible_players)
+    profile_complete_count = sum(
+        profile_is_complete(player) for player in eligible_players
+    )
 
     return dict(
         generated_at=datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S'),
+        is_official=is_official,
+        collection_mode='RECOLECCIÓN OFICIAL' if is_official else 'DATOS DE PRUEBA',
         summary=dict(
             assigned=len(players),
             started=sum(bool(player.participant.visited) for player in players),
+            screened_out=screened_out_count,
             profile_complete=profile_complete_count,
             reached_final_page=sum(
                 player.participant._index_in_pages >= player.participant._max_page_index
@@ -790,10 +863,10 @@ def build_admin_report_context(subsession):
             ),
         ),
         quota_dimensions=[
-            build_quota_dimension(players, dimension, targets)
+            build_quota_dimension(eligible_players, dimension, targets)
             for dimension in QUOTA_DIMENSIONS
         ],
-        intersection=build_age_gender_intersection(players, targets),
+        intersection=build_age_gender_intersection(eligible_players, targets),
         participant_rows=participant_rows,
         no_participants=not participant_rows,
         targets_configured=any(bool(value) for value in targets.values()),

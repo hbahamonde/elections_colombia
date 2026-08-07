@@ -1,0 +1,22 @@
+{{ block title }}
+Preguntas generales
+{{ endblock }}
+
+{{ block content }}
+
+<div style="max-width: 750px; margin: 0 auto; line-height: 1.5;">
+    <p><strong>¿En qué país reside actualmente?</strong></p>
+
+    <input
+        type="text"
+        name="country_of_residence"
+        autocomplete="country-name"
+        maxlength="200"
+        required
+        style="width: 100%; max-width: 480px; margin: 6px 0 18px;"
+    >
+
+    {{ next_button }}
+</div>
+
+{{ endblock }}

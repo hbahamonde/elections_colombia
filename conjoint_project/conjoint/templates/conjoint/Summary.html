@@ -5,6 +5,20 @@ Finalización
 {{ block content }}
 
 <div style="max-width: 850px; margin: 0 auto; line-height: 1.55;">
+    {{ if screened_out }}
+    <p>
+        Muchas gracias por su interés en participar.
+    </p>
+
+    <p>
+        De acuerdo con sus respuestas, usted no cumple con los criterios de participación
+        establecidos para este estudio. Por este motivo, la encuesta ha finalizado.
+    </p>
+
+    <p>
+        Agradecemos su tiempo y disposición.
+    </p>
+    {{ else }}
     <p>
         Ha finalizado su participación en este estudio.
     </p>
@@ -33,6 +47,7 @@ Finalización
     <p>
         Muchas gracias por su participación.
     </p>
+    {{ endif }}
 </div>
 
 {{ endblock }}

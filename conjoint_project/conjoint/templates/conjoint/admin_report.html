@@ -42,6 +42,23 @@
         margin: 0.3rem 0 0;
     }
 
+    .quota-mode {
+        display: inline-block;
+        margin-top: 0.55rem;
+        padding: 0.25rem 0.55rem;
+        border-radius: 999px;
+        background: #fff1cf;
+        color: #805b00;
+        font-size: 0.72rem;
+        font-weight: 750;
+        letter-spacing: 0.045em;
+    }
+
+    .quota-mode.is-official {
+        background: var(--quota-accent-soft);
+        color: #135b4d;
+    }
+
     .quota-live-dot {
         display: inline-block;
         width: 0.55rem;
@@ -74,7 +91,7 @@
 
     .quota-summary-grid {
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(5, minmax(0, 1fr));
         gap: 0.8rem;
         margin-bottom: 1.25rem;
     }
@@ -245,6 +262,11 @@
         color: #135b4d;
     }
 
+    .quota-status.is-excluded {
+        background: #fbe8e4;
+        color: var(--quota-full);
+    }
+
     .quota-note {
         margin: 0.9rem 0 0;
         padding: 0.8rem 0.9rem;
@@ -278,6 +300,9 @@
         <div>
             <h2><span class="quota-live-dot" aria-hidden="true"></span>Monitoreo de cuotas</h2>
             <p>Sesión {{ session.code }} · actualizado {{ generated_at }} UTC</p>
+            <span class="quota-mode {{ if is_official }}is-official{{ endif }}">
+                {{ collection_mode }}
+            </span>
         </div>
         <div class="quota-header-actions">
             <span id="quota-refresh-status" class="quota-refresh-status" aria-live="polite">
@@ -297,6 +322,10 @@
         <div class="quota-summary-card">
             <div class="quota-summary-label">Iniciaron</div>
             <div class="quota-summary-value">{{ summary.started }}</div>
+        </div>
+        <div class="quota-summary-card">
+            <div class="quota-summary-label">Excluidos por filtro</div>
+            <div class="quota-summary-value">{{ summary.screened_out }}</div>
         </div>
         <div class="quota-summary-card">
             <div class="quota-summary-label">Perfil completo</div>
@@ -380,6 +409,7 @@
                     <tr>
                         <th scope="col">Código</th>
                         <th scope="col">Estado</th>
+                        <th scope="col">Motivo del filtro</th>
                         <th scope="col">Página actual</th>
                         <th class="quota-number" scope="col">Ronda</th>
                         <th scope="col">Edad</th>
@@ -390,7 +420,8 @@
                     {{ for item in participant_rows }}
                     <tr>
                         <td>{{ item.code }}</td>
-                        <td><span class="quota-status {{ if item.profile_complete }}is-screened{{ endif }}">{{ item.status }}</span></td>
+                        <td><span class="quota-status {{ if item.screened_out }}is-excluded{{ endif }} {{ if item.profile_complete }}is-screened{{ endif }}">{{ item.status }}</span></td>
+                        <td>{{ item.exclusion_reason }}</td>
                         <td>{{ item.current_page }}</td>
                         <td class="quota-number">{{ item.round_number }}</td>
                         <td>{{ item.age_band }}</td>
@@ -399,7 +430,7 @@
                     {{ endfor }}
                     {{ if no_participants }}
                     <tr>
-                        <td class="quota-empty" colspan="6">Todavía no hay participantes en esta sesión.</td>
+                        <td class="quota-empty" colspan="7">Todavía no hay participantes en esta sesión.</td>
                     </tr>
                     {{ endif }}
                 </tbody>

@@ -8,6 +8,7 @@ services:
     region: virginia
     rootDir: conjoint_project
     buildCommand: pip install -r requirements.txt
+    preDeployCommand: python migrate_screening_fields.py
     startCommand: otree prodserver 0.0.0.0:$PORT
     healthCheckPath: /
     autoDeployTrigger: commit

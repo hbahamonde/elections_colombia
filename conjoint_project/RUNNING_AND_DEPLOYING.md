@@ -22,6 +22,7 @@ available only on this computer. It is not an internet deployment.
 ```bash
 cd /Users/hectorbahamonde/research/elections_colombia/conjoint_project
 source .venv/bin/activate
+python migrate_screening_fields.py
 otree devserver 127.0.0.1:8000
 ```
 
@@ -37,8 +38,10 @@ source .venv/bin/activate
 python -m pip install -r requirements.txt
 ```
 
-Do not run `otree resetdb` unless you intentionally want to erase the local
-test database.
+The migration command is safe to run repeatedly. It only adds missing
+screening columns and preserves existing responses. The one-click launcher
+runs it automatically. Do not run `otree resetdb` unless you intentionally
+want to erase the local test database.
 
 ## What an online deployment means
 
@@ -94,6 +97,50 @@ Never upload `db.sqlite3` to the online service. oTree will use PostgreSQL when
 
 Before inviting respondents, verify the complete participant flow, the admin
 quota report, data export, and database backup/restore procedure.
+
+## One permanent participant link
+
+The project defines one oTree Room named `colombia_study` and one session
+configuration named `colombia_conjoint`. All three experimental arms are
+assigned randomly inside that single configuration. The permanent public link
+is:
+
+<https://colombia-conjoint.onrender.com/room/colombia_study>
+
+Use the same Room link for internal testing and fieldwork. The Room points to
+whichever session is currently active behind it, so the public URL does not
+change when a testing session is replaced with the official session.
+
+### Testing-to-fieldwork transition
+
+1. In **Admin > Rooms**, open **Estudio Colombia — enlace maestro** and create a
+   testing session with the `colombia_conjoint` configuration. Leave
+   `official_data_collection` unchecked under **Configure session**.
+2. Test only through the permanent Room link above. Use a private/incognito
+   browser window for each new test participant so an existing participant
+   cookie is not reused.
+3. When testing is complete, close the Room.
+4. In **Admin > Sessions**, select and delete the testing session. This deletes
+   that session's participant and response records; it does not require
+   `otree resetdb` and does not remove the PostgreSQL service.
+5. Return to **Admin > Rooms** and create a completely new session with the
+   intended fieldwork capacity. Under **Configure session**, check
+   `official_data_collection`. After creation, you may use the session's
+   **Edit properties** page to give it an unmistakable label such as
+   `OFFICIAL_2026_DO_NOT_DELETE`.
+6. Confirm that its monitoring report starts at zero and displays
+   **RECOLECCIÓN OFICIAL** before the marketing company distributes the
+   permanent Room link. The official/testing flag is also included in oTree
+   data exports as part of the session configuration.
+
+Deleting test sessions is optional during development: creating a new official
+session already separates official responses from all earlier sessions. Never
+run `otree resetdb` on Render as a routine cleanup step; it erases every session
+and all collected responses.
+
+Closing a Room does not delete its session or its responses. It only disconnects
+the permanent link from that session. Delete a testing session separately from
+**Admin > Sessions** if its records should be removed.
 
 ## Monitoring access
 

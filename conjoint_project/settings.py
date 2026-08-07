@@ -5,34 +5,19 @@ IS_PRODUCTION = environ.get('OTREE_PRODUCTION') == '1'
 
 SESSION_CONFIGS = [
     dict(
-        name='conjoint_random',
-        display_name='Conjoint experiment - RANDOM assignment',
+        name='colombia_conjoint',
+        display_name='Estudio Colombia — asignación aleatoria',
         app_sequence=['conjoint'],
         num_demo_participants=1,
+        official_data_collection=False,
     ),
+]
 
+ROOMS = [
     dict(
-        name='conjoint_demo_timer',
-        display_name='Conjoint DEMO - Grupo presión del tiempo',
-        app_sequence=['conjoint'],
-        num_demo_participants=1,
-        demo_treatment_arm='timer_mostrar_mas',
-    ),
-
-    dict(
-        name='conjoint_demo_math',
-        display_name='Conjoint DEMO - Grupo costo información',
-        app_sequence=['conjoint'],
-        num_demo_participants=1,
-        demo_treatment_arm='captcha_ver_mas',
-    ),
-
-    dict(
-        name='conjoint_demo_control',
-        display_name='Conjoint DEMO - Grupo control',
-        app_sequence=['conjoint'],
-        num_demo_participants=1,
-        demo_treatment_arm='control_ver_mas',
+        name='colombia_study',
+        display_name='Estudio Colombia — enlace maestro',
+        welcome_page='conjoint/RoomWelcome.html',
     ),
 ]
 

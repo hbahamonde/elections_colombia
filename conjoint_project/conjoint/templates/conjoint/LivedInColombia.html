@@ -1,0 +1,24 @@
+{{ block title }}
+Preguntas generales
+{{ endblock }}
+
+{{ block content }}
+
+<div style="max-width: 750px; margin: 0 auto; line-height: 1.5;">
+    <p>
+        <strong>
+            Sin considerar viajes o estadías breves por turismo, ¿ha vivido alguna vez en Colombia?
+        </strong>
+    </p>
+
+    <label style="display:block; margin: 8px 0;"><input type="radio" name="lived_in_colombia" value="yes" required> Sí</label>
+    <label style="display:block; margin: 8px 0;"><input type="radio" name="lived_in_colombia" value="no"> No</label>
+    <label style="display:block; margin: 8px 0;"><input type="radio" name="lived_in_colombia" value="currently"> Actualmente vivo en Colombia</label>
+    <label style="display:block; margin: 8px 0;"><input type="radio" name="lived_in_colombia" value="prefer_not_to_answer"> Prefiero no responder</label>
+
+    <div style="margin-top: 18px;">
+        {{ next_button }}
+    </div>
+</div>
+
+{{ endblock }}

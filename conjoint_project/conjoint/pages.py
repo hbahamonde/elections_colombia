@@ -1,6 +1,16 @@
 from otree.api import Page
 
-from .models import C, assign_candidates, candidate_payload, ensure_participant_vars
+from .models import (
+    C,
+    assign_candidates,
+    candidate_payload,
+    ensure_participant_vars,
+    mentions_colombia,
+    player_is_eligible,
+    player_was_screened_out,
+    screen_out,
+)
+
 
 class Consent(Page):
     form_model = 'player'
@@ -14,9 +24,72 @@ class Consent(Page):
             return 'Para participar en el estudio, debe aceptar el consentimiento informado.'
 
 
+class CountryResidence(Page):
+    form_model = 'player'
+    form_fields = ['country_of_residence']
+
+    def is_displayed(self):
+        return (
+            self.round_number == C.SCREENING_ROUND
+            and player_is_eligible(self.player)
+        )
+
+    def error_message(self, values):
+        if not (values.get('country_of_residence') or '').strip():
+            return 'Por favor, indique el país donde reside actualmente.'
+
+    def before_next_page(self):
+        if mentions_colombia(self.player.country_of_residence):
+            screen_out(self.player, 'residence_colombia')
+
+
+class Nationality(Page):
+    form_model = 'player'
+    form_fields = ['nationality']
+
+    def is_displayed(self):
+        return (
+            self.round_number == C.SCREENING_ROUND
+            and player_is_eligible(self.player)
+        )
+
+    def error_message(self, values):
+        if not (values.get('nationality') or '').strip():
+            return 'Por favor, indique su nacionalidad.'
+
+    def before_next_page(self):
+        if mentions_colombia(self.player.nationality):
+            screen_out(self.player, 'nationality_colombian')
+
+
+class LivedInColombia(Page):
+    form_model = 'player'
+    form_fields = ['lived_in_colombia']
+
+    def is_displayed(self):
+        return (
+            self.round_number == C.SCREENING_ROUND
+            and player_is_eligible(self.player)
+        )
+
+    def error_message(self, values):
+        if not values.get('lived_in_colombia'):
+            return 'Por favor, seleccione una opción.'
+
+    def before_next_page(self):
+        exclusion_reasons = {
+            'yes': 'lived_colombia',
+            'currently': 'currently_in_colombia',
+            'prefer_not_to_answer': 'lived_prefer_not_to_answer',
+        }
+        reason = exclusion_reasons.get(self.player.lived_in_colombia)
+        if reason:
+            screen_out(self.player, reason)
+
+
 class Intro(Page):
     def is_displayed(self):
-        return self.round_number == 1
+        return self.round_number == 1 and player_is_eligible(self.player)
 
     def vars_for_template(self):
         ensure_participant_vars(self.player)
@@ -55,6 +128,9 @@ class Task(Page):
         'countdown_expired',
     ]
 
+    def is_displayed(self):
+        return player_is_eligible(self.player)
+
     def vars_for_template(self):
         assign_candidates(self.player)
 
@@ -91,7 +167,10 @@ class PracticeDone(Page):
     template_name = 'conjoint/Intro.html'
 
     def is_displayed(self):
-        return self.round_number == C.NUM_PRACTICE_ROUNDS
+        return (
+            self.round_number == C.NUM_PRACTICE_ROUNDS
+            and player_is_eligible(self.player)
+        )
 
     def vars_for_template(self):
         ensure_participant_vars(self.player)
@@ -121,7 +200,10 @@ class FollowUp(Page):
     ]
 
     def is_displayed(self):
-        return self.round_number > C.NUM_PRACTICE_ROUNDS
+        return (
+            self.round_number > C.NUM_PRACTICE_ROUNDS
+            and player_is_eligible(self.player)
+        )
 
     def vars_for_template(self):
         return {
@@ -147,7 +229,10 @@ class FollowUp(Page):
 
 class GeneralQuestionsIntro(Page):
     def is_displayed(self):
-        return self.round_number == C.SCREENING_ROUND
+        return (
+            self.round_number == C.SCREENING_ROUND
+            and player_is_eligible(self.player)
+        )
 
 
 class Age(Page):
@@ -155,7 +240,10 @@ class Age(Page):
     form_fields = ['age_years']
 
     def is_displayed(self):
-        return self.round_number == C.SCREENING_ROUND
+        return (
+            self.round_number == C.SCREENING_ROUND
+            and player_is_eligible(self.player)
+        )
 
     def error_message(self, values):
         age = values.get('age_years')
@@ -163,8 +251,8 @@ class Age(Page):
         if age is None:
             return 'Por favor, indique su edad.'
 
-        if age < 18 or age > 80:
-            return 'Por favor, indique una edad entre 18 y 80 años.'
+        if age < 18 or age > 65:
+            return 'Por favor, indique una edad entre 18 y 65 años.'
 
 
 class Gender(Page):
@@ -172,13 +260,19 @@ class Gender(Page):
     form_fields = ['gender_identity', 'gender_identity_other']
 
     def is_displayed(self):
-        return self.round_number == C.SCREENING_ROUND
+        return (
+            self.round_number == C.SCREENING_ROUND
+            and player_is_eligible(self.player)
+        )
 
     def error_message(self, values):
         if not values.get('gender_identity'):
             return 'Por favor, seleccione una opción.'
 
-        if values.get('gender_identity') == 'otra' and not values.get('gender_identity_other'):
+        if (
+            values.get('gender_identity') == 'otra'
+            and not values.get('gender_identity_other')
+        ):
             return 'Por favor, describa la opción con la que se identifica.'
 
 
@@ -187,13 +281,19 @@ class Occupation(Page):
     form_fields = ['occupation_status', 'occupation_status_other']
 
     def is_displayed(self):
-        return self.round_number == C.SCREENING_ROUND
+        return (
+            self.round_number == C.SCREENING_ROUND
+            and player_is_eligible(self.player)
+        )
 
     def error_message(self, values):
         if not values.get('occupation_status'):
             return 'Por favor, seleccione una opción.'
 
-        if values.get('occupation_status') == 'otra' and not values.get('occupation_status_other'):
+        if (
+            values.get('occupation_status') == 'otra'
+            and not values.get('occupation_status_other')
+        ):
             return 'Por favor, describa su situación ocupacional.'
 
 
@@ -202,7 +302,10 @@ class Education(Page):
     form_fields = ['education_level']
 
     def is_displayed(self):
-        return self.round_number == C.SCREENING_ROUND
+        return (
+            self.round_number == C.SCREENING_ROUND
+            and player_is_eligible(self.player)
+        )
 
     def error_message(self, values):
         if not values.get('education_level'):
@@ -214,7 +317,10 @@ class VotedLastMunicipal(Page):
     form_fields = ['voted_last_municipal']
 
     def is_displayed(self):
-        return self.round_number == C.SCREENING_ROUND
+        return (
+            self.round_number == C.SCREENING_ROUND
+            and player_is_eligible(self.player)
+        )
 
     def error_message(self, values):
         if not values.get('voted_last_municipal'):
@@ -226,7 +332,10 @@ class PoliticalInterest(Page):
     form_fields = ['political_interest']
 
     def is_displayed(self):
-        return self.round_number == C.SCREENING_ROUND
+        return (
+            self.round_number == C.SCREENING_ROUND
+            and player_is_eligible(self.player)
+        )
 
     def error_message(self, values):
         if values.get('political_interest') is None:
@@ -238,7 +347,10 @@ class PoliticsFrequency(Page):
     form_fields = ['politics_frequency']
 
     def is_displayed(self):
-        return self.round_number == C.SCREENING_ROUND
+        return (
+            self.round_number == C.SCREENING_ROUND
+            and player_is_eligible(self.player)
+        )
 
     def error_message(self, values):
         if not values.get('politics_frequency'):
@@ -250,7 +362,10 @@ class LeftRightPlacement(Page):
     form_fields = ['left_right_self_placement']
 
     def is_displayed(self):
-        return self.round_number == C.SCREENING_ROUND
+        return (
+            self.round_number == C.SCREENING_ROUND
+            and player_is_eligible(self.player)
+        )
 
     def error_message(self, values):
         if not values.get('left_right_self_placement'):
@@ -261,8 +376,15 @@ class Summary(Page):
     def is_displayed(self):
         return self.round_number == C.NUM_ROUNDS
 
+    def vars_for_template(self):
+        return {'screened_out': player_was_screened_out(self.player)}
+
+
 page_sequence = [
     Consent,
+    CountryResidence,
+    Nationality,
+    LivedInColombia,
     GeneralQuestionsIntro,
     Age,
     Gender,

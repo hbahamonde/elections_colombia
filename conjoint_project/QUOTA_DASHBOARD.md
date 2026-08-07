@@ -22,16 +22,21 @@ fresh session so every participant receives the same page sequence.
 
 The page refreshes every 10 seconds while its browser tab is visible. It shows:
 
+- whether the session contains test data or official fieldwork data;
 - assigned and started participants;
+- participants excluded by the Colombia eligibility filter and the exclusion reason;
 - participants with a complete demographic profile;
 - counts and percentages for every current demographic and political question;
 - the age-by-gender intersection; and
 - each participant's current page and round.
 
-The demographic and political questions are shown immediately after consent in
-round 1, before the conjoint instructions and tasks. The dashboard reads those
-answers as each page is submitted. For compatibility, it also falls back to
-round-20 answers from sessions created before the questionnaire was moved.
+The three Colombia eligibility questions are shown immediately after consent.
+The demographic and political questions follow in round 1, before the conjoint
+instructions and tasks. The dashboard reads those answers as each page is
+submitted. Excluded participants are sent directly to the final page and are
+not counted in the quota distributions. For compatibility, the report also
+falls back to round-20 answers from sessions created before the questionnaire
+was moved.
 
 ## Optional numeric targets
 
@@ -40,7 +45,7 @@ stable and are defined in `conjoint/models.py`.
 
 ```python
 dict(
-    name='conjoint_random',
+    name='colombia_conjoint',
     # ...existing settings...
     quota_targets=dict(
         age_band={
