@@ -23,7 +23,7 @@
     .choose-row { margin-top: 14px; }
     .choice-btn { width: 280px; padding: 12px 16px; border: none; border-radius: 8px; background: #0d6efd; color: white; cursor: pointer; font-size: 17px; font-weight: 700; }
     .selected-choice { background: #198754 !important; }
-    .revealed-info { display: none; margin-top: 12px; padding: 12px; border: 1px solid #d9d9d9; border-radius: 8px; background: #f5f5f5; text-align: center; }
+    .revealed-info { display: none; margin-top: 12px; padding: 14px; border: 1px solid #d9d9d9; border-radius: 8px; background: #f5f5f5; text-align: left; line-height: 1.5; overflow-wrap: anywhere; }
     .timer-box { font-weight: 700; font-size: 18px; color: #b02a37; }
     .timer-expired { color: #b02a37; font-weight: 700; margin-left: 10px; }
     .cost-box { display: none; margin: 12px auto; padding: 12px; max-width: 420px; border: 1px solid #ddd; border-radius: 8px; background: #f8f9fa; text-align: left; }
@@ -74,9 +74,8 @@
                 {% endif %}
 
                 <div id="left-ideology-info" class="revealed-info">
-                    <strong>Ideas programáticas:</strong>
-                    {% if left_candidate.ideologia_cat %}
-                        {{ left_candidate.ideologia_cat }}
+                    {% if left_candidate.ideology_text %}
+                        {{ left_candidate.ideology_text }}
                     {% else %}
                         Sin información
                     {% endif %}
@@ -111,9 +110,8 @@
                 {% endif %}
 
                 <div id="right-ideology-info" class="revealed-info">
-                    <strong>Ideas programáticas:</strong>
-                    {% if right_candidate.ideologia_cat %}
-                        {{ right_candidate.ideologia_cat }}
+                    {% if right_candidate.ideology_text %}
+                        {{ right_candidate.ideology_text }}
                     {% else %}
                         Sin información
                     {% endif %}

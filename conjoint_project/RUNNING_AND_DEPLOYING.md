@@ -38,10 +38,10 @@ source .venv/bin/activate
 python -m pip install -r requirements.txt
 ```
 
-The migration command is safe to run repeatedly. It only adds missing
-screening columns and preserves existing responses. The one-click launcher
-runs it automatically. Do not run `otree resetdb` unless you intentionally
-want to erase the local test database.
+The migration command is safe to run repeatedly. It only adds missing project
+columns (including screening and candidate-description fields) and preserves
+existing responses. The one-click launcher runs it automatically. Do not run
+`otree resetdb` unless you intentionally want to erase the local test database.
 
 ## What an online deployment means
 

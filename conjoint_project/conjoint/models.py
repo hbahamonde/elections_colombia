@@ -8,12 +8,17 @@ from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 
+from openpyxl import load_workbook
+
 
 doc = """
 Visual conjoint experiment.
 
 Participants choose between two candidate photos. Candidate metadata is read from:
 _static/conjoint/data/dataset.csv
+
+Candidate ideology and policy-focus descriptions are read from:
+_static/conjoint/data/ideology_db.xlsx
 
 Candidate photos are stored in:
 _static/conjoint/images/
@@ -25,7 +30,8 @@ The backend records:
 - left/right candidate IDs
 - image paths
 - all candidate-level metadata from dataset.csv
-- full candidate CSV rows as JSON backups
+- candidate-specific ideology and policy-focus descriptions
+- full combined candidate metadata rows as JSON backups
 - information acquisition behavior
 - math-task behavior
 - countdown/time-pressure behavior
@@ -152,6 +158,17 @@ LEFT_RIGHT_CHOICES = [[str(i), str(i)] for i in range(0, 11)] + [
     ['ninguno', 'Ninguno'],
 ]
 
+EXCEL_ERROR_VALUES = {
+    '#NULL!',
+    '#DIV/0!',
+    '#VALUE!',
+    '#REF!',
+    '#NAME?',
+    '#NUM!',
+    '#N/A',
+    '#GETTING_DATA',
+}
+
 
 # Stable keys make these bands usable both in the dashboard and in future
 # quota rules. Keep the keys unchanged if you later translate the labels.
@@ -230,10 +247,91 @@ def find_image_for_candidate(candidate_id, image_dir):
     return None
 
 
+def load_candidate_ideology_texts(workbook_path):
+    if not workbook_path.exists():
+        raise FileNotFoundError(
+            f'Candidate ideology workbook not found at: {workbook_path}'
+        )
+
+    workbook = load_workbook(
+        workbook_path,
+        read_only=True,
+        data_only=True,
+    )
+
+    try:
+        sheet_name = 'Clasificación Met3'
+
+        if sheet_name not in workbook.sheetnames:
+            raise ValueError(
+                f'{workbook_path.name} must contain a sheet named '
+                f'{sheet_name!r}.'
+            )
+
+        rows = workbook[sheet_name].iter_rows(values_only=True)
+
+        try:
+            headers = [clean_value(value) for value in next(rows)]
+        except StopIteration as exc:
+            raise ValueError(f'{workbook_path.name} is empty.') from exc
+
+        missing_columns = [
+            column for column in ('ID', 'TEXTO')
+            if column not in headers
+        ]
+        if missing_columns:
+            raise ValueError(
+                f'{workbook_path.name} is missing these expected columns: '
+                f'{missing_columns}'
+            )
+
+        id_index = headers.index('ID')
+        text_index = headers.index('TEXTO')
+        ideology_texts = {}
+        seen_candidate_ids = set()
+
+        for row_number, row in enumerate(rows, start=2):
+            if not any(clean_value(value) for value in row):
+                continue
+
+            candidate_id = clean_candidate_id(row[id_index])
+            ideology_text = clean_value(row[text_index])
+
+            if candidate_id == '':
+                raise ValueError(
+                    f'{workbook_path.name} row {row_number} has no candidate ID.'
+                )
+            if ideology_text == '':
+                raise ValueError(
+                    f'{workbook_path.name} row {row_number} has no TEXTO for '
+                    f'candidate {candidate_id}.'
+                )
+            if candidate_id in seen_candidate_ids:
+                raise ValueError(
+                    f'{workbook_path.name} contains duplicate candidate ID '
+                    f'{candidate_id}.'
+                )
+
+            seen_candidate_ids.add(candidate_id)
+            ideology_texts[candidate_id] = (
+                None if ideology_text in EXCEL_ERROR_VALUES else ideology_text
+            )
+    finally:
+        workbook.close()
+
+    if not any(ideology_texts.values()):
+        raise ValueError(f'{workbook_path.name} contains no candidate text.')
+
+    return ideology_texts
+
+
 def load_candidate_data():
     project_root = Path(__file__).resolve().parent.parent
 
     data_path = project_root / '_static' / 'conjoint' / 'data' / 'dataset.csv'
+    ideology_path = (
+        project_root / '_static' / 'conjoint' / 'data' / 'ideology_db.xlsx'
+    )
     image_dir = project_root / '_static' / 'conjoint' / 'images'
 
     if not data_path.exists():
@@ -242,7 +340,10 @@ def load_candidate_data():
     if not image_dir.exists():
         raise FileNotFoundError(f'image folder not found at: {image_dir}')
 
+    ideology_texts = load_candidate_ideology_texts(ideology_path)
     candidates = {}
+    missing_ideology_text_ids = []
+    invalid_ideology_text_ids = []
 
     with open(data_path, encoding='utf-8-sig', newline='') as f:
         reader = csv.DictReader(f)
@@ -276,7 +377,17 @@ def load_candidate_data():
             if image_filename is None:
                 continue
 
+            if candidate_id not in ideology_texts:
+                missing_ideology_text_ids.append(candidate_id)
+                continue
+
+            ideology_text = ideology_texts[candidate_id]
+            if ideology_text is None:
+                invalid_ideology_text_ids.append(candidate_id)
+                continue
+
             row['ID'] = candidate_id
+            row['TEXTO'] = ideology_text
             row['_image_filename'] = image_filename
             row['_image_path'] = f'conjoint/images/{image_filename}'
 
@@ -284,6 +395,7 @@ def load_candidate_data():
                 'id': candidate_id,
                 'image_filename': image_filename,
                 'image_path': f'conjoint/images/{image_filename}',
+                'ideology_text': ideology_text,
                 'dataset_row_json': json.dumps(row, ensure_ascii=False),
             }
 
@@ -291,6 +403,21 @@ def load_candidate_data():
                 candidate[field_name] = clean_value(row.get(original_name))
 
             candidates[candidate_id] = candidate
+
+    if missing_ideology_text_ids:
+        examples = ', '.join(missing_ideology_text_ids[:10])
+        raise ValueError(
+            'Every randomized candidate must have a TEXTO entry in '
+            f'{ideology_path.name}. Missing {len(missing_ideology_text_ids)} '
+            f'candidate(s), including: {examples}'
+        )
+
+    if invalid_ideology_text_ids:
+        print(
+            f'Excluded {len(invalid_ideology_text_ids)} candidate(s) from '
+            f'randomization because {ideology_path.name} contains an Excel '
+            'error instead of TEXTO.'
+        )
 
     if len(candidates) < 2:
         raise ValueError(
@@ -392,6 +519,7 @@ class Player(BasePlayer):
     left_ranking = models.StringField(blank=True)
     left_partido_fe = models.StringField(blank=True)
     left_ideologia_cat = models.StringField(blank=True)
+    left_ideology_text = models.LongStringField(blank=True)
     left_fhwr_cat = models.StringField(blank=True)
     left_combo_id = models.StringField(blank=True)
 
@@ -427,6 +555,7 @@ class Player(BasePlayer):
     right_ranking = models.StringField(blank=True)
     right_partido_fe = models.StringField(blank=True)
     right_ideologia_cat = models.StringField(blank=True)
+    right_ideology_text = models.LongStringField(blank=True)
     right_fhwr_cat = models.StringField(blank=True)
     right_combo_id = models.StringField(blank=True)
 
@@ -562,6 +691,7 @@ def ensure_participant_vars(player):
 
 def save_candidate_to_player(player, side, candidate):
     setattr(player, f'{side}_image_path', candidate['image_path'])
+    setattr(player, f'{side}_ideology_text', candidate['ideology_text'])
     setattr(player, f'{side}_dataset_row_json', candidate['dataset_row_json'])
 
     for field_name in FIELD_NAME_MAP.values():
@@ -627,7 +757,7 @@ def candidate_payload(candidate_id):
     return {
         'id': candidate['id'],
         'image_path': candidate['image_path'],
-        'ideologia_cat': candidate['ideologia_cat'],
+        'ideology_text': candidate['ideology_text'],
     }
 
 

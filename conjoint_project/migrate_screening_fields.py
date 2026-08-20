@@ -1,4 +1,4 @@
-"""Add the Colombia screening fields without deleting existing oTree data."""
+"""Add project fields without deleting existing oTree data."""
 
 import sqlite3
 from os import environ
@@ -13,7 +13,9 @@ ALTER TABLE conjoint_player
     ADD COLUMN IF NOT EXISTS nationality VARCHAR,
     ADD COLUMN IF NOT EXISTS lived_in_colombia VARCHAR,
     ADD COLUMN IF NOT EXISTS screening_excluded BOOLEAN NOT NULL DEFAULT FALSE,
-    ADD COLUMN IF NOT EXISTS screening_exclusion_reason VARCHAR
+    ADD COLUMN IF NOT EXISTS screening_exclusion_reason VARCHAR,
+    ADD COLUMN IF NOT EXISTS left_ideology_text TEXT,
+    ADD COLUMN IF NOT EXISTS right_ideology_text TEXT
 """
 
 SQLITE_COLUMNS = {
@@ -22,6 +24,8 @@ SQLITE_COLUMNS = {
     'lived_in_colombia': 'VARCHAR',
     'screening_excluded': 'BOOLEAN NOT NULL DEFAULT 0',
     'screening_exclusion_reason': 'VARCHAR',
+    'left_ideology_text': 'TEXT',
+    'right_ideology_text': 'TEXT',
 }
 
 
@@ -33,19 +37,22 @@ def migrate_postgres(database_url):
 
             if table_name is None:
                 print(
-                    'Screening migration skipped: '
+                    'Project schema migration skipped: '
                     'conjoint_player will be created at startup.'
                 )
                 return
 
             cursor.execute(POSTGRES_COLUMNS_SQL)
 
-    print('PostgreSQL screening migration complete.')
+    print('PostgreSQL project schema migration complete.')
 
 
 def migrate_sqlite(database_path):
     if not database_path.exists():
-        print('Screening migration skipped: local database does not exist yet.')
+        print(
+            'Project schema migration skipped: '
+            'local database does not exist yet.'
+        )
         return
 
     with sqlite3.connect(database_path) as connection:
@@ -59,7 +66,7 @@ def migrate_sqlite(database_path):
 
         if table_exists is None:
             print(
-                'Screening migration skipped: '
+                'Project schema migration skipped: '
                 'conjoint_player will be created at startup.'
             )
             return
@@ -75,7 +82,7 @@ def migrate_sqlite(database_path):
                     f'ADD COLUMN {column_name} {column_type}'
                 )
 
-    print('Local SQLite screening migration complete.')
+    print('Local SQLite project schema migration complete.')
 
 
 database_url = environ.get('DATABASE_URL', '')

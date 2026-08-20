@@ -63,15 +63,15 @@ if [[ -f "$requirements_stamp" ]]; then
 fi
 
 if [[ "$requirements_hash" != "$installed_hash" ]] || \
-        ! python -c "import otree, psycopg2" >/dev/null 2>&1; then
+        ! python -c "import openpyxl, otree, psycopg2" >/dev/null 2>&1; then
     echo "Installing the project requirements…"
     python -m pip install -r requirements.txt
     print -r -- "$requirements_hash" > "$requirements_stamp"
 fi
 
 # oTree does not add new model columns to an existing SQLite database. This
-# idempotent migration preserves existing local responses and adds only the
-# fields required by the Colombia eligibility screener.
+# idempotent migration preserves existing local responses while adding any
+# missing screening and candidate-description fields.
 python migrate_screening_fields.py
 
 if [[ "$skip_browser" == false ]]; then
