@@ -1,0 +1,103 @@
+{{ block title }}
+Preguntas iniciales
+{{ endblock }}
+
+{{ block content }}
+
+<style>
+    .questionnaire { max-width: 920px; margin: 0 auto; }
+    .questionnaire-intro { color: #4f5963; margin-bottom: 20px; }
+    .question-card { margin-bottom: 18px; padding: 20px 22px; border: 1px solid #dee2e6; border-radius: 12px; background: #fff; }
+    .question-card .form-group { margin-bottom: 0; }
+    .question-card select { min-height: 44px; max-width: 360px; }
+    .question-card input[type="text"] { width: 100%; max-width: 560px; }
+    .other-field { margin: 10px 0 0 28px; }
+    .scale-guide { display: flex; justify-content: space-between; max-width: 560px; margin: 0 0 8px; color: #5c6670; font-size: 0.92rem; }
+    .submit-row { display: flex; justify-content: flex-end; margin-top: 24px; }
+    .submit-row button { min-width: 150px; min-height: 46px; }
+    @media (max-width: 700px) {
+        .question-card { padding: 17px 16px; }
+        .other-field { margin-left: 0; }
+        .submit-row button { width: 100%; }
+    }
+</style>
+
+<div class="questionnaire">
+    <p class="questionnaire-intro">
+        Responda las siguientes preguntas en esta única página. Todas son necesarias, salvo los campos que aparecen únicamente al elegir “otra”.
+    </p>
+
+    <section class="question-card">
+        {{ formfield 'age_years' label='¿Cuántos años cumplidos tiene?' }}
+    </section>
+
+    <section class="question-card">
+        {{ formfield 'gender_identity' label='¿Con cuál de las siguientes opciones se identifica?' }}
+        <div id="gender-other-wrap" class="other-field" hidden>
+            {{ formfield 'gender_identity_other' label='Descríbalo brevemente' }}
+        </div>
+    </section>
+
+    <section class="question-card">
+        {{ formfield 'occupation_status' label='¿Cuál es su situación ocupacional principal actualmente?' }}
+        <div id="occupation-other-wrap" class="other-field" hidden>
+            {{ formfield 'occupation_status_other' label='Describa la otra situación' }}
+        </div>
+    </section>
+
+    <section class="question-card">
+        {{ formfield 'education_level' label='¿Cuál es el nivel educacional más alto que ha completado?' }}
+    </section>
+
+    <section class="question-card">
+        {{ formfield 'voted_last_municipal' label='¿Votó usted en la última elección municipal de 2021?' }}
+    </section>
+
+    <section class="question-card">
+        <div class="scale-guide"><span>1 — Nada interesado</span><span>7 — Muy interesado</span></div>
+        {{ formfield 'political_interest' label='¿Cuán interesado(a) está usted en la política?' }}
+    </section>
+
+    <section class="question-card">
+        {{ formfield 'politics_frequency' label='¿Con qué frecuencia habla usted de política o sigue noticias políticas?' }}
+    </section>
+
+    <section class="question-card">
+        <div class="scale-guide"><span>0 — Izquierda</span><span>10 — Derecha</span></div>
+        {{ formfield 'left_right_self_placement' label='En política, ¿dónde se ubicaría usted?' }}
+    </section>
+
+    <div class="submit-row">
+        <button class="otree-btn-next btn btn-primary" type="submit">Continuar</button>
+    </div>
+</div>
+
+<script>
+    function toggleOtherField(groupName, triggerValue, wrapperId, inputName) {
+        const selected = document.querySelector(`input[name="${groupName}"]:checked`);
+        const wrapper = document.getElementById(wrapperId);
+        const input = document.querySelector(`input[name="${inputName}"]`);
+        const show = selected && selected.value === triggerValue;
+
+        wrapper.hidden = !show;
+        input.disabled = !show;
+        input.required = Boolean(show);
+
+        if (!show) {
+            input.value = '';
+        }
+    }
+
+    function refreshConditionalFields() {
+        toggleOtherField('gender_identity', 'otra', 'gender-other-wrap', 'gender_identity_other');
+        toggleOtherField('occupation_status', 'otra', 'occupation-other-wrap', 'occupation_status_other');
+    }
+
+    document.querySelectorAll('input[name="gender_identity"], input[name="occupation_status"]').forEach(function(input) {
+        input.addEventListener('change', refreshConditionalFields);
+    });
+
+    refreshConditionalFields();
+</script>
+
+{{ endblock }}

@@ -15,7 +15,21 @@ ALTER TABLE conjoint_player
     ADD COLUMN IF NOT EXISTS screening_excluded BOOLEAN NOT NULL DEFAULT FALSE,
     ADD COLUMN IF NOT EXISTS screening_exclusion_reason VARCHAR,
     ADD COLUMN IF NOT EXISTS left_ideology_text TEXT,
-    ADD COLUMN IF NOT EXISTS right_ideology_text TEXT
+    ADD COLUMN IF NOT EXISTS right_ideology_text TEXT,
+    ADD COLUMN IF NOT EXISTS left_codigo VARCHAR,
+    ADD COLUMN IF NOT EXISTS left_ideologia VARCHAR,
+    ADD COLUMN IF NOT EXISTS left_sexo VARCHAR,
+    ADD COLUMN IF NOT EXISTS left_dominancia VARCHAR,
+    ADD COLUMN IF NOT EXISTS left_edad_categoria VARCHAR,
+    ADD COLUMN IF NOT EXISTS left_nombre_base_final VARCHAR,
+    ADD COLUMN IF NOT EXISTS left_texto TEXT,
+    ADD COLUMN IF NOT EXISTS right_codigo VARCHAR,
+    ADD COLUMN IF NOT EXISTS right_ideologia VARCHAR,
+    ADD COLUMN IF NOT EXISTS right_sexo VARCHAR,
+    ADD COLUMN IF NOT EXISTS right_dominancia VARCHAR,
+    ADD COLUMN IF NOT EXISTS right_edad_categoria VARCHAR,
+    ADD COLUMN IF NOT EXISTS right_nombre_base_final VARCHAR,
+    ADD COLUMN IF NOT EXISTS right_texto TEXT
 """
 
 SQLITE_COLUMNS = {
@@ -26,6 +40,20 @@ SQLITE_COLUMNS = {
     'screening_exclusion_reason': 'VARCHAR',
     'left_ideology_text': 'TEXT',
     'right_ideology_text': 'TEXT',
+    'left_codigo': 'VARCHAR',
+    'left_ideologia': 'VARCHAR',
+    'left_sexo': 'VARCHAR',
+    'left_dominancia': 'VARCHAR',
+    'left_edad_categoria': 'VARCHAR',
+    'left_nombre_base_final': 'VARCHAR',
+    'left_texto': 'TEXT',
+    'right_codigo': 'VARCHAR',
+    'right_ideologia': 'VARCHAR',
+    'right_sexo': 'VARCHAR',
+    'right_dominancia': 'VARCHAR',
+    'right_edad_categoria': 'VARCHAR',
+    'right_nombre_base_final': 'VARCHAR',
+    'right_texto': 'TEXT',
 }
 
 

@@ -28,6 +28,14 @@
     .timer-expired { color: #b02a37; font-weight: 700; margin-left: 10px; }
     .cost-box { display: none; margin: 12px auto; padding: 12px; max-width: 420px; border: 1px solid #ddd; border-radius: 8px; background: #f8f9fa; text-align: left; }
     .cost-box input { width: 80px; margin-left: 6px; margin-right: 8px; }
+    .learn-btn:focus-visible, .choice-btn:focus-visible { outline: 3px solid #86b7fe; outline-offset: 3px; }
+    @media (max-width: 780px) {
+        .top-bar { align-items: flex-start; gap: 12px; }
+        .question { font-size: 21px; }
+        .profiles { grid-template-columns: 1fr; gap: 20px; }
+        .profile-card { padding: 15px; }
+        .learn-btn, .choice-btn { width: 100%; max-width: 360px; }
+    }
 </style>
 
 <div class="task-wrapper">
@@ -74,8 +82,8 @@
                 {% endif %}
 
                 <div id="left-ideology-info" class="revealed-info">
-                    {% if left_candidate.ideology_text %}
-                        {{ left_candidate.ideology_text }}
+                    {% if left_candidate.texto %}
+                        {{ left_candidate.texto }}
                     {% else %}
                         Sin información
                     {% endif %}
@@ -110,8 +118,8 @@
                 {% endif %}
 
                 <div id="right-ideology-info" class="revealed-info">
-                    {% if right_candidate.ideology_text %}
-                        {{ right_candidate.ideology_text }}
+                    {% if right_candidate.texto %}
+                        {{ right_candidate.texto }}
                     {% else %}
                         Sin información
                     {% endif %}

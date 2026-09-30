@@ -35,7 +35,7 @@ class CountryResidence(Page):
         )
 
     def error_message(self, values):
-        if not (values.get('country_of_residence') or '').strip():
+        if not values.get('country_of_residence'):
             return 'Por favor, indique el país donde reside actualmente.'
 
     def before_next_page(self):
@@ -54,7 +54,7 @@ class Nationality(Page):
         )
 
     def error_message(self, values):
-        if not (values.get('nationality') or '').strip():
+        if not values.get('nationality'):
             return 'Por favor, indique su nacionalidad.'
 
     def before_next_page(self):
@@ -227,17 +227,20 @@ class FollowUp(Page):
             return 'Por favor, indique qué tanto le costó informarse.'
 
 
-class GeneralQuestionsIntro(Page):
-    def is_displayed(self):
-        return (
-            self.round_number == C.SCREENING_ROUND
-            and player_is_eligible(self.player)
-        )
-
-
-class Age(Page):
+class Questionnaire(Page):
     form_model = 'player'
-    form_fields = ['age_years']
+    form_fields = [
+        'age_years',
+        'gender_identity',
+        'gender_identity_other',
+        'occupation_status',
+        'occupation_status_other',
+        'education_level',
+        'voted_last_municipal',
+        'political_interest',
+        'politics_frequency',
+        'left_right_self_placement',
+    ]
 
     def is_displayed(self):
         return (
@@ -246,130 +249,38 @@ class Age(Page):
         )
 
     def error_message(self, values):
-        age = values.get('age_years')
-
-        if age is None:
+        if values.get('age_years') is None:
             return 'Por favor, indique su edad.'
-
-        if age < 18 or age > 65:
-            return 'Por favor, indique una edad entre 18 y 65 años.'
-
-
-class Gender(Page):
-    form_model = 'player'
-    form_fields = ['gender_identity', 'gender_identity_other']
-
-    def is_displayed(self):
-        return (
-            self.round_number == C.SCREENING_ROUND
-            and player_is_eligible(self.player)
-        )
-
-    def error_message(self, values):
         if not values.get('gender_identity'):
-            return 'Por favor, seleccione una opción.'
-
+            return 'Por favor, indique con qué opción se identifica.'
         if (
             values.get('gender_identity') == 'otra'
-            and not values.get('gender_identity_other')
+            and not (values.get('gender_identity_other') or '').strip()
         ):
             return 'Por favor, describa la opción con la que se identifica.'
-
-
-class Occupation(Page):
-    form_model = 'player'
-    form_fields = ['occupation_status', 'occupation_status_other']
-
-    def is_displayed(self):
-        return (
-            self.round_number == C.SCREENING_ROUND
-            and player_is_eligible(self.player)
-        )
-
-    def error_message(self, values):
         if not values.get('occupation_status'):
-            return 'Por favor, seleccione una opción.'
-
+            return 'Por favor, indique su situación ocupacional.'
         if (
             values.get('occupation_status') == 'otra'
-            and not values.get('occupation_status_other')
+            and not (values.get('occupation_status_other') or '').strip()
         ):
             return 'Por favor, describa su situación ocupacional.'
-
-
-class Education(Page):
-    form_model = 'player'
-    form_fields = ['education_level']
-
-    def is_displayed(self):
-        return (
-            self.round_number == C.SCREENING_ROUND
-            and player_is_eligible(self.player)
-        )
-
-    def error_message(self, values):
         if not values.get('education_level'):
-            return 'Por favor, seleccione una opción.'
-
-
-class VotedLastMunicipal(Page):
-    form_model = 'player'
-    form_fields = ['voted_last_municipal']
-
-    def is_displayed(self):
-        return (
-            self.round_number == C.SCREENING_ROUND
-            and player_is_eligible(self.player)
-        )
-
-    def error_message(self, values):
+            return 'Por favor, indique su nivel educacional.'
         if not values.get('voted_last_municipal'):
-            return 'Por favor, seleccione una opción.'
-
-
-class PoliticalInterest(Page):
-    form_model = 'player'
-    form_fields = ['political_interest']
-
-    def is_displayed(self):
-        return (
-            self.round_number == C.SCREENING_ROUND
-            and player_is_eligible(self.player)
-        )
-
-    def error_message(self, values):
+            return 'Por favor, responda la pregunta sobre la elección municipal.'
         if values.get('political_interest') is None:
-            return 'Por favor, seleccione una opción.'
-
-
-class PoliticsFrequency(Page):
-    form_model = 'player'
-    form_fields = ['politics_frequency']
-
-    def is_displayed(self):
-        return (
-            self.round_number == C.SCREENING_ROUND
-            and player_is_eligible(self.player)
-        )
-
-    def error_message(self, values):
+            return 'Por favor, indique su interés en la política.'
         if not values.get('politics_frequency'):
-            return 'Por favor, seleccione una opción.'
-
-
-class LeftRightPlacement(Page):
-    form_model = 'player'
-    form_fields = ['left_right_self_placement']
-
-    def is_displayed(self):
-        return (
-            self.round_number == C.SCREENING_ROUND
-            and player_is_eligible(self.player)
-        )
-
-    def error_message(self, values):
+            return 'Por favor, indique con qué frecuencia sigue la política.'
         if not values.get('left_right_self_placement'):
-            return 'Por favor, seleccione una opción.'
+            return 'Por favor, indique su ubicación política.'
+
+    def before_next_page(self):
+        if self.player.gender_identity != 'otra':
+            self.player.gender_identity_other = ''
+        if self.player.occupation_status != 'otra':
+            self.player.occupation_status_other = ''
 
 
 class Summary(Page):
@@ -385,15 +296,7 @@ page_sequence = [
     CountryResidence,
     Nationality,
     LivedInColombia,
-    GeneralQuestionsIntro,
-    Age,
-    Gender,
-    Occupation,
-    Education,
-    VotedLastMunicipal,
-    PoliticalInterest,
-    PoliticsFrequency,
-    LeftRightPlacement,
+    Questionnaire,
     Intro,
     Task,
     PracticeDone,

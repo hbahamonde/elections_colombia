@@ -4,19 +4,16 @@ Preguntas generales
 
 {{ block content }}
 
-<div style="max-width: 750px; margin: 0 auto; line-height: 1.5;">
-    <p><strong>¿Cuál es su nacionalidad?</strong></p>
+<style>
+    .screening-card { max-width: 760px; margin: 0 auto; padding: 24px; border: 1px solid #dee2e6; border-radius: 12px; background: #fff; line-height: 1.5; }
+    .screening-card select { width: 100%; max-width: 520px; min-height: 46px; }
+    .screening-note { color: #5c6670; margin-bottom: 22px; }
+</style>
 
-    <input
-        type="text"
-        name="nationality"
-        autocomplete="off"
-        maxlength="200"
-        required
-        style="width: 100%; max-width: 480px; margin: 6px 0 18px;"
-    >
-
-    {{ next_button }}
+<div class="screening-card">
+    <p class="screening-note">Seleccione el país correspondiente a su nacionalidad.</p>
+    {{ formfield 'nationality' label='¿Cuál es su nacionalidad?' }}
+    <button class="otree-btn-next btn btn-primary" type="submit">Continuar</button>
 </div>
 
 {{ endblock }}

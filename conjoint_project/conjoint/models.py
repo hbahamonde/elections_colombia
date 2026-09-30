@@ -8,17 +8,15 @@ from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 
-from openpyxl import load_workbook
+from .countries import AGE_CHOICES, COUNTRY_CHOICES
 
 
 doc = """
 Visual conjoint experiment.
 
-Participants choose between two candidate photos. Candidate metadata is read from:
-_static/conjoint/data/dataset.csv
-
-Candidate ideology and policy-focus descriptions are read from:
-_static/conjoint/data/ideology_db.xlsx
+Participants choose between two candidate photos. Candidate metadata and the
+candidate-specific ideology/policy text are read from the single master file:
+_static/conjoint/data/base_final_merged.csv
 
 Candidate photos are stored in:
 _static/conjoint/images/
@@ -29,7 +27,7 @@ The backend records:
 - practice versus main-experiment round status
 - left/right candidate IDs
 - image paths
-- all candidate-level metadata from dataset.csv
+- all candidate-level metadata from base_final_merged.csv
 - candidate-specific ideology and policy-focus descriptions
 - full combined candidate metadata rows as JSON backups
 - information acquisition behavior
@@ -43,8 +41,9 @@ The backend records:
 """
 
 
-DATASET_COLUMNS = [
-    'ID', 'DEPARTAMENTO', 'COD_DPTO', 'MUNICIPIO', 'COD_MCPIO',
+MASTER_DATA_COLUMNS = [
+    'Código', 'Ideologia', 'Sexo', 'Dominancia', 'Edad', 'Nombre', 'ID',
+    'Texto', 'DEPARTAMENTO', 'COD_DPTO', 'MUNICIPIO', 'COD_MCPIO',
     'Cod_candidato', 'NOMBRE', 'Votos', 'PARTIDO', 'COD_PARTIDO',
     'GENERO', 'EDAD', 'age (estimada)', 'gender (estimado)', 'blurness',
     'facequality', 'yaw_angle', 'pitch_angle', 'roll_angle', 'BD',
@@ -55,7 +54,14 @@ DATASET_COLUMNS = [
 
 
 FIELD_NAME_MAP = {
+    'Código': 'codigo',
+    'Ideologia': 'ideologia',
+    'Sexo': 'sexo',
+    'Dominancia': 'dominancia',
+    'Edad': 'edad_categoria',
+    'Nombre': 'nombre_base_final',
     'ID': 'id',
+    'Texto': 'texto',
     'DEPARTAMENTO': 'departamento',
     'COD_DPTO': 'cod_dpto',
     'MUNICIPIO': 'municipio',
@@ -95,6 +101,10 @@ FIELD_NAME_MAP = {
 YES_NO_CHOICES = [
     ['yes', 'Sí'],
     ['no', 'No'],
+]
+
+VOTED_CHOICES = YES_NO_CHOICES + [
+    ['dont_know', 'No sé, no recuerdo'],
 ]
 
 LIVED_IN_COLOMBIA_CHOICES = [
@@ -158,18 +168,6 @@ LEFT_RIGHT_CHOICES = [[str(i), str(i)] for i in range(0, 11)] + [
     ['ninguno', 'Ninguno'],
 ]
 
-EXCEL_ERROR_VALUES = {
-    '#NULL!',
-    '#DIV/0!',
-    '#VALUE!',
-    '#REF!',
-    '#NAME?',
-    '#NUM!',
-    '#N/A',
-    '#GETTING_DATA',
-}
-
-
 # Stable keys make these bands usable both in the dashboard and in future
 # quota rules. Keep the keys unchanged if you later translate the labels.
 AGE_BAND_CHOICES = [
@@ -190,7 +188,7 @@ QUOTA_DIMENSIONS = [
     dict(
         key='voted_last_municipal',
         label='Votó en la última municipal',
-        choices=YES_NO_CHOICES,
+        choices=VOTED_CHOICES,
     ),
     dict(
         key='political_interest',
@@ -247,121 +245,46 @@ def find_image_for_candidate(candidate_id, image_dir):
     return None
 
 
-def load_candidate_ideology_texts(workbook_path):
-    if not workbook_path.exists():
-        raise FileNotFoundError(
-            f'Candidate ideology workbook not found at: {workbook_path}'
-        )
-
-    workbook = load_workbook(
-        workbook_path,
-        read_only=True,
-        data_only=True,
-    )
-
-    try:
-        sheet_name = 'Clasificación Met3'
-
-        if sheet_name not in workbook.sheetnames:
-            raise ValueError(
-                f'{workbook_path.name} must contain a sheet named '
-                f'{sheet_name!r}.'
-            )
-
-        rows = workbook[sheet_name].iter_rows(values_only=True)
-
-        try:
-            headers = [clean_value(value) for value in next(rows)]
-        except StopIteration as exc:
-            raise ValueError(f'{workbook_path.name} is empty.') from exc
-
-        missing_columns = [
-            column for column in ('ID', 'TEXTO')
-            if column not in headers
-        ]
-        if missing_columns:
-            raise ValueError(
-                f'{workbook_path.name} is missing these expected columns: '
-                f'{missing_columns}'
-            )
-
-        id_index = headers.index('ID')
-        text_index = headers.index('TEXTO')
-        ideology_texts = {}
-        seen_candidate_ids = set()
-
-        for row_number, row in enumerate(rows, start=2):
-            if not any(clean_value(value) for value in row):
-                continue
-
-            candidate_id = clean_candidate_id(row[id_index])
-            ideology_text = clean_value(row[text_index])
-
-            if candidate_id == '':
-                raise ValueError(
-                    f'{workbook_path.name} row {row_number} has no candidate ID.'
-                )
-            if ideology_text == '':
-                raise ValueError(
-                    f'{workbook_path.name} row {row_number} has no TEXTO for '
-                    f'candidate {candidate_id}.'
-                )
-            if candidate_id in seen_candidate_ids:
-                raise ValueError(
-                    f'{workbook_path.name} contains duplicate candidate ID '
-                    f'{candidate_id}.'
-                )
-
-            seen_candidate_ids.add(candidate_id)
-            ideology_texts[candidate_id] = (
-                None if ideology_text in EXCEL_ERROR_VALUES else ideology_text
-            )
-    finally:
-        workbook.close()
-
-    if not any(ideology_texts.values()):
-        raise ValueError(f'{workbook_path.name} contains no candidate text.')
-
-    return ideology_texts
-
-
 def load_candidate_data():
     project_root = Path(__file__).resolve().parent.parent
 
-    data_path = project_root / '_static' / 'conjoint' / 'data' / 'dataset.csv'
-    ideology_path = (
-        project_root / '_static' / 'conjoint' / 'data' / 'ideology_db.xlsx'
+    data_path = (
+        project_root
+        / '_static'
+        / 'conjoint'
+        / 'data'
+        / 'base_final_merged.csv'
     )
     image_dir = project_root / '_static' / 'conjoint' / 'images'
 
     if not data_path.exists():
-        raise FileNotFoundError(f'dataset.csv not found at: {data_path}')
+        raise FileNotFoundError(f'base_final_merged.csv not found at: {data_path}')
 
     if not image_dir.exists():
         raise FileNotFoundError(f'image folder not found at: {image_dir}')
 
-    ideology_texts = load_candidate_ideology_texts(ideology_path)
     candidates = {}
-    missing_ideology_text_ids = []
-    invalid_ideology_text_ids = []
+    seen_candidate_ids = set()
+    excluded_missing_text = []
 
     with open(data_path, encoding='utf-8-sig', newline='') as f:
         reader = csv.DictReader(f)
 
         if reader.fieldnames is None:
-            raise ValueError('dataset.csv has no header row.')
+            raise ValueError(f'{data_path.name} has no header row.')
 
         missing_columns = [
-            column for column in DATASET_COLUMNS
+            column for column in MASTER_DATA_COLUMNS
             if column not in reader.fieldnames
         ]
 
         if missing_columns:
             raise ValueError(
-                f'dataset.csv is missing these expected columns: {missing_columns}'
+                f'{data_path.name} is missing these expected columns: '
+                f'{missing_columns}'
             )
 
-        for raw_row in reader:
+        for row_number, raw_row in enumerate(reader, start=2):
             row = {
                 clean_value(key): clean_value(value)
                 for key, value in raw_row.items()
@@ -372,31 +295,39 @@ def load_candidate_data():
             if candidate_id == '':
                 continue
 
+            if candidate_id in seen_candidate_ids:
+                raise ValueError(
+                    f'{data_path.name} row {row_number} repeats candidate ID '
+                    f'{candidate_id}.'
+                )
+            seen_candidate_ids.add(candidate_id)
+
             image_filename = find_image_for_candidate(candidate_id, image_dir)
 
             if image_filename is None:
-                continue
+                raise ValueError(
+                    f'No candidate image was found for ID {candidate_id} '
+                    f'({data_path.name} row {row_number}).'
+                )
 
-            if candidate_id not in ideology_texts:
-                missing_ideology_text_ids.append(candidate_id)
-                continue
-
-            ideology_text = ideology_texts[candidate_id]
-            if ideology_text is None:
-                invalid_ideology_text_ids.append(candidate_id)
+            ideology_text = clean_value(row.get('Texto'))
+            if not ideology_text:
+                excluded_missing_text.append(candidate_id)
                 continue
 
             row['ID'] = candidate_id
-            row['TEXTO'] = ideology_text
-            row['_image_filename'] = image_filename
-            row['_image_path'] = f'conjoint/images/{image_filename}'
+            row['Texto'] = ideology_text
+            master_row = {
+                column: clean_value(row.get(column))
+                for column in MASTER_DATA_COLUMNS
+            }
 
             candidate = {
                 'id': candidate_id,
                 'image_filename': image_filename,
                 'image_path': f'conjoint/images/{image_filename}',
                 'ideology_text': ideology_text,
-                'dataset_row_json': json.dumps(row, ensure_ascii=False),
+                'dataset_row_json': json.dumps(master_row, ensure_ascii=False),
             }
 
             for original_name, field_name in FIELD_NAME_MAP.items():
@@ -404,25 +335,17 @@ def load_candidate_data():
 
             candidates[candidate_id] = candidate
 
-    if missing_ideology_text_ids:
-        examples = ', '.join(missing_ideology_text_ids[:10])
-        raise ValueError(
-            'Every randomized candidate must have a TEXTO entry in '
-            f'{ideology_path.name}. Missing {len(missing_ideology_text_ids)} '
-            f'candidate(s), including: {examples}'
-        )
-
-    if invalid_ideology_text_ids:
+    if excluded_missing_text:
         print(
-            f'Excluded {len(invalid_ideology_text_ids)} candidate(s) from '
-            f'randomization because {ideology_path.name} contains an Excel '
-            'error instead of TEXTO.'
+            f'Excluded {len(excluded_missing_text)} candidate(s) from '
+            f'randomization because {data_path.name} has no Texto: '
+            f'{", ".join(excluded_missing_text)}.'
         )
 
     if len(candidates) < 2:
         raise ValueError(
             'Need at least two candidate rows with matching image files. '
-            f'dataset.csv is at {data_path}. '
+            f'{data_path.name} is at {data_path}. '
             f'Images are expected in {image_dir}.'
         )
 
@@ -462,8 +385,14 @@ class Group(BaseGroup):
 class Player(BasePlayer):
     consent_accepted = models.BooleanField(initial=False)
 
-    country_of_residence = models.StringField(blank=True)
-    nationality = models.StringField(blank=True)
+    country_of_residence = models.StringField(
+        choices=COUNTRY_CHOICES,
+        blank=True,
+    )
+    nationality = models.StringField(
+        choices=COUNTRY_CHOICES,
+        blank=True,
+    )
     lived_in_colombia = models.StringField(
         choices=LIVED_IN_COLOMBIA_CHOICES,
         widget=widgets.RadioSelect,
@@ -487,6 +416,13 @@ class Player(BasePlayer):
     left_image_path = models.StringField()
     right_image_path = models.StringField()
 
+    left_codigo = models.StringField(blank=True)
+    left_ideologia = models.StringField(blank=True)
+    left_sexo = models.StringField(blank=True)
+    left_dominancia = models.StringField(blank=True)
+    left_edad_categoria = models.StringField(blank=True)
+    left_nombre_base_final = models.StringField(blank=True)
+    left_texto = models.LongStringField(blank=True)
     left_id = models.StringField(blank=True)
     left_departamento = models.StringField(blank=True)
     left_cod_dpto = models.StringField(blank=True)
@@ -523,6 +459,13 @@ class Player(BasePlayer):
     left_fhwr_cat = models.StringField(blank=True)
     left_combo_id = models.StringField(blank=True)
 
+    right_codigo = models.StringField(blank=True)
+    right_ideologia = models.StringField(blank=True)
+    right_sexo = models.StringField(blank=True)
+    right_dominancia = models.StringField(blank=True)
+    right_edad_categoria = models.StringField(blank=True)
+    right_nombre_base_final = models.StringField(blank=True)
+    right_texto = models.LongStringField(blank=True)
     right_id = models.StringField(blank=True)
     right_departamento = models.StringField(blank=True)
     right_cod_dpto = models.StringField(blank=True)
@@ -603,7 +546,10 @@ class Player(BasePlayer):
         blank=True,
     )
 
-    age_years = models.IntegerField(min=18, max=65, blank=True)
+    age_years = models.IntegerField(
+        choices=AGE_CHOICES,
+        blank=True,
+    )
     gender_identity = models.StringField(
         choices=GENDER_CHOICES,
         widget=widgets.RadioSelect,
@@ -623,7 +569,7 @@ class Player(BasePlayer):
     )
 
     voted_last_municipal = models.StringField(
-        choices=YES_NO_CHOICES,
+        choices=VOTED_CHOICES,
         widget=widgets.RadioSelect,
         blank=True,
     )
@@ -757,6 +703,7 @@ def candidate_payload(candidate_id):
     return {
         'id': candidate['id'],
         'image_path': candidate['image_path'],
+        'texto': candidate['texto'],
         'ideology_text': candidate['ideology_text'],
     }
 
@@ -783,8 +730,10 @@ def normalize_screening_text(value):
 
 
 def mentions_colombia(value):
-    """Match Colombia/colombiano/colombiana in a free-text response."""
-    return bool(re.search(r'\bcolomb', normalize_screening_text(value)))
+    """Match the stable country code or legacy free-text Colombian answers."""
+    return value == 'CO' or bool(
+        re.search(r'\bcolomb', normalize_screening_text(value))
+    )
 
 
 def screen_out(player, reason):

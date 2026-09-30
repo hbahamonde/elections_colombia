@@ -63,7 +63,7 @@ if [[ -f "$requirements_stamp" ]]; then
 fi
 
 if [[ "$requirements_hash" != "$installed_hash" ]] || \
-        ! python -c "import openpyxl, otree, psycopg2" >/dev/null 2>&1; then
+        ! python -c "import otree, psycopg2" >/dev/null 2>&1; then
     echo "Installing the project requirements…"
     python -m pip install -r requirements.txt
     print -r -- "$requirements_hash" > "$requirements_stamp"
