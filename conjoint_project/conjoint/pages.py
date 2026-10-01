@@ -12,6 +12,32 @@ from .models import (
 )
 
 
+VISUAL_DECISION_FACTOR_KEYS = {
+    'apariencia_primera_impresion',
+    'edad',
+    'genero',
+    'otra_razon',
+}
+
+REVEALED_TEXT_DECISION_FACTOR_KEYS = {
+    'ideologia_revelada',
+    'focos_programaticos_revelados',
+}
+
+
+def revealed_candidate_information(player):
+    """Whether the participant actually saw either profile's hidden text."""
+    return bool(player.left_ideology_opened or player.right_ideology_opened)
+
+
+def selected_decision_factors(raw_value):
+    return {
+        value.strip()
+        for value in (raw_value or '').split(',')
+        if value.strip()
+    }
+
+
 class Consent(Page):
     form_model = 'player'
     form_fields = ['consent_accepted']
@@ -206,25 +232,55 @@ class FollowUp(Page):
         )
 
     def vars_for_template(self):
+        information_revealed = revealed_candidate_information(self.player)
+
         return {
             'main_round_number': self.player.main_round_number,
             'num_main_rounds': C.NUM_MAIN_ROUNDS,
             'timed_task': self.player.timed_task,
             'info_condition': self.player.info_condition,
+            'information_revealed': information_revealed,
+            'show_info_cost_scale': (
+                self.player.info_condition == 'captcha_ver_mas'
+                and information_revealed
+            ),
         }
 
     def error_message(self, values):
         if not values.get('realistic_vote'):
             return 'Por favor, responda si habría votado por un(a) candidato(a) así en la realidad.'
 
-        if values.get('realistic_vote') == 'yes' and not values.get('decision_factors'):
+        factors = selected_decision_factors(values.get('decision_factors'))
+
+        if values.get('realistic_vote') == 'yes' and not factors:
             return 'Por favor, seleccione al menos un factor que haya considerado.'
+
+        allowed_factors = set(VISUAL_DECISION_FACTOR_KEYS)
+        if revealed_candidate_information(self.player):
+            allowed_factors.update(REVEALED_TEXT_DECISION_FACTOR_KEYS)
+
+        if not factors.issubset(allowed_factors):
+            return (
+                'Una de las alternativas seleccionadas no corresponde a la '
+                'información que vio. Por favor, revise su respuesta.'
+            )
 
         if self.player.timed_task and values.get('rushed_scale') is None:
             return 'Por favor, indique qué tan apurado se sintió.'
 
-        if self.player.info_condition == 'captcha_ver_mas' and values.get('info_cost_scale') is None:
+        if (
+            self.player.info_condition == 'captcha_ver_mas'
+            and revealed_candidate_information(self.player)
+            and values.get('info_cost_scale') is None
+        ):
             return 'Por favor, indique qué tanto le costó informarse.'
+
+    def before_next_page(self):
+        if self.player.realistic_vote != 'yes':
+            self.player.decision_factors = ''
+
+        if not revealed_candidate_information(self.player):
+            self.player.info_cost_scale = None
 
 
 class Questionnaire(Page):

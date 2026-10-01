@@ -33,12 +33,13 @@ Preguntas sobre su decisión
 
         <p style="margin-bottom: 10px;">Puede seleccionar más de una alternativa.</p>
 
-        <label><input type="checkbox" class="factor-option" value="ideas_programaticas"> Las ideas programáticas del candidato(a)</label><br>
-        <label><input type="checkbox" class="factor-option" value="experiencia_trayectoria"> Su experiencia o trayectoria</label><br>
+        {% if information_revealed %}
+        <label><input type="checkbox" class="factor-option" value="ideologia_revelada"> La ideología que vio (izquierda, centro o derecha)</label><br>
+        <label><input type="checkbox" class="factor-option" value="focos_programaticos_revelados"> Los focos programáticos que vio</label><br>
+        {% endif %}
         <label><input type="checkbox" class="factor-option" value="apariencia_primera_impresion"> Su apariencia o primera impresión</label><br>
-        <label><input type="checkbox" class="factor-option" value="edad"> La edad del candidato(a)</label><br>
-        <label><input type="checkbox" class="factor-option" value="genero"> El género del candidato(a)</label><br>
-        <label><input type="checkbox" class="factor-option" value="cercania_local"> Su cercanía con la comuna o el territorio</label><br>
+        <label><input type="checkbox" class="factor-option" value="edad"> La edad que aparentaba</label><br>
+        <label><input type="checkbox" class="factor-option" value="genero"> El género que percibió</label><br>
         <label><input type="checkbox" class="factor-option" value="otra_razon"> Otra razón</label>
     </div>
 
@@ -62,7 +63,7 @@ Preguntas sobre su decisión
     </div>
     {% endif %}
 
-    {% if info_condition == 'captcha_ver_mas' %}
+    {% if show_info_cost_scale %}
     <div style="margin: 26px 0;">
         <p>
             <strong>En una escala de 1 a 7, donde 1 significa “no le costó nada” y 7 significa “le costó mucho”, ¿qué tanto le costó informarse sobre las ideas programáticas del (de la) candidato(a)?</strong>

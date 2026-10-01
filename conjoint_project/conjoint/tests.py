@@ -4,14 +4,46 @@ from . import pages
 
 
 class PlayerBot(Bot):
-    """Exercise the complete eligible-participant path in all 20 rounds."""
+    """Exercise the eligible path and every Colombian screening exit."""
+
+    cases = [
+        'eligible',
+        'residence_colombia',
+        'nationality_colombian',
+        'lived_colombia',
+    ]
 
     def play_round(self):
+        if self.case != 'eligible' and self.round_number > 1:
+            return
+
         if self.round_number == 1:
             yield pages.Consent, dict(consent_accepted=True)
-            yield pages.CountryResidence, dict(country_of_residence='FI')
-            yield pages.Nationality, dict(nationality='CL')
-            yield pages.LivedInColombia, dict(lived_in_colombia='no')
+
+            yield pages.CountryResidence, dict(
+                country_of_residence=(
+                    'CO' if self.case == 'residence_colombia' else 'FI'
+                )
+            )
+            if self.case == 'residence_colombia':
+                return
+
+            yield pages.Nationality, dict(
+                nationality=(
+                    'CO' if self.case == 'nationality_colombian' else 'CL'
+                )
+            )
+            if self.case == 'nationality_colombian':
+                return
+
+            yield pages.LivedInColombia, dict(
+                lived_in_colombia=(
+                    'yes' if self.case == 'lived_colombia' else 'no'
+                )
+            )
+            if self.case == 'lived_colombia':
+                return
+
             yield pages.Questionnaire, dict(
                 age_years=35,
                 gender_identity='mujer',
@@ -26,17 +58,19 @@ class PlayerBot(Bot):
             )
             yield pages.Intro
 
+        information_revealed = self.round_number % 2 == 0
+
         yield pages.Task, dict(
-            left_ideology_opened=True,
+            left_ideology_opened=information_revealed,
             right_ideology_opened=False,
-            info_cost_task_completed=True,
-            info_cost_attempts=1,
+            info_cost_task_completed=information_revealed,
+            info_cost_attempts=1 if information_revealed else 0,
             decision_candidate_id=self.player.left_candidate_id,
             decision_side='left',
             time_spent_seconds=2.5,
             time_to_first_choice_seconds=1.5,
             choice_changes=0,
-            learn_more_clicks=1,
+            learn_more_clicks=1 if information_revealed else 0,
             mouse_distance_px=120.0,
             left_hover_seconds=1.2,
             right_hover_seconds=0.4,
@@ -49,10 +83,18 @@ class PlayerBot(Bot):
         if self.round_number > 5:
             follow_up = dict(
                 realistic_vote='yes',
-                decision_factors='apariencia; información programática',
+                decision_factors=(
+                    'ideologia_revelada,focos_programaticos_revelados,'
+                    'apariencia_primera_impresion'
+                    if information_revealed
+                    else 'apariencia_primera_impresion,edad'
+                ),
             )
             if self.player.timed_task:
                 follow_up['rushed_scale'] = 3
-            if self.player.info_condition == 'captcha_ver_mas':
+            if (
+                self.player.info_condition == 'captcha_ver_mas'
+                and information_revealed
+            ):
                 follow_up['info_cost_scale'] = 2
             yield pages.FollowUp, follow_up
