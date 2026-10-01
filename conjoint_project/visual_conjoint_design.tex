@@ -1,5 +1,5 @@
-\documentclass[10pt]{article}
-\usepackage[letterpaper,top=0.55in,bottom=0.58in,left=0.62in,right=0.62in]{geometry}
+\documentclass[11pt]{article}
+\usepackage[letterpaper,margin=0.85in]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{lmodern}
@@ -23,16 +23,15 @@
 \definecolor{gold}{HTML}{C58B1B}
 \definecolor{soft}{HTML}{F3F5F7}
 \hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue,citecolor=blue}
-\color{ink}
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{2pt}
+\setlength{\parindent}{1.25em}
+\setlength{\parskip}{0pt}
 \setlength{\columnsep}{14pt}
 \setlist[itemize]{leftmargin=1.3em,itemsep=0pt,topsep=2pt,parsep=0pt}
 \setlist[enumerate]{leftmargin=1.5em,itemsep=0pt,topsep=2pt,parsep=0pt}
-\titleformat{\section}{\large\bfseries\color{blue}}{}{0pt}{}[\vspace{-2pt}\color{cyan}\titlerule]
-\titleformat{\subsection}{\normalsize\bfseries\color{ink}}{}{0pt}{}
-\titlespacing*{\section}{0pt}{4pt}{2pt}
-\titlespacing*{\subsection}{0pt}{4pt}{1pt}
+\titleformat{\section}{\large\bfseries}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{0.6em}{}
+\titlespacing*{\section}{0pt}{10pt}{4pt}
+\titlespacing*{\subsection}{0pt}{7pt}{3pt}
 \captionsetup{font=footnotesize,labelfont=bf,skip=2pt}
 \pagestyle{plain}
 
@@ -41,27 +40,49 @@
 \newcommand{\armB}{\textsc{Baseline}}
 \newcommand{\E}{\mathbb{E}}
 
+\title{\textbf{Faces or Facts?}\\[2pt]
+\large Experimental Evidence on Time Pressure, Information Costs, and Gender Bias in Electoral Choice}
+\author{%
+\begin{tabular}{@{}c@{\hspace{0.02\textwidth}}c@{\hspace{0.02\textwidth}}c@{}}
+\begin{minipage}[t]{0.30\textwidth}
+\centering
+\textbf{Nayssa Alejandra Mar\'in D\'iaz}\\[-1pt]
+{\small Postdoctoral Researcher}\\[-1pt]
+{\small Universidad de O'Higgins}\\[-1pt]
+{\footnotesize\href{mailto:alejandra.marin@postdoc.uoh.cl}{\nolinkurl{alejandra.marin@postdoc.uoh.cl}}}
+\end{minipage}
+&
+\begin{minipage}[t]{0.30\textwidth}
+\centering
+\textbf{Andrea Canales}\\[-1pt]
+{\small Banco Central, Chile}\\[-1pt]
+{\footnotesize\href{mailto:andreacanalesg@gmail.com}{\nolinkurl{andreacanalesg@gmail.com}}}
+\end{minipage}
+&
+\begin{minipage}[t]{0.30\textwidth}
+\centering
+\textbf{H\'ector Bahamonde}\\[-1pt]
+{\small Senior Researcher}\\[-1pt]
+{\small University of Turku}\\[-1pt]
+{\footnotesize\href{mailto:hector.bahamonde@utu.fi}{\nolinkurl{hector.bahamonde@utu.fi}}}
+\end{minipage}
+\end{tabular}%
+}
+\date{Work in progress --- 1 October 2026}
+
 \begin{document}
 
-\begin{center}
-{\LARGE\bfseries Faces or Facts?}\par
-\vspace{1pt}
-{\large Experimental Evidence on Time Pressure, Information Costs, and Gender Bias in Electoral Choice}\par
-\vspace{3pt}
-{\normalsize Nayssa Alejandra Mar\'in D\'iaz \quad Andrea Canales \quad H\'ector Bahamonde}\par
-\vspace{1pt}
-{\small Design and analysis proposal --- work in progress --- 1 October 2026}
-\end{center}
-
-\vspace{-3pt}
-\noindent\colorbox{cyan}{\parbox{0.978\linewidth}{\small
-\textbf{Abstract.} Voters often see a candidate's face before they read a platform. Building on evidence that rapid visual impressions can predict election winners, we ask when time pressure and information costs displace political learning, and whether that displacement exposes women candidates to distinctive scrutiny. We field a three-arm online visual conjoint experiment using photographs and programmatic information from Colombian electoral data. Eligible adults outside Colombia complete five practice and fifteen consequential paired-profile choices. Respondents are assigned to a 10-second deadline, a cognitive cost for revealing political information, or an unconstrained baseline. Candidate pairs and left-right positions are randomized within respondents. We record vote choice, candidate-specific information reveals, response time, treatment exposure, and the complete candidate-source row shown in every task. The design identifies intention-to-treat effects of decision environments and causal effects of assigning complete candidate profiles. Because the attributes within a real candidate profile are not independently randomized, gender-, ideology-, and appearance-based contrasts describe bundled profiles rather than conventional attribute-level AMCEs.}}
+\maketitle
+\vspace{-1.5em}
+\begin{abstract}
+Voters often see a candidate's face before learning about the candidate's political positions. Building on evidence that rapid visual impressions predict electoral outcomes, we examine how time pressure and information costs shape political learning and whether these constraints produce distinct patterns of scrutiny for women candidates. We conduct a preregistered three-arm online visual conjoint experiment using photographs and political information drawn from Colombian electoral data. Eligible adults outside Colombia complete five practice and fifteen analytical paired-profile choices. Respondents are randomly assigned to make these choices under a 10-second deadline, an effort cost for accessing political information, or an unconstrained baseline. Candidate pairings, task order, and left-right placement are randomized within respondents. The experiment measures candidate choice, candidate-specific information acquisition, and decision time. It identifies intention-to-treat effects of the decision environment and causal effects of assigning complete candidate profiles. Because the attributes of real candidates are not independently randomized, analyses of gender, ideology, and appearance characterize heterogeneity across observed profile bundles rather than attribute-level average marginal component effects.
+\end{abstract}
 
 \section{Faces arrive before facts}
 
 Most political choices begin with a sequence so ordinary that it is easy to overlook: voters see a face before they read a platform. A visual impression arrives almost automatically, whereas learning a candidate's ideology and priorities requires time and effort. This ordering matters because judgments made from faces can form after exposures as brief as 100 milliseconds and predict real election outcomes (Todorov et al. 2005). The familiar contrast between ``faces'' and ``facts'' is therefore not merely rhetorical. It describes two sources of political judgment that become available at different speeds and costs.
 
-The relevant cognitive framework is dual processing, but not the claim that a stopwatch cleanly turns ``System 1'' on and ``System 2'' off. Type 1 processes are rapid and autonomous; Type 2 processes support hypothetical comparison and draw heavily on working memory (Evans and Stanovich 2013). Under time pressure, people adapt by accelerating processing, filtering cues, or substituting a simpler noncompensatory rule for effortful integration (Payne, Bettman, and Luce 1996; Rieskamp and Hoffrage 2008). Political learning follows the same basic logic. Candidate evaluations can be updated on-line as information is encountered, even when the facts supporting the resulting impression are poorly remembered (Lodge, McGraw, and Stroh 1989). A deadline therefore changes which evidence can enter the running evaluation; it does not directly reveal an otherwise unobservable cognitive ``system.''
+Time pressure matters because it changes how decision makers acquire and combine information before choosing. When time is scarce, people accelerate processing, filter cues, or substitute a simpler noncompensatory rule for effortful integration (Payne, Bettman, and Luce 1996; Rieskamp and Hoffrage 2008). Political learning follows the same basic logic. Candidate evaluations can be updated on-line as information is encountered, even when the facts supporting the resulting impression are poorly remembered (Lodge, McGraw, and Stroh 1989). A deadline can therefore alter which evidence enters the running evaluation and how extensively competing considerations are compared before a vote.
 
 Antonakis and Dalgas (2009) make this puzzle unusually concrete. After an imaginary voyage from Troy to Ithaca, Swiss children aged 5--13 were shown pairs of photographs from French parliamentary runoffs and asked whom they would choose as captain. Their choices predicted the actual winner with a probability of 0.71; adults' competence ratings predicted the winner with a probability of 0.72, and the child and adult response patterns were statistically indistinguishable. The participants did not need campaign knowledge, policy positions, or electoral experience to reproduce the electorate's ranking. As Antonakis and Dalgas put it, ``voters are anchored in first impressions and do not appropriately correct initial inferences'' (2009, 1183). Ballew and Todorov (2007) identify the speed of this process more directly: competence judgments after 100 or 250 milliseconds were as predictive as judgments made with unlimited exposure, and a two-second response deadline preserved predictive accuracy while instructions to deliberate lengthened response time and reduced it.
 
@@ -71,22 +92,30 @@ That finding is compelling, but it leaves the central decision process unobserve
 
 Candidate gender can shape not only the final vote but the path by which voters learn. Ditonto, Hamilton, and Redlawsk (2014) show that voters seek more competence-related and ``compassion issue'' information about women than men. Andersen and Ditonto (2020) further show that the amount of search triggered by a woman candidate depends on partisan alignment and is strongest early in a campaign. This is consequential because women are often required to provide stronger evidence of qualification: across survey experiments, voters applied more stringent qualification standards to women candidates (Bauer 2020). A photograph makes candidate gender immediately available before policy text is opened, exactly the sequence in which an early cue can organize subsequent search.
 
-The mechanism need not involve conscious hostility. Campaign communication can activate gender stereotypes that otherwise remain dormant (Bauer 2015), and rapid appearance-based inferences predict different outcomes by candidate gender: competence is most predictive in men-only races, whereas attractiveness predicts women-only races (Ditonto and Mattes 2018). Bahamonde and Sarpila (2024) likewise find a compounded penalty for working-class-looking women and weaker electoral returns to attractiveness for women than men. Recent work cautions against a universal penalty: eye-tracking evidence finds similar attention to stereotype-consistent and inconsistent information across candidate gender, suggesting that bias can arise from the standards applied to evidence rather than from attention alone (Jenke 2025), while think-aloud evidence shows both rapid gender heuristics and later gendered rationalizations (Rohrbach and Sch\"onhagen 2025). The empirical question is therefore not simply whether women lose. It is whether women profiles invite different information acquisition, whether constraints suppress potentially corrective learning, and whether the same evidence is translated into choice differently for women and men.
+The mechanism need not involve conscious hostility. Campaign communication can activate gender stereotypes that otherwise remain dormant (Bauer 2015), and rapid appearance-based inferences predict different outcomes by candidate gender: competence is most predictive in men-only races, whereas attractiveness predicts women-only races (Ditonto and Mattes 2018). Bahamonde and Sarpila (2024) likewise find a compounded penalty for working-class-looking women and weaker electoral returns to attractiveness for women than men. Recent work cautions against a universal penalty: eye-tracking evidence finds similar attention to stereotype-consistent and inconsistent information across candidate gender, suggesting that bias can arise from the standards applied to evidence rather than from attention alone (Jenke 2025), while think-aloud evidence shows both rapid gender heuristics and later gendered rationalizations (Rohrbach and Sch\"onhagen 2025). The empirical question is therefore not simply whether women lose. It is whether profiles of women candidates invite different patterns of information acquisition, whether constraints suppress potentially corrective learning, and whether the same evidence is translated into choice differently for women and men.
 
-Our experiment turns these predictive and gendered puzzles into a causal process test. Every respondent sees the same visual choice, but we randomize whether decisions occur under a 10-second deadline, whether political information carries an effort cost, or whether neither constraint applies. We observe not only whom respondents choose, but whether they request ideological and programmatic information for each woman or man profile before choosing. The contribution is to locate inequality in the sequence from first impression, to information acquisition, to choice. Methodologically, the study combines temporal scarcity and information cost with click-level process measurement and repeated choices between profiles assembled from Colombian electoral data. Standard conjoint AMCEs require independently randomized attribute levels (Hainmueller, Hopkins, and Yamamoto 2014); because photograph, gender, ideology, electoral history, and facial measurements travel together here, primary causal claims concern the randomized decision environment and assigned \emph{whole profiles}, while component-feature analyses remain secondary.
+Taken together, these findings motivate a design that follows the decision process from initial exposure to information acquisition and, ultimately, choice. Every respondent encounters the same paired-candidate task, while random assignment determines whether the choice occurs under a 10-second deadline, whether political information is costly to access, or whether neither constraint applies. Candidate-specific information requests reveal whether these constraints alter both the amount and the gendered distribution of political learning. The study thus locates inequality within a sequence---from first impression, to information acquisition, to choice---rather than only in the final vote. Methodologically, it combines randomized time and effort constraints with behavioral measures of information acquisition and repeated choices between profiles constructed from Colombian electoral data.\footnote{The experiment was preregistered before implementation in the AEA RCT Registry: AEARCTR-0017574. https://doi.org/10.1257/rct.17574-1.3. IRB Approval Number 086-2025.} Standard conjoint average marginal component effects require independently randomized attributes (Hainmueller, Hopkins, and Yamamoto 2014). Here, photographs, gender, ideology, electoral history, and facial characteristics remain bundled within real candidate profiles. The primary causal claims therefore concern the randomized decision environment and the assignment of complete profiles; analyses of individual profile characteristics assess heterogeneity in those effects.
 
-\section{Design and implementation}
+The first contribution is to recast appearance-based voting as a problem of information acquisition and evidence integration rather than simply an association between facial impressions and electoral choice. The same observed vote can emerge from several distinct processes: a voter may never consult political information, may inspect only one candidate's positions, may examine both candidates yet retain the initial visual ranking, or may use programmatic evidence to revise that ranking. These paths carry different theoretical and practical implications, but studies that observe only trait judgments or final votes cannot distinguish among them. By measuring candidate-specific information requests, decision time, and choice across repeated tasks, the experiment separates the decision to acquire political information from the electoral decision made in its presence or absence. The comparison among a deadline, an access cost, and an unconstrained baseline then reveals whether temporal and effort constraints reduce learning altogether, make learning asymmetric across candidates, or alter choice even when average acquisition changes little. The design therefore moves beyond showing that faces matter: it identifies the decision environments under which voters acquire evidence capable of supplementing an initial visual impression and estimates whether those environments alter candidate choice.
 
-\textbf{Population and screening.} The planned sample is 462 adults aged 18--65, balanced across men and women and allocated approximately equally across the three arms ($154$ per arm). To minimize recognition and prior Colombian political knowledge, respondents must neither be Colombian nationals nor currently reside in Colombia, and must report never having lived in Colombia. Residence, nationality, and prior residence are asked sequentially so that an ineligible person exits immediately. Age, gender identity, occupation, education, turnout, political interest, discussion frequency, and left-right self-placement are then collected on one page.
+The second contribution is to connect this process account to gender inequality in candidate evaluation. More extensive information search about women candidates may reflect genuine openness to learning, but it may also indicate that women must supply additional evidence before voters regard them as qualified; conversely, limited search may signal either confidence or exclusion from serious consideration (Ditonto, Hamilton, and Redlawsk 2014; Bauer 2020). A gender difference in information acquisition therefore has no invariant meaning apart from the conditions under which it arises and the choices that follow it. Randomizing the decision environment supplies the relevant leverage. If the difference between women and men candidates expands, contracts, or reverses under time pressure or costly access, the experiment identifies how those constraints redistribute scrutiny across fixed profile groups, without treating candidate gender as independently randomized. Linking candidate-specific acquisition to candidate selection further documents whether unequal scrutiny is accompanied by unequal electoral returns. This contribution is consequential beyond the experimental interface: campaigns, ballot environments, and digital information platforms routinely vary in the time and effort they require from voters. Establishing whether such frictions place unequal informational burdens on women candidates connects a micro-level process of political learning to broader inequalities in evaluation and representation.
 
-\textbf{Stimuli and repeated choice.} The deployed candidate pool contains 71 profiles with nonmissing programmatic text in \texttt{base\_final\_merged.csv}. Each respondent receives 40 distinct profile assignments---two per round---randomized without replacement into five practice and fifteen analysis rounds. Within each round, the pair and left-right placement are randomized. A profile shows the candidate photograph and a button that can reveal the Spanish \texttt{Texto} field (ideology plus policy priorities). The binary outcome is the selected candidate. Fifteen main tasks are defensible in light of experimental evidence that substantially larger conjoint batteries produce only limited average satisficing in comparable online settings (Bansak et al. 2018); practice rounds are excluded from confirmatory estimates.
+\section{Research design}
+
+\subsection{Sample and eligibility}
+
+The planned sample consists of 462 adults aged 18--65, balanced across men and women and allocated approximately equally across the three experimental conditions ($154$ per condition). To minimize candidate recognition and prior knowledge of Colombian politics, respondents must not be Colombian nationals, reside in Colombia, or have previously lived in Colombia. Eligibility is assessed before treatment assignment. The pretreatment questionnaire measures age, gender identity, occupation, education, electoral participation, political interest, frequency of political discussion, and ideological self-placement.
+
+\subsection{Stimuli and repeated choice}
+
+After the pretreatment questionnaire, respondents complete repeated paired choices drawn from 71 Colombian candidate profiles for which a photograph and programmatic information are available. For each respondent, 40 profiles are sampled without replacement and randomly ordered. Consecutive profiles form 20 pairs, randomizing both pair composition and task order. The first five pairs are used for practice, and the remaining fifteen constitute the analytical sample. Within each task, the two candidates are independently assigned to the left and right positions. No candidate therefore appears more than once for the same respondent, although candidates can appear for different respondents. Each profile initially presents a photograph; respondents may then access a brief description of the candidate's ideological orientation and principal policy priorities before selecting one of the two candidates. Experimental evidence from comparable online conjoint studies indicates that substantially longer task batteries generate only limited average satisficing (Bansak et al. 2018). The five practice rounds allow respondents to learn the choice procedure and are excluded from the analytical sample.
 
 \begin{figure}[h!]
 \centering
 \begin{minipage}[t]{0.475\linewidth}
 \centering
 \includegraphics[width=\linewidth,height=1.88in,keepaspectratio]{visual_conjoint_task_example.jpg}
-\caption*{\textbf{A. Task interface.} A live oTree task using Colombian candidate photographs; the left profile's programmatic text has been revealed.}
+\caption*{\textbf{A. Example choice task.} Respondents compare two Colombian candidates and may request programmatic information before choosing; information for the candidate on the left is shown here.}
 \end{minipage}\hfill
 \begin{minipage}[t]{0.50\linewidth}
 \centering
@@ -98,14 +127,14 @@ Our experiment turns these predictive and gendered puzzles into a causal process
   arr/.style={-{Latex[length=2mm]},thick,draw=ink}
 ]
 \node[box] (screen) {Consent and sequential eligibility screening};
-\node[box,below=of screen] (survey) {One-page baseline questionnaire};
+\node[box,below=of screen] (survey) {Pretreatment questionnaire};
 \node[box,below=of survey] (rand) {Respondent-level random assignment ($Z_i$)};
 \node[arm,below left=5mm and -2mm of rand] (time) {\armT\\10-second deadline};
-\node[arm,below=5mm of rand] (cost) {\armC\\arithmetic reveal cost};
-\node[arm,below right=5mm and -2mm of rand] (base) {\armB\\free reveal, no timer};
+\node[arm,below=5mm of rand] (cost) {\armC\\arithmetic access cost};
+\node[arm,below right=5mm and -2mm of rand] (base) {\armB\\free access, no deadline};
 \node[box,below=17mm of rand] (practice) {5 practice paired-profile choices};
 \node[box,below=of practice] (main) {15 main paired-profile choices\\random pair and left-right position};
-\node[box,below=of main] (follow) {Choice, clicks, latency, timeout, follow-up measures};
+\node[box,below=of main] (follow) {Choice, information acquisition, decision time, and follow-up measures};
 \draw[arr] (screen)--(survey);
 \draw[arr] (survey)--(rand);
 \draw[arr] (rand)--(time);
@@ -118,69 +147,113 @@ Our experiment turns these predictive and gendered puzzles into a causal process
 \draw[arr] (main)--(follow);
 \end{tikzpicture}%
 }
-\caption*{\textbf{B. Assignment and measurement.} Treatment is fixed by respondent; profile pairing and side are rerandomized by round.}
+\caption*{\textbf{B. Assignment and measurement.} Treatment is fixed by respondent. Each respondent receives an independent 40-profile sequence sampled without replacement, divided into consecutive pairs; left-right placement is randomized within every task.}
 \end{minipage}
+\caption{Experimental sequence and example choice task.}
+\label{fig:design}
 \vspace{-6pt}
 \end{figure}
 
-\textbf{Experimental arms.} Let $Z_i\in\{T,C,B\}$ denote assignment. In \armT, each task has a visible 10-second countdown; information can otherwise be revealed freely. In \armC, there is no task deadline, but revealing a profile's text requires solving a simple arithmetic challenge. In \armB, there is neither a timer nor an arithmetic barrier, and the same text is available through the reveal button. The interface, candidate pool, task count, and choice prompt are otherwise held constant. The current design randomizes arms with equal probability at the respondent level.
+After each analytical task, respondents report whether they would support the selected candidate in a real election. Those answering affirmatively identify the principal considerations underlying their choice. The order of these response options is randomized within tasks, with ``Otra raz\'on'' always placed last. Appearance-related considerations are available to all respondents, whereas ideology and policy priorities are listed only when the respondent accessed programmatic information. Additional items measure perceived time pressure in the \armT\ condition and perceived effort in the \armC\ condition.
 
-\pagebreak
-\textbf{What the ten-second deadline manipulates.} The cutoff is a theory-guided operational choice, not a universal boundary between intuition and deliberation. Political-face studies show that election-predictive impressions are already available after 100--250 milliseconds and remain predictive under a two-second response deadline (Ballew and Todorov 2007). At the other end of the decision, a voting experiment found mean response times of 16.63 seconds without opportunity time costs and 5.67 seconds when every additional second was costly; the latter condition also reduced deliberative strategic voting (Al\'os-Ferrer and Garagnani 2022). Those tasks are not numerically interchangeable with ours, but together they establish a useful range: faces can supply a choice-relevant cue almost immediately, whereas politically informed comparison occupies a longer interval. More generally, time pressure produces selective search, cue-wise processing, and lexicographic rather than fully compensatory integration (Payne, Bettman, and Luce 1996; Rieskamp and Hoffrage 2008). Our treatment therefore manipulates \emph{temporal scarcity in evidence acquisition}; it does not directly assign or measure ``System 1.''
+\subsection{Experimental conditions}
 
-\textbf{Why ten rather than two or approximately seventeen seconds.} The value is also tied to the geometry of the implemented task. Across the 71 usable Colombian candidate profiles, each Spanish description contains 10--17 words (median 14). Reading both median-length texts requires processing 28 words, in addition to inspecting two photographs, making two reveal decisions, comparing the information, and registering a vote. Meta-analytic adult silent-reading benchmarks are roughly 238 words per minute for English nonfiction and about 278 words per minute across the available Spanish studies (Brysbaert 2019). At those rates, reading 28 words alone takes approximately 6.0--7.1 seconds; the clicks, visual orientation, comparison, and choice consume additional time. This calculation is a descriptive benchmark, not an assumption that every respondent reads at the same speed. A two-second limit would make information acquisition nearly impossible and collapse the treatment toward a face-only task. A limit near the 16.63-second unconstrained voting mean would leave substantially more room for exhaustive search. Ten seconds is deliberately intermediate: it preserves a genuine opportunity to reveal and use at least one description, while making the revelation and integration of both descriptions costly.
+Let $Z_i\in\{T,C,B\}$ denote assignment to one of three decision environments. In \armT, each task includes a visible 10-second countdown, while programmatic information remains freely available. In \armC, there is no deadline, but accessing a candidate's political information requires solving a simple arithmetic problem. In \armB, there is neither a deadline nor an arithmetic barrier. Assignment occurs with equal probability at the respondent level; the candidates, number of tasks, and choice prompt are otherwise held constant. This structure distinguishes two constraints on political learning: \armT\ limits the time available to acquire and integrate information, whereas \armC\ increases the effort required to obtain it.
 
-\textbf{Pilot validation and decision rule.} The exact cutoff will be validated in a discarded pilot before outcome analysis. We will compare the timer and baseline arms on median decision time, the probability of revealing any text, the probability of revealing both texts, and timeout. The cutoff will be retained only if it (i) shortens decisions, (ii) reduces exhaustive two-profile revelation, (iii) leaves nondegenerate variation in whether at least one profile is revealed, and (iv) does not generate an excessive timeout rate. Operational thresholds for these four criteria will be written before inspecting the pilot. If ten seconds fails them, the interface will be recalibrated in the discarded pilot, and the final value will be frozen in the preregistration before production data are collected. The confirmatory estimand is therefore the intention-to-treat effect of the pre-specified ten-second environment, not the effect of an unobserved cognitive state.
+\subsection{Temporal scarcity and deadline calibration}
 
-\textbf{Recorded data and reproducibility.} Each task row stores arm, round, side assignment, displayed and chosen IDs, latency, timer status, candidate-specific reveals, total clicks, and follow-up responses. It also stores each candidate's complete 41-column source record---including gender, age, party, political text, geography, votes, and facial measures---as explicit left/right variables and a lossless JSON snapshot. Every choice remains reconstructable if the source file changes.
+The time treatment requires a deadline that constrains information acquisition without eliminating it. Accordingly, the 10-second cutoff operationalizes temporal scarcity in the acquisition and integration of candidate information. Political-face studies establish the lower end of the relevant decision interval: election-predictive impressions are available after 100--250 milliseconds and remain predictive under a two-second response deadline (Ballew and Todorov 2007). Because these visual cues are available almost immediately, a deadline need not prevent a facial judgment in order to alter the subsequent decision process. Instead, it can reduce the opportunity to supplement that initial impression with programmatic evidence.
 
-\section{Potential outcomes, estimands, and hypotheses}
+Evidence from voting under opportunity time costs provides a complementary benchmark for the duration of more deliberative choice. Mean response time fell from 16.63 seconds without an opportunity cost to 5.67 seconds when each additional second was costly, and the latter condition also reduced strategic voting (Al\'os-Ferrer and Garagnani 2022). Although those tasks are not numerically interchangeable with ours, the contrast places the experimental deadline within a theoretically relevant interval: faces can supply a choice-relevant cue almost immediately, whereas politically informed comparison requires additional time. This interpretation is also consistent with evidence that time pressure shifts decision makers toward selective search, cue-wise processing, and lexicographic rather than fully compensatory integration (Payne, Bettman, and Luce 1996; Rieskamp and Hoffrage 2008). The treatment is therefore defined narrowly as \emph{temporal scarcity in evidence acquisition and integration}.
 
-For respondent $i$ in main task $t$, let $P_{it}=(C^L_{it},C^R_{it})$ denote the ordered candidate pair. Let $Y_{it}(z,p)\in\{0,1\}$ equal one if the left candidate would be selected under arm $z$ and ordered pair $p$. Let $M^s_{it}(z,p)$ indicate whether information for side $s\in\{L,R\}$ would be revealed; $K_{it}(z,p)$ is the total number of reveal clicks; $D_{it}(z,p)$ is decision time; and $Q_{it}(z,p)$ denotes timeout or item nonresponse. Random assignment of $Z_i$ identifies arm-level intention-to-treat effects, for example
+The content of the choice task further determines where within this interval the deadline should fall. Across the 71 Colombian candidate profiles, each Spanish description contains 10--17 words, with a median of 14. Reading both median-length descriptions therefore requires processing 28 words, in addition to inspecting two photographs, choosing whether to request political information, comparing the candidates, and registering a vote. Meta-analytic benchmarks place adult silent reading at roughly 238 words per minute for English nonfiction and about 278 words per minute across the available Spanish studies (Brysbaert 2019). At those rates, reading the two descriptions alone takes approximately 6.0--7.1 seconds; visual orientation, information acquisition, comparison, and choice require additional time. These figures are descriptive benchmarks rather than an assumption of uniform reading speed, but they clarify the design tradeoff. A two-second deadline would make programmatic information acquisition nearly impossible and would approximate a face-only task. Conversely, a deadline near the 16.63-second unconstrained voting mean would permit substantially more exhaustive search. Ten seconds occupies the theoretically useful space between these extremes: it preserves a meaningful opportunity to access and use at least one description while making acquisition and integration of both descriptions costly.
+
+Because reading-rate benchmarks cannot establish how respondents will perform the task, the deadline will also be assessed in a separate pilot that will not enter the main analysis. We will compare the \armT\ and \armB\ conditions on median decision time, the probability of accessing information about either candidate, the probability of accessing information about both candidates, and the rate of nonresponse before the deadline. Ten seconds will be retained only if it (i) shortens decisions, (ii) reduces exhaustive information acquisition, (iii) preserves meaningful variation in whether respondents consult at least one description, and (iv) does not produce excessive nonresponse. Thresholds for these criteria will be established before examining the pilot results. If the cutoff fails these criteria, it will be revised using the pilot alone and fixed before the study begins. The resulting intention-to-treat estimand will therefore capture the effect of the final decision environment.
+
+\subsection{Outcomes and measurement}
+
+The primary outcomes are candidate choice, whether any programmatic information is consulted, the number of candidate descriptions consulted, decision time capped at a common ten-second window, and failure to register a choice within that window. Candidate-specific information acquisition permits tests of gendered scrutiny. Terminal timeout is retained as a separate implementation outcome. Post-choice measures capture whether respondents would support the selected candidate in a real election and which considerations they report using. The candidate profiles include gender, age, party affiliation, geographic constituency, electoral performance, political information, and previously measured facial characteristics. Recording the alternatives and information available in each task allows us to distinguish treatment effects on information acquisition from treatment effects on the eventual choice.
+
+\section{Potential outcomes and estimands}
+
+\subsection{Notation and common averaging distribution}
+
+For eligible respondent $i$ in analytical task $t$, let $Z_i\in\{T,C,B\}$ denote the assigned decision environment and let $P_{it}=(C^L_{it},C^R_{it})$ denote the ordered candidate pair. For side $s\in\{L,R\}$, define $M^s_{it}(z,p)\in\{0,1\}$ as the potential indicator that the respondent consults programmatic information about the candidate on side $s$ under environment $z$ and pair $p$. Aggregate information acquisition is defined explicitly as
 \[
-\tau^{M}_{zB}=\E\!\left[M_{it}(z,P_{it})-M_{it}(B,P_{it})\right],\quad
-\tau^{D}_{zB}=\E\!\left[D_{it}(z,P_{it})-D_{it}(B,P_{it})\right],
+K_{it}(z,p)=M^L_{it}(z,p)+M^R_{it}(z,p),\quad
+A_{it}(z,p)=\mathbf 1\{K_{it}(z,p)\geq 1\},\quad
+X_{it}(z,p)=\mathbf 1\{K_{it}(z,p)=2\}.
 \]
-with analogous effects for $K$, $Q$, and pre-specified choice summaries. Because revealing information occurs after treatment, $M$ is itself an outcome/mediator. Conditioning outcome models on observed clicks would generally induce post-treatment bias; any mediation analysis will be labeled exploratory and will require additional assumptions.
+Thus, $K$ is the number of descriptions consulted, $A$ indicates any information acquisition, and $X$ indicates exhaustive acquisition of both descriptions.
 
-Random pairing identifies profile-level choice probabilities. For candidate profile $c$, define
+Let $T^*_{it}(z,p)$ denote seconds from task presentation to the first registered candidate choice. To place all conditions on a common observation window, define capped decision time $D^{10}_{it}(z,p)=\min\{T^*_{it}(z,p),10\}$ and slow or absent choice $S^{10}_{it}(z,p)=\mathbf 1\{T^*_{it}(z,p)>10\}$. If no choice is registered within ten seconds, $D^{10}$ is set to 10 and $S^{10}$ to one. Let $Q_{it}(z,p)$ indicate that a task terminates without any registered choice. This terminal timeout is possible under \armT; in the other conditions the task requires a choice before submission. $S^{10}$ is therefore the comparable measure of failure to choose within ten seconds across all conditions, whereas $Q$ captures the design-specific loss of a choice outcome.
+
+Candidate choice is defined without privileging the randomized left position. For each displayed side, let
 \[
-\theta_c(z)=\E_{C',S}\bigl[\mathbf 1\{c\text{ is chosen}\}\mid c\text{ is displayed with random rival }C'\text{ on side }S,\,Z_i=z\bigr].
+Y^s_{it}(z,p)=\mathbf 1\{C^s_{it}\text{ is selected before the task terminates}\}.
 \]
-Contrasts $\theta_c(z)-\theta_{c'}(z)$ compare complete profiles under the same environment; $[\theta_c(z)-\theta_c(B)]$ describes how an environment changes profile $c$'s performance. Candidate gender, ideology, and facial geometry are fixed components of $c$, not separately assigned attributes. A woman--man contrast therefore compares the observed profile bundles, not gender while holding appearance and biography constant.
+When a choice is registered, $Y^L_{it}+Y^R_{it}=1$; when $Q_{it}=1$, both candidate-level outcomes equal zero. The latter convention makes $Y^s$ the intention-to-treat probability that a displayed profile is selected under the assigned decision environment rather than an outcome defined only among respondents who completed the choice.
 
-Candidate-specific clicks permit a direct test of gendered scrutiny. Let $G(c)=1$ denote a profile coded as a woman and define, over randomized displays and sides,
+Unless otherwise stated, expectations weight eligible respondents and the fifteen analytical tasks equally and average over the randomized candidate draw, pairing, task order, and left-right assignment. Practice tasks are excluded. Comparisons between $z\in\{T,C\}$ and \armB\ are respondent-level intention-to-treat effects.
+
+\subsection{Effects of the decision environment}
+
+For each task-level outcome $R\in\{A,K,X,D^{10},S^{10}\}$, define
 \[
-\mu^M_g(z)=\E\!\left[M^s_{it}\mid G(C^s_{it})=g,Z_i=z\right],\qquad
-\Gamma_M(z)=\mu^M_1(z)-\mu^M_0(z),\qquad
-\Psi_M(z)=\Gamma_M(z)-\Gamma_M(B).
+\tau^R_{zB}=\E\!\left[R_{it}(z,P_{it})-R_{it}(B,P_{it})\right],
+\qquad z\in\{T,C\}.
 \]
-$\Gamma_M(B)$ is the unconstrained woman--man profile-bundle difference in revelation; $\Psi_M(z)$ is its treatment-induced change. Analogous $\Gamma_Y(z)$ quantities compare choice. Because $G(c)$ is not independently randomized, these are gender-indexed bundle contrasts; the causal object is the effect of environment on how the fixed profile distribution is searched and chosen.
+The terminal-timeout effect is defined separately as $\tau^Q_{TB}=\E[Q_{it}(T,P_{it})-Q_{it}(B,P_{it})]$ because forced task termination exists only in \armT. These estimands capture how temporal scarcity and information cost change information acquisition, decision speed, and response completion. Information acquisition is also a potential mediator of candidate choice. Because it occurs after treatment, models that condition choice on realized information acquisition do not identify a controlled or natural direct effect without additional assumptions; mediation analyses are therefore interpreted cautiously and do not carry a direct-effect interpretation.
 
-The confirmatory expectations are:
-\begin{enumerate}
-\item \textbf{Information acquisition:} relative to \armB, both \armT\ and \armC\ reduce the probability of revealing programmatic text and the number of reveals; \armT\ also reduces decision time and increases timeout risk.
-\item \textbf{Visual reliance:} constrained environments increase the association between visually salient candidate features and choice while weakening the association between the revealed programmatic text and choice. This is a treatment-by-profile-feature heterogeneity claim, not an attribute-level AMCE.
-\item \textbf{Gendered scrutiny:} in \armB, programmatic information is revealed more often for women-profile bundles than for men-profile bundles, $\Gamma_M(B)>0$, consistent with a higher evidentiary threshold for women candidates.
-\item \textbf{Constraints and gendered choice:} constraints attenuate candidate-gender differences in search while increasing the absolute woman--man profile-bundle choice gap by making appearance-based defaults harder to correct. Its direction remains two-sided because prior research finds both penalties and advantages for women.
-\item \textbf{Congruence:} when political text is revealed, respondents more often select profiles whose ideological and policy content is closer to their own placement; the association is attenuated in the constrained arms.
-\end{enumerate}
+Randomized pairing and position also identify side-neutral profile-selection probabilities. For complete candidate profile $c$, define
+\[
+\theta_c(z)=\E\!\left[Y^s_{it}(z,P_{it})\mid C^s_{it}=c\right],\qquad
+\Delta_c(z)=\theta_c(z)-\theta_c(B).
+\]
+The expectation averages over respondents, tasks, randomized rivals, and side. $\Delta_c(z)$ is the causal effect of the decision environment on the probability that profile $c$ is selected when displayed. Contrasts $\theta_c(z)-\theta_{c'}(z)$ compare randomly assigned complete profiles under the same environment. They do not isolate gender, ideology, party, or facial characteristics because those attributes remain bundled within each observed candidate.
 
-\section{Analysis, diagnostics, and contribution}
+\subsection{Gendered information acquisition and choice}
 
-Primary analyses use respondent-task rows from the fifteen main rounds. For each process outcome, we estimate arm means and ITT differences with respondent-clustered standard errors and randomization-inference or respondent-level bootstrap intervals. Binary outcomes use linear probability models for transparent marginal effects; duration models will pre-specify handling of timer-censored trials. Candidate-specific reveal models use the displayed profile-side as the unit, with arm indicators, profile-gender indicators, their interactions, and side and round controls. We report arm-specific $\mu_g^M(z)$, $\Gamma_M(z)$, and $\Psi_M(z)$ with respondent- and profile-aware uncertainty. Profile choice probabilities use side and round controls and profile-level precision reporting. Models of profile features will include treatment interactions and will be labeled as bundle heterogeneity unless supported by a separately randomized attribute manipulation. Candidate-level dependence will be assessed with crossed respondent/profile random intercepts or multiway clustering as a robustness check.
+Let $G(c)=1$ denote a profile coded as a woman. For $R\in\{M,Y\}$, define the candidate-level mean, gender-indexed contrast, and treatment-induced change as
+\[
+\mu^R_g(z)=\E\!\left[R^s_{it}(z,P_{it})\mid G(C^s_{it})=g\right],\quad
+\Gamma_R(z)=\mu^R_1(z)-\mu^R_0(z),\quad
+\Psi_R(z)=\Gamma_R(z)-\Gamma_R(B).
+\]
+$\Gamma_M(z)$ compares the probability of consulting political information about women and men candidates, while $\Gamma_Y(z)$ compares their probability of selection. The corresponding $\Psi_M(z)$ and $\Psi_Y(z)$ estimands identify how random assignment to a constrained decision environment changes each gender-indexed contrast. Candidate gender is not independently randomized, so $\Gamma_M(z)$ and $\Gamma_Y(z)$ compare complete profiles grouped by gender and are not causal effects of gender. The causal interpretation of $\Psi_M(z)$ and $\Psi_Y(z)$ is limited to the effect of the randomized environment on those fixed profile-group differences.
 
-Balance checks cover baseline covariates and the distribution of candidate profiles/positions across arms. Manipulation checks compare median duration, timeout, arithmetic completion, any-profile revelation, and two-profile revelation. We will report attrition and exclusion by arm, keep screened-out cases separate from experimental outcomes, test practice-to-main learning, inspect order trends, and adjust within pre-specified outcome families for multiple comparisons. Candidate-gender analyses will distinguish candidate gender from respondent gender; respondent-gender and political-sophistication moderation will be secondary unless separately pre-specified. Small subgroups will be reported with uncertainty rather than dichotomous significance claims. Before launch, we will freeze the timer, candidate file, codebook, hypotheses, exclusion rules, and analysis script; pilot records will be deleted and the production database initialized once.
+\subsection{Hypotheses and analytical priorities}
 
-The study's central contribution is causal but deliberately bounded. It can show whether randomized constraints change information seeking and profile choice; whether those constraints alter the scrutiny of women-profile bundles; and whether entire candidate profiles fare differently across environments. It cannot, in its current bundled-profile form, claim that a single face metric, gender label, party, or ideology caused the difference. Nor do reveal clicks alone identify an unconscious mechanism: they locate an observable stage at which unequal processing may emerge. This distinction turns a visually rich field-like task into a credible causal design while retaining the contextual value of Colombian candidate data. A later extension could orthogonally randomize labels or policy text across validated, synthetic faces to identify conventional AMCEs and isolate individual mechanisms.
+The \textbf{primary process family} consists of $\tau^A_{zB}$, $\tau^K_{zB}$, $\tau^{D^{10}}_{zB}$, and $\tau^{S^{10}}_{zB}$ for $z\in\{T,C\}$. The \textbf{primary causal gender family} consists of $\Psi_M(T)$, $\Psi_M(C)$, $\Psi_Y(T)$, and $\Psi_Y(C)$. The baseline contrasts $\Gamma_M(B)$ and $\Gamma_Y(B)$ form a separate descriptive family because candidate gender is not independently assigned. Hypothesis tests are two-sided even where theory implies a direction.
 
+The hypotheses are: (H1) both constrained conditions reduce any information acquisition and the number of descriptions consulted, $\tau^A_{zB}<0$ and $\tau^K_{zB}<0$; (H2) \armT\ reduces capped decision time, $\tau^{D^{10}}_{TB}<0$, while effects on $S^{10}$ and the timing effects of \armC\ are tested without directional restrictions; (H3) under \armB, respondents consult information more often for profiles of women candidates, $\Gamma_M(B)>0$, and both constraints attenuate this difference, $\Psi_M(T)<0$ and $\Psi_M(C)<0$; and (H4) $\Psi_Y(T)$ and $\Psi_Y(C)$ differ from zero, with their signs left open because prior work implies both potential penalties and advantages for women candidates.
+
+\textbf{Additional estimands} include exhaustive information acquisition $X$, terminal timeout $Q$, profile-specific $\theta_c(z)$ and $\Delta_c(z)$, the real-election support item, self-reported time pressure and information cost, ideological congruence, associations between choice and other candidate characteristics, and moderation by respondent gender or political sophistication. \textbf{Additional analyses} examine mediation through information acquisition, models conditioned on realized information acquisition or completed choice, high-dimensional profile interactions, decision-factor responses, and subgroup variation. Because these analyses require further assumptions or extend beyond the central hypotheses, they will be interpreted separately from the primary tests.
+
+\subsection{Timeout and missing-data rules}
+
+All information requests made before a timeout remain observed and contribute to $M^s$, $A$, $K$, and $X$. A task with no choice within ten seconds receives $D^{10}=10$ and $S^{10}=1$. If the \armT\ task then terminates without a registered candidate choice, $Q=1$ and $Y^L=Y^R=0$. Post-choice outcomes are undefined for such a task and will not be imputed. Analyses restricted to tasks with $Q=0$ will be reported only as secondary sensitivity analyses because completion is affected by treatment. Withdrawal or abandonment before task submission will remain missing rather than being recoded as a timeout; the number of analytical tasks completed and study attrition will be reported by condition. No other primary outcome will be imputed.
+
+\section{Estimation strategy}
+
+The analysis population includes all eligible randomized respondents who begin the experimental task sequence; no respondent will be excluded because of post-assignment behavior. Submitted analytical tasks contribute to the task-level outcomes, while unsubmitted tasks remain missing and contribute to the attrition analysis. Outcomes $A$, $K$, $D^{10}$, and $S^{10}$ will be estimated using linear models with indicators for \armT\ and \armC; the coefficients are the corresponding unadjusted intention-to-treat differences from \armB. Standard errors will be clustered by respondent. Covariate-adjusted specifications using pretreatment characteristics and task-order indicators will be reported as precision-adjusted robustness checks rather than replacing the unadjusted estimates.
+
+Candidate-level analyses use two observations per submitted task, one for each displayed candidate. Linear probability models for $M^s$ and $Y^s$ include treatment indicators, candidate gender, treatment-by-gender interactions, randomized side, and task-order indicators. The interaction coefficients estimate $\Psi_M(z)$ and $\Psi_Y(z)$. Primary uncertainty for these models will use two-way clustering by respondent and candidate; respondent-clustered estimates and crossed random-intercept models will be reported as robustness checks. Profile-specific selection probabilities will be presented with multiplicity-adjusted uncertainty and will not be interpreted as attribute-level average marginal component effects.
+
+Within the primary process and causal gender families, two-sided $p$-values will be adjusted separately by Holm's sequential procedure. The two baseline gender contrasts constitute a third, descriptive multiplicity family. Unadjusted estimates with 95\% confidence intervals will also be reported. Balance checks assess pretreatment covariates and the randomized distribution of candidate profiles and positions across conditions. Manipulation checks compare arithmetic-problem completion, information acquisition, $D^{10}$, $S^{10}$, and $Q$. We will report screening, attrition, and task completion by condition; examine practice-to-analysis learning and task-order patterns; and distinguish candidate gender from respondent gender throughout. The analysis will follow the treatment definition, pilot decision, sample, estimands, hypotheses, exclusion rules, timeout coding, multiplicity adjustments, and estimation procedures described above.
+
+\section{Discussion}
+
+The experiment identifies whether randomized constraints alter political information acquisition, candidate choice, and the scrutiny applied to women candidates. Because gender, ideology, party, and facial characteristics remain bundled within observed candidates, these comparisons capture heterogeneity across naturally occurring profiles rather than isolated attribute effects. Observed information acquisition locates a stage at which unequal evaluation may emerge but does not, by itself, establish an unconscious psychological mechanism. Combining randomized decision environments, repeated choices, and behavioral measures of political learning connects appearance-based judgment to the acquisition and use of substantive information in the Colombian electoral context.
+
+\enlargethispage{\baselineskip}
 \section{References}
 
 {\footnotesize
 \begin{list}{}{%
   \setlength{\leftmargin}{1.5em}%
   \setlength{\itemindent}{-1.5em}%
-  \setlength{\itemsep}{1pt}%
+  \setlength{\itemsep}{0pt}%
   \setlength{\parsep}{0pt}%
   \setlength{\topsep}{1pt}%
 }
@@ -210,8 +283,6 @@ The study's central contribution is causal but deliberately bounded. It can show
 
 \item Ditonto, T., \& Mattes, K. (2018). Differences in appearance-based trait inferences for male and female political candidates. \emph{Journal of Women, Politics \& Policy, 39}(4), 430--450. \url{https://doi.org/10.1080/1554477X.2018.1506206}
 
-\item Evans, J. St. B. T., \& Stanovich, K. E. (2013). Dual-process theories of higher cognition: Advancing the debate. \emph{Perspectives on Psychological Science, 8}(3), 223--241. \url{https://doi.org/10.1177/1745691612460685}
-
 \item Hainmueller, J., Hopkins, D. J., \& Yamamoto, T. (2014). Causal inference in conjoint analysis: Understanding multidimensional choices via stated preference experiments. \emph{Political Analysis, 22}(1), 1--30. \url{https://doi.org/10.1093/pan/mpt024}
 
 \item Herrmann, M., \& Shikano, S. (2016). Attractiveness and facial competence bias face-based inferences of candidate ideology. \emph{Political Psychology, 37}(3), 401--417.
@@ -223,6 +294,8 @@ The study's central contribution is causal but deliberately bounded. It can show
 \item Lenz, G. S., \& Lawson, C. (2011). Looking the part: Television leads less informed citizens to vote based on candidates' appearance. \emph{American Journal of Political Science, 55}(3), 574--589.
 
 \item Lodge, M., McGraw, K. M., \& Stroh, P. (1989). An impression-driven model of candidate evaluation. \emph{American Political Science Review, 83}(2), 399--419. \url{https://doi.org/10.2307/1962397}
+
+\item Mar\'in, A., Bahamonde, H., \& Canales, A. (2026). \emph{Faces or Facts? Experimental Evidence on Time Pressure, Information Costs, and Gender Bias in Electoral Choice}. AEA RCT Registry, AEARCTR-0017574. \url{https://doi.org/10.1257/rct.17574-1.3}
 
 \item Mattes, K., Spezio, M., Kim, H., Todorov, A., Adolphs, R., \& Alvarez, R. M. (2010). Predicting election outcomes from positive and negative trait assessments of candidate images. \emph{Political Psychology, 31}(1), 41--58.
 

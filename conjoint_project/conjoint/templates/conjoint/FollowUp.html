@@ -33,14 +33,9 @@ Preguntas sobre su decisión
 
         <p style="margin-bottom: 10px;">Puede seleccionar más de una alternativa.</p>
 
-        {% if information_revealed %}
-        <label><input type="checkbox" class="factor-option" value="ideologia_revelada"> La ideología que vio (izquierda, centro o derecha)</label><br>
-        <label><input type="checkbox" class="factor-option" value="focos_programaticos_revelados"> Los focos programáticos que vio</label><br>
-        {% endif %}
-        <label><input type="checkbox" class="factor-option" value="apariencia_primera_impresion"> Su apariencia o primera impresión</label><br>
-        <label><input type="checkbox" class="factor-option" value="edad"> La edad que aparentaba</label><br>
-        <label><input type="checkbox" class="factor-option" value="genero"> El género que percibió</label><br>
-        <label><input type="checkbox" class="factor-option" value="otra_razon"> Otra razón</label>
+        {{ for option in decision_factor_options }}
+        <label style="display:block; margin: 4px 0;"><input type="checkbox" class="factor-option" value="{{ option.value }}"> {{ option.label }}</label>
+        {{ endfor }}
     </div>
 
     <input type="hidden" name="decision_factors" id="id_decision_factors" value="">

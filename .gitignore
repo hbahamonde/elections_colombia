@@ -331,3 +331,7 @@ TSWLatexianTemp*
 #*Notes.bib
 
 .DS_Store
+
+conjoint_project/tmp/pdfs/
+
+conjoint_project/_static/conjoint/data/.Rhistory

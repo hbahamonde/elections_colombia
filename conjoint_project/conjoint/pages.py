@@ -1,3 +1,6 @@
+import hashlib
+import random
+
 from otree.api import Page
 
 from .models import (
@@ -12,16 +15,28 @@ from .models import (
 )
 
 
+VISUAL_DECISION_FACTOR_OPTIONS = (
+    ('apariencia_primera_impresion', 'Su apariencia o primera impresión'),
+    ('edad', 'La edad que aparentaba'),
+    ('genero', 'El género que percibió'),
+)
+
+REVEALED_TEXT_DECISION_FACTOR_OPTIONS = (
+    (
+        'ideologia_revelada',
+        'La ideología que vio (izquierda, centro o derecha)',
+    ),
+    ('focos_programaticos_revelados', 'Los focos programáticos que vio'),
+)
+
+OTHER_DECISION_FACTOR_OPTION = ('otra_razon', 'Otra razón')
+
 VISUAL_DECISION_FACTOR_KEYS = {
-    'apariencia_primera_impresion',
-    'edad',
-    'genero',
-    'otra_razon',
-}
+    value for value, _label in VISUAL_DECISION_FACTOR_OPTIONS
+} | {OTHER_DECISION_FACTOR_OPTION[0]}
 
 REVEALED_TEXT_DECISION_FACTOR_KEYS = {
-    'ideologia_revelada',
-    'focos_programaticos_revelados',
+    value for value, _label in REVEALED_TEXT_DECISION_FACTOR_OPTIONS
 }
 
 
@@ -36,6 +51,28 @@ def selected_decision_factors(raw_value):
         for value in (raw_value or '').split(',')
         if value.strip()
     }
+
+
+def randomized_decision_factor_options(player):
+    """Return eligible factors in a stable random order, with "other" last."""
+    options = list(VISUAL_DECISION_FACTOR_OPTIONS)
+    if revealed_candidate_information(player):
+        options.extend(REVEALED_TEXT_DECISION_FACTOR_OPTIONS)
+
+    seed_material = (
+        f'{player.participant.code}:{player.round_number}:decision-factors'
+    )
+    seed = int.from_bytes(
+        hashlib.sha256(seed_material.encode('utf-8')).digest()[:16],
+        byteorder='big',
+    )
+    random.Random(seed).shuffle(options)
+    options.append(OTHER_DECISION_FACTOR_OPTION)
+
+    return [
+        {'value': value, 'label': label}
+        for value, label in options
+    ]
 
 
 class Consent(Page):
@@ -240,6 +277,9 @@ class FollowUp(Page):
             'timed_task': self.player.timed_task,
             'info_condition': self.player.info_condition,
             'information_revealed': information_revealed,
+            'decision_factor_options': randomized_decision_factor_options(
+                self.player
+            ),
             'show_info_cost_scale': (
                 self.player.info_condition == 'captcha_ver_mas'
                 and information_revealed
