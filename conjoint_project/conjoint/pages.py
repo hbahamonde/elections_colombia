@@ -26,7 +26,7 @@ REVEALED_TEXT_DECISION_FACTOR_OPTIONS = (
         'ideologia_revelada',
         'La ideología que vio (izquierda, centro o derecha)',
     ),
-    ('focos_programaticos_revelados', 'Los focos programáticos que vio'),
+    ('focos_programaticos_revelados', 'Los focos temáticos que vio'),
 )
 
 OTHER_DECISION_FACTOR_OPTION = ('otra_razon', 'Otra razón')
@@ -43,6 +43,17 @@ REVEALED_TEXT_DECISION_FACTOR_KEYS = {
 def revealed_candidate_information(player):
     """Whether the participant actually saw either profile's hidden text."""
     return bool(player.left_ideology_opened or player.right_ideology_opened)
+
+
+def candidate_choice_was_registered(player):
+    """Whether the participant submitted one of the two displayed profiles."""
+    decision_side = player.field_maybe_none('decision_side')
+    decision_candidate_id = player.field_maybe_none('decision_candidate_id')
+    return (
+        decision_side in {'left', 'right'}
+        and decision_candidate_id
+        in {player.left_candidate_id, player.right_candidate_id}
+    )
 
 
 def selected_decision_factors(raw_value):
@@ -225,6 +236,13 @@ class Task(Page):
         if not values.get('decision_candidate_id'):
             return 'Por favor, seleccione una opción antes de continuar.'
 
+    def before_next_page(self):
+        # The browser uses a temporary sentinel so a timed-out form can be
+        # submitted. Store the absence of a choice as a genuine missing value.
+        if self.player.field_maybe_none('decision_side') == 'timeout':
+            self.player.decision_candidate_id = None
+            self.player.decision_side = None
+
 
 class PracticeDone(Page):
     template_name = 'conjoint/Intro.html'
@@ -266,6 +284,7 @@ class FollowUp(Page):
         return (
             self.round_number > C.NUM_PRACTICE_ROUNDS
             and player_is_eligible(self.player)
+            and candidate_choice_was_registered(self.player)
         )
 
     def vars_for_template(self):
@@ -288,7 +307,10 @@ class FollowUp(Page):
 
     def error_message(self, values):
         if not values.get('realistic_vote'):
-            return 'Por favor, responda si habría votado por un(a) candidato(a) así en la realidad.'
+            return (
+                'Por favor, indique si habría votado por el/la candidato(a) '
+                'que acaba de elegir en una elección real.'
+            )
 
         factors = selected_decision_factors(values.get('decision_factors'))
 

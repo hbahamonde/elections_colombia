@@ -8,13 +8,19 @@ class PlayerBot(Bot):
 
     cases = [
         'eligible',
+        'eligible_timeout',
         'residence_colombia',
         'nationality_colombian',
         'lived_colombia',
     ]
 
     def play_round(self):
-        if self.case != 'eligible' and self.round_number > 1:
+        excluded_cases = {
+            'residence_colombia',
+            'nationality_colombian',
+            'lived_colombia',
+        }
+        if self.case in excluded_cases and self.round_number > 1:
             return
 
         if self.round_number == 1:
@@ -56,9 +62,32 @@ class PlayerBot(Bot):
                 politics_frequency='several_times_per_week',
                 left_right_self_placement='4',
             )
+
+            if self.case == 'eligible_timeout':
+                self.player.participant.vars['treatment_arm'] = 'timer_mostrar_mas'
+
             yield pages.Intro
 
         information_revealed = self.round_number % 2 == 0
+
+        if self.case == 'eligible_timeout' and self.round_number == 6:
+            yield pages.Task, dict(
+                left_ideology_opened=True,
+                right_ideology_opened=True,
+                info_cost_task_completed=False,
+                info_cost_attempts=0,
+                decision_candidate_id='timeout',
+                decision_side='timeout',
+                time_spent_seconds=10.0,
+                time_to_first_choice_seconds=0,
+                choice_changes=0,
+                learn_more_clicks=2,
+                mouse_distance_px=240.0,
+                left_hover_seconds=3.1,
+                right_hover_seconds=2.4,
+                countdown_expired=True,
+            )
+            return
 
         yield pages.Task, dict(
             left_ideology_opened=information_revealed,
