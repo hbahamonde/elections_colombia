@@ -155,3 +155,20 @@ only to organizations covered by the study's data-access agreement. If the
 marketing company must see aggregates but must not have administrative access,
 deploy a separate read-only quota view before fieldwork instead of sharing the
 oTree administrator password.
+
+## Final pretest adjustments
+
+The timed condition allows 20 seconds per task, including practice. Practice
+uses the participant's assigned condition throughout: the countdown, the
+addition before opening information, or unrestricted access to information.
+The decision clock starts after both candidate photos are loaded and visible.
+
+The data export includes `stimulus_load_seconds` for photo-loading time and
+`time_spent_seconds` for elapsed decision time. Existing information-opening,
+click, hover, and timeout measures are retained. A timeout without a choice
+leaves the choice and follow-up fields missing and advances to the next task.
+
+The political self-placement question now uses the requested 1–10 scale
+(1 = left, 10 = right). Earlier test responses used 0–10 and are left unchanged.
+The project migration adds the loading-time column without deleting responses;
+the local launcher and Render's pre-deployment command run it automatically.

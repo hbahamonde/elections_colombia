@@ -162,7 +162,7 @@ POLITICS_FREQUENCY_CHOICES = [
 ]
 
 LIKERT_1_TO_7 = [[i, str(i)] for i in range(1, 8)]
-LEFT_RIGHT_CHOICES = [[str(i), str(i)] for i in range(0, 11)] + [
+LEFT_RIGHT_CHOICES = [[str(i), str(i)] for i in range(1, 11)] + [
     ['no_sabe', 'No sabe'],
     ['no_responde', 'No responde'],
     ['ninguno', 'Ninguno'],
@@ -364,7 +364,7 @@ class C(BaseConstants):
     NUM_MAIN_ROUNDS = 15
     NUM_ROUNDS = NUM_PRACTICE_ROUNDS + NUM_MAIN_ROUNDS
 
-    COUNTDOWN_SECONDS = 10
+    COUNTDOWN_SECONDS = 20
 
     TREATMENT_ARMS = [
         'timer_mostrar_mas',
@@ -519,6 +519,9 @@ class Player(BasePlayer):
     decision_candidate_id = models.StringField(blank=True)
     decision_side = models.StringField(blank=True)
 
+    # Loading time is separate from the decision clock, which starts only once
+    # both photos are visible. Null on responses collected before this measure.
+    stimulus_load_seconds = models.FloatField(blank=True)
     time_spent_seconds = models.FloatField(initial=0)
     time_to_first_choice_seconds = models.FloatField(initial=0)
 
@@ -646,6 +649,7 @@ def save_candidate_to_player(player, side, candidate):
 
 def assign_candidates(player):
     ensure_participant_vars(player)
+    player.countdown_seconds = C.COUNTDOWN_SECONDS
 
     if (
         player.field_maybe_none('left_candidate_id')
@@ -660,7 +664,6 @@ def assign_candidates(player):
     player.treatment_arm = treatment_arm
     player.timed_task = treatment_arm == 'timer_mostrar_mas'
     player.info_condition = treatment_arm
-    player.countdown_seconds = C.COUNTDOWN_SECONDS
 
     if player.captcha_left_a == 0:
         player.captcha_left_a = random.randint(2, 20)

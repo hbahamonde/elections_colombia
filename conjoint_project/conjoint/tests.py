@@ -1,13 +1,16 @@
 from otree.api import Bot
 
 from . import pages
+from .models import C
 
 
 class PlayerBot(Bot):
-    """Exercise the eligible path and every Colombian screening exit."""
+    """Exercise each treatment, its practice tasks, and screening exits."""
 
     cases = [
         'eligible',
+        'eligible_timer',
+        'eligible_info_cost',
         'eligible_timeout',
         'residence_colombia',
         'nationality_colombian',
@@ -63,30 +66,49 @@ class PlayerBot(Bot):
                 left_right_self_placement='4',
             )
 
-            if self.case == 'eligible_timeout':
-                self.player.participant.vars['treatment_arm'] = 'timer_mostrar_mas'
+            treatment_by_case = {
+                'eligible': 'control_ver_mas',
+                'eligible_timer': 'timer_mostrar_mas',
+                'eligible_info_cost': 'captcha_ver_mas',
+                'eligible_timeout': 'timer_mostrar_mas',
+            }
+            self.player.participant.vars['treatment_arm'] = treatment_by_case[
+                self.case
+            ]
 
             yield pages.Intro
 
         information_revealed = self.round_number % 2 == 0
+        assert self.player.treatment_arm == self.player.participant.vars[
+            'treatment_arm'
+        ]
+        assert self.player.countdown_seconds == 20
+        assert self.player.timed_task == (
+            self.player.treatment_arm == 'timer_mostrar_mas'
+        )
 
-        if self.case == 'eligible_timeout' and self.round_number == 6:
+        if self.case == 'eligible_timeout' and self.round_number in {6, 7, 8}:
+            texts_opened = self.round_number - 6
             yield pages.Task, dict(
-                left_ideology_opened=True,
-                right_ideology_opened=True,
+                left_ideology_opened=texts_opened >= 1,
+                right_ideology_opened=texts_opened == 2,
                 info_cost_task_completed=False,
                 info_cost_attempts=0,
                 decision_candidate_id='timeout',
                 decision_side='timeout',
-                time_spent_seconds=10.0,
+                stimulus_load_seconds=1.75,
+                time_spent_seconds=C.COUNTDOWN_SECONDS,
                 time_to_first_choice_seconds=0,
                 choice_changes=0,
-                learn_more_clicks=2,
+                learn_more_clicks=texts_opened,
                 mouse_distance_px=240.0,
                 left_hover_seconds=3.1,
                 right_hover_seconds=2.4,
                 countdown_expired=True,
             )
+            assert self.player.field_maybe_none('decision_candidate_id') is None
+            assert self.player.field_maybe_none('decision_side') is None
+            assert self.player.learn_more_clicks == texts_opened
             return
 
         yield pages.Task, dict(
@@ -96,6 +118,7 @@ class PlayerBot(Bot):
             info_cost_attempts=1 if information_revealed else 0,
             decision_candidate_id=self.player.left_candidate_id,
             decision_side='left',
+            stimulus_load_seconds=0.25,
             time_spent_seconds=2.5,
             time_to_first_choice_seconds=1.5,
             choice_changes=0,
@@ -103,7 +126,9 @@ class PlayerBot(Bot):
             mouse_distance_px=120.0,
             left_hover_seconds=1.2,
             right_hover_seconds=0.4,
-            countdown_expired=False,
+            countdown_expired=(
+                self.case == 'eligible_timeout' and self.round_number == 9
+            ),
         )
 
         if self.round_number == 5:

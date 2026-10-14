@@ -1,3 +1,5 @@
+{{ extends 'global/Page.html' }}
+
 {{ block title }}
 Preguntas iniciales
 {{ endblock }}
@@ -63,8 +65,8 @@ Preguntas iniciales
     </section>
 
     <section class="question-card">
-        <div class="scale-guide"><span>0 — Izquierda</span><span>10 — Derecha</span></div>
-        {{ formfield 'left_right_self_placement' label='En política, ¿dónde se ubicaría usted?' }}
+        {{ formfield 'left_right_self_placement' label='Los conceptos de izquierda y derecha son útiles para resumir de una manera muy simplificada lo que piensa la gente en muchos temas. Me gustaría que por favor se clasificara en la escala que va de 1 a 10, donde 1 representa a la izquierda y 10 representa a la derecha.' }}
+        <div class="scale-guide"><span>1 — Izquierda</span><span>10 — Derecha</span></div>
     </section>
 
     <div class="submit-row">

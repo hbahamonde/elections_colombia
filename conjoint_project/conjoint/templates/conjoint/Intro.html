@@ -1,3 +1,5 @@
+{{ extends 'global/Page.html' }}
+
 {{ block title }}
 Instrucciones
 {{ endblock }}
@@ -34,7 +36,8 @@ Instrucciones
             {% if is_control_group %}
                 <ul>
                     <li>Verá pares de candidatos(as) hipotéticos(as) que podrían postular a la alcaldía de su comuna.</li>
-                    <li>Cada candidato(a) será presentado(a) mediante una fotografía y una breve descripción de su ideología y sus focos temáticos.</li>
+                    <li>Al principio verá únicamente las fotografías. La descripción de la ideología y los focos temáticos de cada candidato(a) estará oculta.</li>
+                    <li>Puede leer esa descripción al hacer clic en <strong>“Ver con más detalle sus propuestas”</strong>, o decidir solo con las fotografías.</li>
                     <li>En este estudio, la ideología se presenta como de izquierda, centro o derecha.</li>
                     <li>Su tarea es elegir a quién le daría su voto en las elecciones para la alcaldía de su comuna.</li>
                     <li>No existen respuestas correctas o incorrectas.</li>
@@ -45,10 +48,11 @@ Instrucciones
             {% elif is_timer_group %}
                 <ul>
                     <li>Verá pares de candidatos(as) hipotéticos(as) que podrían postular a la alcaldía de su comuna.</li>
-                    <li>Cada candidato(a) será presentado(a) mediante una fotografía y una breve descripción de su ideología y sus focos temáticos.</li>
+                    <li>Al principio verá únicamente las fotografías. La descripción de la ideología y los focos temáticos de cada candidato(a) estará oculta.</li>
+                    <li>Puede leer esa descripción al hacer clic en <strong>“Ver con más detalle sus propuestas”</strong>, o decidir solo con las fotografías.</li>
                     <li>En este estudio, la ideología se presenta como de izquierda, centro o derecha.</li>
                     <li>Su tarea es elegir a quién le daría su voto en las elecciones para la alcaldía de su comuna.</li>
-                    <li>Para cada decisión contará con un tiempo limitado visible en pantalla.</li>
+                    <li>Contará con <strong>{{ countdown_seconds }} segundos para cada decisión</strong>, como en la práctica. El tiempo restante será visible en pantalla.</li>
                     <li>Le pedimos tomar su decisión dentro del tiempo disponible.</li>
                     <li>Una vez finalizado el tiempo, la plataforma avanzará automáticamente a la siguiente tarea.</li>
                     <li>Responda utilizando la información disponible en ese momento.</li>
@@ -57,12 +61,12 @@ Instrucciones
             {% elif is_info_cost_group %}
                 <ul>
                     <li>Verá pares de candidatos(as) hipotéticos(as) que podrían postular a la alcaldía de su comuna.</li>
-                    <li>Cada candidato(a) será presentado(a) mediante una fotografía y una breve descripción de su ideología y sus focos temáticos.</li>
+                    <li>Al principio verá únicamente las fotografías. La descripción de la ideología y los focos temáticos de cada candidato(a) estará oculta.</li>
                     <li>En este estudio, la ideología se presenta como de izquierda, centro o derecha.</li>
                     <li>Su tarea es elegir a quién le daría su voto en las elecciones para la alcaldía de su comuna.</li>
                     <li>En cada perfil encontrará la opción <strong>“Ver con más detalle sus propuestas”</strong>.</li>
-                    <li>Puede decidir usando solo la información visible inicialmente o acceder a información complementaria.</li>
-                    <li>Para ver la información adicional, deberá completar un paso adicional dentro de la plataforma.</li>
+                    <li>Puede decidir solo con las fotografías o hacer clic en esa opción para acceder a la descripción.</li>
+                    <li>Para que aparezca la descripción, deberá resolver correctamente una suma, como en la práctica.</li>
                     <li>Responda de forma honesta, como si se tratara de una elección real.</li>
                 </ul>
             {% endif %}
@@ -79,9 +83,11 @@ Instrucciones
         </p>
 
         <p>
-            Cada candidato(a) será presentado(a) mediante una fotografía y una breve descripción de
-            su ideología y sus focos temáticos. En este estudio, la ideología se presenta como de
-            izquierda, centro o derecha. Su tarea consiste en revisar la información
+            Al principio verá únicamente las fotografías. La descripción de la ideología y los focos
+            temáticos de cada candidato(a) estará oculta. Puede leerla al hacer clic en
+            <strong>“Ver con más detalle sus propuestas”</strong>, o decidir solo con las fotografías.
+            En este estudio, la ideología se presenta como de izquierda, centro o derecha.
+            Su tarea consiste en revisar la información
             disponible y seleccionar, en cada caso, al candidato(a) por quien tendría mayor probabilidad
             de votar si la elección se realizara hoy.
         </p>
@@ -102,9 +108,11 @@ Instrucciones
         </p>
 
         <p>
-            Cada candidato(a) será presentado(a) mediante una fotografía y una breve descripción de
-            su ideología y sus focos temáticos. En este estudio, la ideología se presenta como de
-            izquierda, centro o derecha. Su tarea consiste en revisar la información disponible
+            Al principio verá únicamente las fotografías. La descripción de la ideología y los focos
+            temáticos de cada candidato(a) estará oculta. Puede leerla al hacer clic en
+            <strong>“Ver con más detalle sus propuestas”</strong>, o decidir solo con las fotografías.
+            En este estudio, la ideología se presenta como de izquierda, centro o derecha.
+            Su tarea consiste en revisar la información disponible
             y seleccionar, en cada caso, al candidato(a) por quien tendría mayor probabilidad de votar si
             la elección se realizara hoy.
         </p>
@@ -121,8 +129,9 @@ Instrucciones
         </p>
 
         <p>
-            Para cada decisión contará con un tiempo limitado, visible en la pantalla mediante un
-            contador.
+            Contará con <strong>{{ countdown_seconds }} segundos para cada decisión</strong>,
+            tanto en la práctica como en el estudio principal. El tiempo restante será visible en la
+            pantalla mediante un contador.
         </p>
 
         <p>
@@ -136,9 +145,9 @@ Instrucciones
         </p>
 
         <p>
-            Cada candidato(a) será presentado(a) mediante una fotografía y una breve descripción de
-            su ideología y sus focos temáticos. En este estudio, la ideología se presenta como de
-            izquierda, centro o derecha.
+            Al principio verá únicamente las fotografías. La descripción de la ideología y los focos
+            temáticos de cada candidato(a) estará oculta. En este estudio, la ideología se presenta
+            como de izquierda, centro o derecha.
         </p>
 
         <p>
@@ -148,13 +157,12 @@ Instrucciones
 
         <p>
             En cada perfil encontrará además una opción denominada "Ver con más detalle sus
-            propuestas". Si decide utilizarla, podrá acceder a información adicional sobre las ideas y
-            propuestas del candidato(a). Para ello deberá completar un paso adicional dentro de la
-            plataforma.
+            propuestas". Si decide utilizarla, deberá resolver correctamente una suma para que
+            aparezca la descripción de la ideología y los focos temáticos del candidato(a).
         </p>
 
         <p>
-            Puede tomar sus decisiones utilizando únicamente la información visible inicialmente o
+            Puede tomar sus decisiones utilizando únicamente las fotografías o
             acceder a la información complementaria cuando lo estime conveniente.
         </p>
 
@@ -195,7 +203,11 @@ Instrucciones
         <p style="margin-bottom: 0;">
             Después de la práctica, completará
             <strong>{{ num_main_rounds }} decisiones principales</strong>.
-            Las rondas de práctica sirven solo para familiarizarse con la pantalla.
+            Las rondas de práctica sirven solo para familiarizarse con la pantalla. En ellas tendrá
+            las mismas condiciones que en el estudio principal: {% if is_timer_group %}el mismo
+            límite de <strong>{{ countdown_seconds }} segundos por decisión</strong>{% elif is_info_cost_group %}la misma
+            suma antes de acceder a la descripción de cada candidato(a){% else %}la misma opción
+            de acceder a las descripciones al hacer clic{% endif %}.
         </p>
     </div>
 

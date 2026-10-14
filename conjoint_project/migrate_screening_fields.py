@@ -29,7 +29,8 @@ ALTER TABLE conjoint_player
     ADD COLUMN IF NOT EXISTS right_dominancia VARCHAR,
     ADD COLUMN IF NOT EXISTS right_edad_categoria VARCHAR,
     ADD COLUMN IF NOT EXISTS right_nombre_base_final VARCHAR,
-    ADD COLUMN IF NOT EXISTS right_texto TEXT
+    ADD COLUMN IF NOT EXISTS right_texto TEXT,
+    ADD COLUMN IF NOT EXISTS stimulus_load_seconds DOUBLE PRECISION
 """
 
 SQLITE_COLUMNS = {
@@ -54,6 +55,7 @@ SQLITE_COLUMNS = {
     'right_edad_categoria': 'VARCHAR',
     'right_nombre_base_final': 'VARCHAR',
     'right_texto': 'TEXT',
+    'stimulus_load_seconds': 'REAL',
 }
 
 
