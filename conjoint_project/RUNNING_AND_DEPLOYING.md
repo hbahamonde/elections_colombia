@@ -1,6 +1,50 @@
 # Running and deploying the conjoint experiment
 
-## Official collection activated on 19 October 2026
+## Recruitment plan: the soft launch counts toward the final sample
+
+The first **30 eligible, completed panel surveys** constitute the soft launch
+and count toward the **462 eligible completions in total**. After these 30,
+the remaining target is **432 additional eligible completions**, not another
+462. The total is not 492. Incomplete and screened-out attempts do not fill
+either completion target.
+
+The soft launch is official data collection, not a disposable technical test.
+Keep the same active official session, participant link, dashboard link, and
+credentials when continuing recruitment after the soft launch. **Do not reset
+the database, replace the session, archive these responses, or subtract the
+first 30 from the dashboard.** Its completion counter is cumulative across
+both recruitment stages. The 600 allocated slots are capacity for attempts,
+not the desired number of completions.
+
+## Collection launch reset on 19 October 2026
+
+The active official session is now `OFFICIAL_2026_10_19_LAUNCH_N462_CAP600`
+(session code `fhcmy7rf`). The launch reset took effect at **2026-10-19
+14:46:42 UTC**, equivalent to **17:46:42 Helsinki**.
+
+- Participant link remains <https://colombia-conjoint.onrender.com/room/colombia_study>.
+- Dashboard remains <https://colombia-conjoint.onrender.com/monitor>.
+- Dashboard credentials are unchanged.
+- Capacity remains **600** slots, with a target of **462 eligible completions**.
+- Verified immediately after cutover: 600 unstarted slots and zero starts,
+  completions, exclusions, and submitted analytical tasks.
+
+This was a clean-session rollover, not a destructive database wipe. All three
+earlier sessions were archived using oTree's archive flag. Their 1,601
+participant slots and 32,020 player-round records remain recoverable in the
+same PostgreSQL database. The predecessor `ecm7dqrb` was relabelled
+`PRELAUNCH_2026_10_19_N462_CAP600` and marked
+`official_data_collection=False`. Its three starts, including one completion,
+do not count toward the new collection session. The reset timestamp and
+predecessor are recorded in the new session's exported comment.
+
+The dashboard follows the room's active session, so no URLs, credentials,
+experiment settings, or deployment configuration changed. Older direct
+participant URLs still belong to archived sessions. Use the unchanged master
+room link for recruitment. Archiving is reversible through oTree's archived
+session controls. The local `db.sqlite3` was not reset or modified.
+
+## Earlier official activation (superseded)
 
 The paid `colombia-conjoint` service in Alejandra's Render workspace now uses
 the official session labelled `OFFICIAL_2026_10_19_N462_CAP600`.
@@ -31,19 +75,25 @@ zero completions. The participant welcome page returned HTTP 200, and the
 dashboard data endpoint rejected anonymous access with HTTP 401. These checks
 did not initialize any official participant.
 
-### Identifying panel-company kickoff runs
+### Distinguishing sample participants from technical checks
 
 The standard response export already includes `participant.code`,
 `participant.time_started_utc`, `session.label`, `session.comment`, and the
 official-collection flag. The start timestamp is stored in UTC, even though
 the exported string has no timezone suffix. Interpret it as UTC in analysis.
 
-For each kickoff tester, retain the participant code visible in the survey's
-URL (`/p/<code>/...`) and the UTC start time or time window. Keep a separate
-record of which codes are kickoff runs. There is no automatic test flag for
-runs made inside this official session. Do not identify observations for
-removal by date alone if genuine recruitment overlaps. Prefer an explicit
-analysis-exclusion list while retaining the original raw data.
+Soft-launch panel respondents are sample participants. Their first 30 eligible
+completions must be retained and counted toward 462. Do not exclude respondents
+because they joined during the soft launch, were recruited early, or participated
+in the panel company's initial rollout.
+
+Only explicitly identified non-sample technical checks by researchers or company
+staff should be marked separately. For such a check, retain the participant code
+visible in the survey's URL (`/p/<code>/...`) and its UTC start time. There is no
+automatic technical-test flag for runs made inside the official session. Never
+infer that a record is a technical test from its date or position among the first
+30 responses. Retain raw records and document any analysis exclusion by an
+explicitly verified participant code.
 
 The separate PageTimes export provides per-page submission timestamps as Unix
 seconds. There is no single overall completion-datetime field, and the final
@@ -183,7 +233,12 @@ Use the same Room link for internal testing and fieldwork. The Room points to
 whichever session is currently active behind it, so the public URL does not
 change when a testing session is replaced with the official session.
 
-### Testing-to-fieldwork transition
+### Development testing to fieldwork (not the soft-launch transition)
+
+The procedure below applies only to disposable development tests conducted
+before official recruitment. It must not be used between the 30-completion
+soft launch and the remaining 432 completions. Both recruitment stages use
+the same official session.
 
 1. In **Admin > Rooms**, open **Estudio Colombia — enlace maestro** and create a
    testing session with the `colombia_conjoint` configuration. Leave
@@ -192,9 +247,8 @@ change when a testing session is replaced with the official session.
    browser window for each new test participant so an existing participant
    cookie is not reused.
 3. When testing is complete, close the Room.
-4. In **Admin > Sessions**, select and delete the testing session. This deletes
-   that session's participant and response records; it does not require
-   `otree resetdb` and does not remove the PostgreSQL service.
+4. In **Admin > Sessions**, archive the development-testing session to preserve
+   its responses recoverably. Do not archive the official soft-launch session.
 5. Return to **Admin > Rooms** and create a completely new session with the
    intended fieldwork capacity. Under **Configure session**, check
    `official_data_collection`. After creation, you may use the session's
@@ -205,10 +259,11 @@ change when a testing session is replaced with the official session.
    permanent Room link. The official/testing flag is also included in oTree
    data exports as part of the session configuration.
 
-Deleting test sessions is optional during development: creating a new official
-session already separates official responses from all earlier sessions. Never
-run `otree resetdb` on Render as a routine cleanup step; it erases every session
-and all collected responses.
+Deleting test sessions is unnecessary: creating a new official session before
+recruitment already separates official responses from earlier development
+tests. Never run `otree resetdb` on Render as a routine cleanup step; it erases
+every session and all collected responses. Never create a replacement session
+merely because the soft launch has finished.
 
 Closing a Room does not delete its session or its responses. It only disconnects
 the permanent link from that session. Delete a testing session separately from

@@ -39,6 +39,11 @@ never pooled. Switching to official collection does not require deleting tests.
 
 ### What the counts mean
 
+- The recruitment target is **462 eligible completed surveys in total**. The
+  first **30 completed soft-launch surveys count toward those 462**, leaving
+  **432 additional completions** afterward. Continue in the same official
+  session without resetting or subtracting the soft-launch cohort. The
+  dashboard's completion count is cumulative across both stages.
 - **Plazas creadas en la sesión** are preallocated participant slots. These are
   not starts and do not imply recruitment or filled quotas.
 - **Iniciaron** means the participant visited their survey link.

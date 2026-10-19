@@ -133,6 +133,35 @@ class AggregateSemanticsTests(unittest.TestCase):
         return monitor._aggregate_records(mode, metadata(), layout(),
                                           *recruitment_fixture(), targets or {})
 
+    def test_soft_launch_completions_count_toward_462_without_reset(self):
+        arms = list(monitor.TREATMENT_LABELS)
+        people = [participant(i, 200, arms[(i - 1) % len(arms)])
+                  for i in range(1, 31)]
+        baselines = {i: baseline(i) for i in range(1, 31)}
+        task_rows = [task(i, round_number) for i in range(1, 31)
+                     for round_number in range(6, 21)]
+        first_wave = monitor._aggregate_records(
+            'official', metadata(), layout(), people, baselines, task_rows, {})
+        self.assertEqual(first_wave['summary']['eligible_completed'], 30)
+        self.assertEqual(first_wave['summary']['main_tasks_submitted'], 450)
+        self.assertEqual(462 - first_wave['summary']['eligible_completed'], 432)
+
+        # Continuing recruitment retains the initial 30. There is no reset or
+        # offset between the soft launch and the remaining 432 completions.
+        people.extend(participant(i, 200, arms[(i - 1) % len(arms)])
+                      for i in range(31, 463))
+        people.extend(participant(i, 0) for i in range(463, 601))
+        baselines.update({i: baseline(i) for i in range(31, 463)})
+        task_rows.extend(task(i, round_number) for i in range(31, 463)
+                         for round_number in range(6, 21))
+        full_sample = monitor._aggregate_records(
+            'official', metadata(), layout(), people, baselines, task_rows, {})
+        self.assertEqual(full_sample['summary']['assigned'], 600)
+        self.assertEqual(full_sample['summary']['not_started'], 138)
+        self.assertEqual(full_sample['summary']['eligible_completed'], 462)
+        self.assertEqual(full_sample['summary']['main_tasks_submitted'], 6930)
+        self.assertEqual(sum(row['completed'] for row in full_sample['treatments']), 462)
+
     def test_people_not_rounds_and_mutually_exclusive_recruitment_statuses(self):
         summary = self.snapshot()['summary']
         self.assertEqual(summary['assigned'], 10)
