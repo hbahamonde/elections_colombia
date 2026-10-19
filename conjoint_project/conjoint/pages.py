@@ -11,8 +11,45 @@ from .models import (
     mentions_colombia,
     player_is_eligible,
     player_was_screened_out,
+    profile_is_complete,
     screen_out,
 )
+
+
+RAFFLE_REGISTRATION_URL = 'https://bordedata.cl/encuestas/survey/42'
+
+
+def raffle_registration_is_available(player):
+    """Offer the external draw only after eligible study completion.
+
+    A submitted timed task can have no choice. Such timeouts do not disqualify
+    an otherwise completed study, and the registration form is never sent
+    participant codes or questionnaire answers.
+    """
+    participant = player.participant
+    max_index = participant._max_page_index or 0
+    if (
+        player.round_number != C.NUM_ROUNDS
+        or not participant.visited
+        or max_index <= 0
+        or participant._index_in_pages < max_index
+        or player_was_screened_out(player)
+    ):
+        return False
+
+    baseline = player.in_round(C.SCREENING_ROUND)
+    residence = baseline.field_maybe_none('country_of_residence')
+    nationality = baseline.field_maybe_none('nationality')
+    return bool(
+        baseline.field_maybe_none('consent_accepted')
+        and residence
+        and nationality
+        and not mentions_colombia(residence)
+        and not mentions_colombia(nationality)
+        and baseline.field_maybe_none('lived_in_colombia') == 'no'
+        and not player_was_screened_out(baseline)
+        and profile_is_complete(baseline)
+    )
 
 
 VISUAL_DECISION_FACTOR_OPTIONS = (
@@ -416,7 +453,14 @@ class Summary(Page):
         return self.round_number == C.NUM_ROUNDS
 
     def vars_for_template(self):
-        return {'screened_out': player_was_screened_out(self.player)}
+        return {
+            'screened_out': player_was_screened_out(self.player),
+            'raffle_registration_url': (
+                RAFFLE_REGISTRATION_URL
+                if raffle_registration_is_available(self.player)
+                else ''
+            ),
+        }
 
 
 page_sequence = [

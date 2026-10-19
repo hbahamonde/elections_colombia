@@ -50,6 +50,26 @@ seconds. There is no single overall completion-datetime field, and the final
 screen itself has no submit action. Do not mistake a task-duration field for a
 calendar timestamp.
 
+## Prize-draw registration after completion
+
+The panel company organizes a draw of three gift cards of 50,000 pesos each
+and one surprise football shirt. This is a chance to win, not a guaranteed
+payment. Consent and both instruction stages explain the draw and the separate
+registration requirement.
+
+Only eligible respondents who reach the final completion screen receive the
+button linking to <https://bordedata.cl/encuestas/survey/42>. The button opens
+the company registration page in a new tab. It does not appear during tasks or
+on the screening-exclusion screen. Completing timed tasks without a recorded
+choice does not remove the invitation from otherwise eligible completers.
+
+Survey completion is not automatic raffle registration. Participants must
+click the final button and complete the company's registration steps. The
+company administers entry and awards. oTree does not receive confirmation of
+external registration. Survey responses remain saved whether or not a person
+enters the raffle. No participant code or response data are appended to the
+external URL, and the link suppresses the referrer.
+
 ## One-click local testing on macOS
 
 Double-click `Start Experiment.command` in Finder. It will:

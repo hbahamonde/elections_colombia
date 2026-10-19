@@ -49,6 +49,33 @@ Finalización
     <p>
         Muchas gracias por su participación.
     </p>
+
+    {{ if raffle_registration_url }}
+    <section aria-labelledby="raffle-title" style="margin: 32px 0; padding: 24px; border: 2px solid #0b6b58; border-radius: 12px; background: #f0f8f5;">
+        <h3 id="raffle-title">Último paso para participar en el sorteo</h3>
+        <p>
+            Su encuesta ya está completada. La empresa encargada del reclutamiento sorteará
+            <strong>tres tarjetas de regalo (gift cards) de 50.000 pesos cada una</strong> y
+            <strong>una camiseta sorpresa de fútbol</strong> entre quienes completen la encuesta
+            y se inscriban en el sorteo.
+        </p>
+        <p>
+            <strong>Para participar, debe hacer clic en el botón de abajo y completar la inscripción
+            en la página de la empresa.</strong> Completar esta encuesta no lo inscribe automáticamente.
+            <strong>Si no realiza este paso, no participará en el sorteo.</strong>
+        </p>
+        <p>
+            La inscripción es voluntaria y se realiza en un formulario separado. La empresa
+            organiza el sorteo y entrega los premios. Inscribirse no garantiza obtener un premio.
+        </p>
+        <p>El formulario se abrirá en una nueva pestaña.</p>
+        <a id="raffle-entry-link" href="{{ raffle_registration_url }}" target="_blank"
+           rel="noopener noreferrer" referrerpolicy="no-referrer" class="btn btn-primary btn-lg"
+           style="display: inline-block; width: 100%; max-width: 520px; white-space: normal; font-weight: 700;">
+            Ir al formulario de inscripción al sorteo
+        </a>
+    </section>
+    {{ endif }}
     {{ endif }}
 </div>
 

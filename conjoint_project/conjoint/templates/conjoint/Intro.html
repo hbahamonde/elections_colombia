@@ -72,6 +72,11 @@ Instrucciones
             {% endif %}
         </div>
 
+        <section aria-label="Información sobre el sorteo" style="margin: 24px 0; padding: 16px; border: 1px solid #ddd; border-radius: 10px; background: #f8f9fa;">
+            <h4>Recuerde el último paso para participar en el sorteo</h4>
+            {{ include 'conjoint/RaffleInstructions.html' }}
+        </section>
+
         {{ next_button }}
 
     {% else %}
@@ -210,6 +215,11 @@ Instrucciones
             de acceder a las descripciones al hacer clic{% endif %}.
         </p>
     </div>
+
+    <section aria-label="Información sobre el sorteo" style="margin: 24px 0; padding: 16px; border: 1px solid #ddd; border-radius: 10px; background: #f8f9fa;">
+        <h4>Al finalizar el estudio</h4>
+        {{ include 'conjoint/RaffleInstructions.html' }}
+    </section>
 
     {{ next_button }}
 
