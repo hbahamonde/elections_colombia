@@ -1,5 +1,55 @@
 # Running and deploying the conjoint experiment
 
+## Official collection activated on 19 October 2026
+
+The paid `colombia-conjoint` service in Alejandra's Render workspace now uses
+the official session labelled `OFFICIAL_2026_10_19_N462_CAP600`.
+
+- Participant link: <https://colombia-conjoint.onrender.com/room/colombia_study>
+- Read-only recruitment dashboard: <https://colombia-conjoint.onrender.com/monitor>
+- Available participant slots: **600**.
+- Recruitment target: **462 eligible, completed surveys**, not 600 completions.
+- Session flag: `official_data_collection=True`.
+- Activation: **2026-10-19 12:25:39 UTC**, equivalent to **15:25:39 Helsinki**.
+- Study configuration: five practice tasks and 15 main tasks, with a 20-second
+  deadline in the timed condition. This activation did not change the design.
+
+The activation timestamp and recruitment target are also recorded in the
+session's exported comment. Both older sessions were retained. The activation
+check confirmed that their 1,001 participant slots and 20,020 player-round
+records remained present. No earlier responses were deleted or moved into
+the official session.
+
+The dashboard is configured with `MONITOR_MODE=official` and follows this
+Room's active session. Capacity is not a completion quota, and no automatic
+quota closure or rejection is enabled. Numeric quota targets remain to be
+configured separately.
+
+After the configuration deployment became live, the authenticated dashboard
+returned `ready` in official mode with 600 unstarted slots, zero starts, and
+zero completions. The participant welcome page returned HTTP 200, and the
+dashboard data endpoint rejected anonymous access with HTTP 401. These checks
+did not initialize any official participant.
+
+### Identifying panel-company kickoff runs
+
+The standard response export already includes `participant.code`,
+`participant.time_started_utc`, `session.label`, `session.comment`, and the
+official-collection flag. The start timestamp is stored in UTC, even though
+the exported string has no timezone suffix. Interpret it as UTC in analysis.
+
+For each kickoff tester, retain the participant code visible in the survey's
+URL (`/p/<code>/...`) and the UTC start time or time window. Keep a separate
+record of which codes are kickoff runs. There is no automatic test flag for
+runs made inside this official session. Do not identify observations for
+removal by date alone if genuine recruitment overlaps. Prefer an explicit
+analysis-exclusion list while retaining the original raw data.
+
+The separate PageTimes export provides per-page submission timestamps as Unix
+seconds. There is no single overall completion-datetime field, and the final
+screen itself has no submit action. Do not mistake a task-duration field for a
+calendar timestamp.
+
 ## One-click local testing on macOS
 
 Double-click `Start Experiment.command` in Finder. It will:
