@@ -1,4 +1,4 @@
-from otree.api import Bot
+from otree.api import Bot, SubmissionMustFail
 
 from . import pages
 from .models import C
@@ -52,6 +52,16 @@ class PlayerBot(Bot):
             )
             if self.case == 'lived_colombia':
                 return
+
+            assert (
+                'Utilizando una escala de 1 a 10, donde 1 representa a la '
+                'izquierda y 10 a la derecha, ¿en qué posición se ubica Ud.?'
+            ) in self.html
+            assert (
+                'Utilizando una escala de 1 a 7, donde 1 significa nada '
+                'interesado(a) y 7 muy interesado(a), ¿Qué tan interesado '
+                'está Ud. en la política?'
+            ) in self.html
 
             yield pages.Questionnaire, dict(
                 age_years=35,
@@ -109,6 +119,14 @@ class PlayerBot(Bot):
             assert self.player.field_maybe_none('decision_candidate_id') is None
             assert self.player.field_maybe_none('decision_side') is None
             assert self.player.learn_more_clicks == texts_opened
+            assert self.player.left_ideology_opened == (texts_opened >= 1)
+            assert self.player.right_ideology_opened == (texts_opened == 2)
+            assert self.player.time_spent_seconds == C.COUNTDOWN_SECONDS
+            assert self.player.countdown_expired
+            assert self.player.field_maybe_none('realistic_vote') in (None, '')
+            assert self.player.field_maybe_none('decision_factors') in (None, '')
+            assert self.player.field_maybe_none('rushed_scale') is None
+            assert self.player.field_maybe_none('info_cost_scale') is None
             return
 
         yield pages.Task, dict(
@@ -135,8 +153,23 @@ class PlayerBot(Bot):
             yield pages.PracticeDone
 
         if self.round_number > 5:
+            asks_hurry = self.player.treatment_arm in {
+                'timer_mostrar_mas', 'control_ver_mas'
+            }
+            asks_info_cost = (
+                self.player.info_condition == 'captcha_ver_mas'
+                and information_revealed
+            )
+            assert ('name="rushed_scale"' in self.html) == asks_hurry
+            assert ('name="info_cost_scale"' in self.html) == asks_info_cost
+            assert ('value="ideologia_revelada"' in self.html) == information_revealed
+            assert (
+                'value="focos_programaticos_revelados"' in self.html
+            ) == information_revealed
+
+            realistic_vote = 'no' if self.round_number % 3 == 0 else 'yes'
             follow_up = dict(
-                realistic_vote='yes',
+                realistic_vote=realistic_vote,
                 decision_factors=(
                     'ideologia_revelada,focos_programaticos_revelados,'
                     'apariencia_primera_impresion'
@@ -144,11 +177,44 @@ class PlayerBot(Bot):
                     else 'apariencia_primera_impresion,edad'
                 ),
             )
-            if self.player.timed_task:
+            if realistic_vote == 'no':
+                follow_up['decision_factors'] = ''
+            if asks_hurry:
                 follow_up['rushed_scale'] = 3
-            if (
-                self.player.info_condition == 'captcha_ver_mas'
-                and information_revealed
-            ):
+                # Require the same item in both arms, also after a "No" vote.
+                without_hurry = {
+                    key: value for key, value in follow_up.items()
+                    if key != 'rushed_scale'
+                }
+                yield SubmissionMustFail(
+                    pages.FollowUp, without_hurry, error_fields=['__all__']
+                )
+                assert 'Por favor, indique qué tan apurado se sintió.' in self.html
+            if asks_info_cost:
                 follow_up['info_cost_scale'] = 2
+                without_info_cost = {
+                    key: value for key, value in follow_up.items()
+                    if key != 'info_cost_scale'
+                }
+                yield SubmissionMustFail(
+                    pages.FollowUp, without_info_cost, error_fields=['__all__']
+                )
+                assert 'Por favor, indique qué tanto le costó informarse.' in self.html
+            if not information_revealed:
+                invalid_factor = dict(
+                    follow_up,
+                    realistic_vote='yes',
+                    decision_factors='ideologia_revelada',
+                )
+                yield SubmissionMustFail(
+                    pages.FollowUp, invalid_factor, error_fields=['__all__']
+                )
             yield pages.FollowUp, follow_up
+            assert self.player.field_maybe_none('rushed_scale') == (
+                3 if asks_hurry else None
+            )
+            assert self.player.field_maybe_none('info_cost_scale') == (
+                2 if asks_info_cost else None
+            )
+            if realistic_vote == 'no':
+                assert self.player.field_maybe_none('decision_factors') in (None, '')

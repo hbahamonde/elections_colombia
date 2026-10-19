@@ -45,6 +45,11 @@ def revealed_candidate_information(player):
     return bool(player.left_ideology_opened or player.right_ideology_opened)
 
 
+def perceived_hurry_is_measured(player):
+    """Use the same hurry item in the timed condition and its baseline."""
+    return player.treatment_arm in {'timer_mostrar_mas', 'control_ver_mas'}
+
+
 def candidate_choice_was_registered(player):
     """Whether the participant submitted one of the two displayed profiles."""
     decision_side = player.field_maybe_none('decision_side')
@@ -295,6 +300,7 @@ class FollowUp(Page):
             'main_round_number': self.player.main_round_number,
             'num_main_rounds': C.NUM_MAIN_ROUNDS,
             'timed_task': self.player.timed_task,
+            'show_rushed_scale': perceived_hurry_is_measured(self.player),
             'info_condition': self.player.info_condition,
             'information_revealed': information_revealed,
             'decision_factor_options': randomized_decision_factor_options(
@@ -328,7 +334,10 @@ class FollowUp(Page):
                 'información que vio. Por favor, revise su respuesta.'
             )
 
-        if self.player.timed_task and values.get('rushed_scale') is None:
+        if (
+            perceived_hurry_is_measured(self.player)
+            and values.get('rushed_scale') is None
+        ):
             return 'Por favor, indique qué tan apurado se sintió.'
 
         if (
