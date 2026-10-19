@@ -68,8 +68,10 @@ pushed to the `main` branch.
    - `colombia-conjoint`: Starter Web Service, Virginia, one instance;
    - `colombia-conjoint-db`: Basic-256mb PostgreSQL, Virginia, 1 GB storage.
 
-6. When Render requests `OTREE_ADMIN_PASSWORD`, enter a long unique password
-   and store it in the team's password manager. Do not commit it to GitHub.
+6. When Render requests `OTREE_ADMIN_PASSWORD` and `MONITOR_PASSWORD`, enter
+   different long unique passwords and store them in the team's password
+   manager. Set `MONITOR_MODE` to `testing` while pretesting, or `official` for
+   fieldwork. Do not commit passwords to GitHub.
 7. Approve the Blueprint and wait until both resources report healthy/live.
 8. Open the Web Service's `onrender.com` URL and sign in to oTree as `admin`.
 9. Create a new production session and test the entire participant flow.
@@ -144,17 +146,32 @@ the permanent link from that session. Delete a testing session separately from
 
 ## Monitoring access
 
-The quota monitor is located at **Admin > session > Report > conjoint** and
-refreshes every 10 seconds. It reads PostgreSQL directly, so new screening
-answers appear as participants submit the initial questionnaire pages.
+The panel-company dashboard is available at
+<https://colombia-conjoint.onrender.com/monitor>. It has a separate read-only
+login, using `MONITOR_USERNAME` and `MONITOR_PASSWORD` from the paid service's
+Render **Environment** page. Share only these dashboard credentials with
+authorized collaborators, through a secure channel. Do not share the oTree
+administrator password, database password, or connection string.
 
-oTree has one administrative credential rather than separate read-only user
-roles. Anyone given the oTree administrator password can access more than the
-quota report, including participant-level data and exports. Give that password
-only to organizations covered by the study's data-access agreement. If the
-marketing company must see aggregates but must not have administrative access,
-deploy a separate read-only quota view before fieldwork instead of sharing the
-oTree administrator password.
+The dashboard refreshes every 10 seconds while visible. It shows aggregate
+counts from the session connected to the permanent `colombia_study` Room. It
+does not expose participant identifiers, political answers, individual records,
+candidate choices, or raw-data downloads. Answers appear after a participant
+submits the relevant page, not while they are typing. See
+[QUOTA_DASHBOARD.md](QUOTA_DASHBOARD.md) for count definitions and configuration.
+
+Before fieldwork, set `MONITOR_MODE=official` in Render and deploy the saved
+configuration. The Room's active session must also have
+`official_data_collection=True`. A mismatch displays an explicit warning and
+no recruitment counts. Earlier test sessions are never pooled into fieldwork.
+Changing this dashboard setting neither deletes data nor changes the study's
+mode. For pretesting, use `MONITOR_MODE=testing` with a testing session.
+
+The original researcher-only report remains at **Admin > session > Report >
+conjoint**. It contains more detailed administrative information and is not
+the link to give the panel company. Numeric quota targets must be agreed and
+configured separately. The dashboard reports progress but does not close
+quotas or screen out participants automatically.
 
 ## Final pretest adjustments
 

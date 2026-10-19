@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title>Avance de la muestra · Faces or Facts?</title>
+    <link rel="stylesheet" href="/monitor/assets/dashboard.css">
+    <script src="/monitor/assets/dashboard.js" defer></script>
+</head>
+<body>
+    <a class="skip-link" href="#main-content">Ir a los datos</a>
+    <div class="dashboard-shell">
+        <header class="page-header">
+            <div class="heading-group">
+                <p class="eyebrow">Faces or Facts? <span aria-hidden="true">/</span> Monitoreo de reclutamiento</p>
+                <h1>Avance de la muestra</h1>
+                <p class="page-description">Seguimiento compartido de participación y composición de la muestra.</p>
+            </div>
+            <span class="mode-badge mode-pending" id="mode-badge">Comprobando estado</span>
+        </header>
+
+        <div class="refresh-toolbar">
+            <div class="sync-status" id="sync-status" role="status" aria-live="polite" aria-atomic="true">
+                <span class="status-dot" aria-hidden="true"></span>
+                <span id="sync-label">Cargando datos…</span>
+            </div>
+            <div class="refresh-controls">
+                <span class="auto-refresh-note">Se actualiza cada 10 segundos</span>
+                <button type="button" class="refresh-button" id="refresh-button">Actualizar ahora</button>
+            </div>
+        </div>
+
+        <div class="notice notice-error" id="error-banner" role="alert" hidden>
+            <strong id="error-heading">No fue posible actualizar el panel.</strong>
+            <p id="error-message">Intente actualizar nuevamente.</p>
+        </div>
+
+        <main id="main-content">
+            <section class="empty-state" id="empty-state" aria-live="polite">
+                <div class="empty-state-mark" aria-hidden="true"></div>
+                <h2 id="empty-title">Cargando el avance del estudio</h2>
+                <p id="empty-message">Los datos aparecerán aquí en unos segundos.</p>
+            </section>
+
+            <div id="dashboard-data" aria-busy="true" hidden>
+                <div class="stale-notice" id="stale-notice" hidden>
+                    Datos anteriores: las cifras están desactualizadas y no deben utilizarse para evaluar las cuotas.
+                </div>
+
+                <section aria-labelledby="summary-title">
+                    <h2 class="sr-only" id="summary-title">Resumen de participación</h2>
+                    <div class="summary-grid">
+                        <article class="summary-card">
+                            <p class="card-label">Iniciaron el estudio</p>
+                            <p class="card-value" id="count-started">—</p>
+                            <p class="card-note">Personas que ingresaron al cuestionario</p>
+                        </article>
+                        <article class="summary-card">
+                            <p class="card-label">No elegibles</p>
+                            <p class="card-value" id="count-screened-out">—</p>
+                            <p class="card-note">Excluidas por los requisitos de participación</p>
+                        </article>
+                        <article class="summary-card">
+                            <p class="card-label">Elegibles en curso</p>
+                            <p class="card-value" id="count-in-progress">—</p>
+                            <p class="card-note">Participación iniciada, aún sin finalizar</p>
+                        </article>
+                        <article class="summary-card summary-card-highlight">
+                            <p class="card-label">Elegibles que finalizaron</p>
+                            <p class="card-value" id="count-completed">—</p>
+                            <p class="card-note">Finalizaciones que se cuentan para las cuotas</p>
+                        </article>
+                    </div>
+                    <div class="stage-strip">
+                        <p><span class="stage-label">Plazas creadas en la sesión</span> <strong id="count-assigned">—</strong><span class="stage-explanation">No equivale a personas que iniciaron</span></p>
+                        <p><span class="stage-label">Sin iniciar</span> <strong id="count-not-started">—</strong></p>
+                        <p><span class="stage-label">Elegibles con caracterización completa</span> <strong id="count-baseline">—</strong></p>
+                    </div>
+                </section>
+
+                <div class="notice notice-information quota-notice" id="quota-notice">
+                    <p id="quota-message">Metas no configuradas; el panel no cierra cuotas automáticamente.</p>
+                </div>
+
+                <section class="recruitment-section" aria-labelledby="composition-title">
+                    <div class="section-heading">
+                        <div>
+                            <p class="eyebrow">Composición de la muestra</p>
+                            <h2 id="composition-title">Quiénes están participando</h2>
+                        </div>
+                        <div class="legend" aria-label="Leyenda de las tablas">
+                            <span><span class="legend-dot legend-completed" aria-hidden="true"></span>Finalizaron</span>
+                            <span><span class="legend-dot legend-in-progress" aria-hidden="true"></span>En curso</span>
+                        </div>
+                    </div>
+                    <p class="section-description">Las finalizaciones cubren las cuotas; las personas en curso permiten anticipar su avance.</p>
+                    <div class="dimensions-grid" id="dimensions-grid"></div>
+                </section>
+
+                <section class="panel age-gender-panel" aria-labelledby="age-gender-title">
+                    <div class="panel-heading">
+                        <div>
+                            <h2 id="age-gender-title">Edad y género</h2>
+                            <p>Lectura conjunta de ambas características para supervisar el balance de la muestra.</p>
+                        </div>
+                    </div>
+                    <div id="age-gender-content"></div>
+                </section>
+
+                <div class="operations-grid">
+                    <section class="panel" aria-labelledby="treatment-title">
+                        <div class="panel-heading">
+                            <div>
+                                <p class="eyebrow">Asignación experimental</p>
+                                <h2 id="treatment-title">Avance por grupo</h2>
+                                <p>La caracterización completa se muestra separada de las finalizaciones.</p>
+                            </div>
+                        </div>
+                        <div id="treatment-content"></div>
+                    </section>
+
+                    <section class="panel" aria-labelledby="timeouts-title">
+                        <div class="panel-heading">
+                            <div>
+                                <p class="eyebrow">Seguimiento de las tareas</p>
+                                <h2 id="timeouts-title">Registro de decisiones y tiempos</h2>
+                                <p id="task-count-note">Resumen de tareas principales.</p>
+                            </div>
+                        </div>
+                        <dl class="operations-list" id="task-summary"></dl>
+                    </section>
+                </div>
+
+                <section class="panel screening-panel" aria-labelledby="screening-title">
+                    <div class="panel-heading">
+                        <div>
+                            <h2 id="screening-title">Requisitos de participación</h2>
+                            <p>Estado de la revisión inicial y motivos de exclusión.</p>
+                        </div>
+                    </div>
+                    <div class="screening-status" id="screening-status"></div>
+                    <div id="exclusion-content"></div>
+                </section>
+            </div>
+        </main>
+
+        <footer class="page-footer">
+            <p>Panel de datos agregados. No muestra respuestas individuales ni identificadores de participantes.</p>
+            <p>Última actualización: <time id="last-updated">pendiente</time></p>
+        </footer>
+    </div>
+</body>
+</html>
