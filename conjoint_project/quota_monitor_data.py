@@ -12,6 +12,8 @@ import os
 import re
 import unicodedata
 
+from completion_rules import MIN_VALID_MAIN_CHOICES, choice_is_valid, classify_completion
+
 
 class MonitorConfigurationError(ValueError):
     """A selected session cannot be interpreted using the current study."""
@@ -20,7 +22,8 @@ class MonitorConfigurationError(ValueError):
 SUMMARY_KEYS = (
     'assigned', 'not_started', 'started', 'screening_pending', 'screened_out',
     'screening_passed', 'baseline_pending', 'eligible_baseline_complete',
-    'eligible_in_progress', 'eligible_completed', 'all_main_tasks_submitted',
+    'eligible_in_progress', 'eligible_completed', 'eligible_final_screen_completion',
+    'eligible_finished_incomplete', 'all_main_tasks_submitted',
     'main_tasks_submitted', 'main_tasks_with_selection', 'main_tasks_no_selection',
     'deadline_expiries', 'participants_with_timeouts',
 )
@@ -338,10 +341,16 @@ def _empty_snapshot(mode, metadata, status, message):
         'status': status, 'message': message, 'mode': mode,
         'updated_at': datetime.now(timezone.utc).isoformat(timespec='seconds'),
         'main_task_count': metadata['main_rounds'],
+        'completion_rule': {
+            'minimum_valid_main_choices': MIN_VALID_MAIN_CHOICES,
+            'main_task_count': metadata['main_rounds'],
+            'maximum_missing_main_choices': metadata['main_rounds'] - MIN_VALID_MAIN_CHOICES,
+        },
         'summary': {key: 0 for key in SUMMARY_KEYS},
         'treatments': [
             {'key': key, 'label': TREATMENT_LABELS.get(key, 'Otra condición'),
-             'eligible_baseline_complete': 0, 'in_progress': 0, 'completed': 0}
+             'eligible_baseline_complete': 0, 'in_progress': 0, 'completed': 0,
+             'finished_incomplete': 0}
             for key in metadata['treatments']
         ],
         'quota_dimensions': _quota_dimensions([], [], metadata, {}),
@@ -394,7 +403,9 @@ def _aggregate_records(mode, metadata, layout, participants, baselines, task_row
             summary['screening_pending'] += 1
             continue
         summary['screening_passed'] += 1
-        baseline_complete = index > layout['questionnaire'] and all(
+        baseline_complete = index > layout['questionnaire'] and _age_band(
+            baseline.get('age_years')
+        ) is not None and all(
             _present(baseline.get(key))
             for key in ('age_years', 'gender_identity', 'education_level', 'occupation_status')
         )
@@ -402,41 +413,51 @@ def _aggregate_records(mode, metadata, layout, participants, baselines, task_row
             summary['baseline_pending'] += 1
             continue
         summary['eligible_baseline_complete'] += 1
-        is_complete = index >= layout['summary']
-        cohort = 'completed' if is_complete else 'in_progress'
-        (completed if is_complete else in_progress).append(baseline)
-        summary['eligible_completed' if is_complete else 'eligible_in_progress'] += 1
-        treatment = participant_vars.get('treatment_arm') or baseline.get('treatment_arm')
-        if treatment in treatment_counts:
-            treatment_counts[treatment]['eligible_baseline_complete'] += 1
-            treatment_counts[treatment][cohort] += 1
-        else:
-            treatment_counts.setdefault('unknown', Counter())['eligible_baseline_complete'] += 1
-            treatment_counts['unknown'][cohort] += 1
         submitted_rounds = [round_number for round_number, task_index in layout['tasks'].items()
                             if index > task_index]
         summary['all_main_tasks_submitted'] += len(submitted_rounds) == metadata['main_rounds']
         participant_had_timeout = False
+        valid_choices = 0
         for round_number in submitted_rounds:
             summary['main_tasks_submitted'] += 1
             task = tasks_by_participant.get(participant_id, {}).get(round_number, {})
-            chosen = (
-                task.get('decision_side') in {'left', 'right'}
-                and _present(task.get('decision_candidate_id'))
-                and task.get('decision_candidate_id') in {
-                    task.get('left_candidate_id'), task.get('right_candidate_id')
-                }
-            )
+            chosen = choice_is_valid(task)
+            valid_choices += int(chosen)
             summary['main_tasks_with_selection' if chosen else 'main_tasks_no_selection'] += 1
             expired = _boolean(task.get('countdown_expired'))
             summary['deadline_expiries'] += expired
             participant_had_timeout = participant_had_timeout or (expired and not chosen)
         summary['participants_with_timeouts'] += participant_had_timeout
+        completion = classify_completion(
+            eligible=True, reached_final_screen=index >= layout['summary'],
+            submitted_main_tasks=len(submitted_rounds), valid_main_choices=valid_choices,
+            main_task_count=metadata['main_rounds'],
+        )
+        summary['eligible_final_screen_completion'] += completion['eligible_final_screen_completion']
+        if completion['study_complete']:
+            cohort = 'completed'
+            completed.append(baseline)
+            summary['eligible_completed'] += 1
+        elif completion['eligible_final_screen_completion']:
+            # Finished questionnaires with fewer than 13 choices are not still
+            # participating, and must not fill the recruitment quotas.
+            cohort = 'finished_incomplete'
+            summary['eligible_finished_incomplete'] += 1
+        else:
+            cohort = 'in_progress'
+            in_progress.append(baseline)
+            summary['eligible_in_progress'] += 1
+        treatment = participant_vars.get('treatment_arm') or baseline.get('treatment_arm')
+        treatment_key = treatment if treatment in treatment_counts else 'unknown'
+        treatment_counts.setdefault(treatment_key, Counter())
+        treatment_counts[treatment_key]['eligible_baseline_complete'] += 1
+        treatment_counts[treatment_key][cohort] += 1
 
     snapshot['treatments'] = [
         {'key': key, 'label': TREATMENT_LABELS.get(key, 'Sin condición reconocida'),
          'eligible_baseline_complete': counts['eligible_baseline_complete'],
-         'in_progress': counts['in_progress'], 'completed': counts['completed']}
+         'in_progress': counts['in_progress'], 'completed': counts['completed'],
+         'finished_incomplete': counts['finished_incomplete']}
         for key, counts in treatment_counts.items()
     ]
     snapshot['quota_dimensions'] = _quota_dimensions(completed, in_progress, metadata, targets)

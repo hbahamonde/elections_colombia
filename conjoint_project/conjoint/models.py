@@ -597,6 +597,143 @@ def available_candidate_ids():
     return list(CANDIDATE_DATA.keys())
 
 
+def custom_export(players):
+    """Export original round responses plus read-only completion metadata.
+
+    Available under this app's custom data export in oTree administration. The
+    normal wide export is unchanged. Every original Player export field is
+    retained, including missing choices and intentionally skipped follow-ups.
+    Participant-level status is recalculated from the responses at download
+    time and repeated on each round, so historical responses need no migration
+    or backfill. This function never saves, commits, or edits a response.
+    """
+    from collections import defaultdict
+    from completion_rules import (
+        MIN_VALID_MAIN_CHOICES, choice_is_valid, classify_completion,
+    )
+    from otree.export import get_fields_for_csv
+    from otree.models import Participant
+    from quota_monitor_data import (
+        MonitorConfigurationError,
+        _age_band,
+        _boolean,
+        _exclusion_reason,
+        _page_layout,
+        _present,
+        _screening_passed,
+    )
+
+    participant_fields = get_fields_for_csv(Participant)
+    player_fields = get_fields_for_csv(Player)
+    completion_fields = (
+        'eligible_final_screen_completion', 'study_complete',
+        'main_tasks_submitted', 'main_tasks_with_selection',
+        'main_tasks_missing_selection', 'minimum_valid_main_choices',
+        'completion_status',
+    )
+    yield (
+        ['session.code']
+        + [f'participant.{name}' for name in participant_fields]
+        + ['subsession.round_number']
+        + [f'player.{name}' for name in player_fields]
+        + list(completion_fields)
+    )
+
+    rows = list(players)
+    by_participant = defaultdict(list)
+    for player in rows:
+        by_participant[(player.session.code, player.participant.code)].append(player)
+
+    layouts = {}
+    classifications = {}
+    for participant_key, round_players in by_participant.items():
+        first = round_players[0]
+        participant = first.participant
+        session = first.session
+        if session.code not in layouts:
+            try:
+                layouts[session.code] = _page_layout(session, {
+                    'practice_rounds': C.NUM_PRACTICE_ROUNDS,
+                    'main_rounds': C.NUM_MAIN_ROUNDS,
+                    'total_rounds': C.NUM_ROUNDS,
+                })
+            except MonitorConfigurationError:
+                layouts[session.code] = None
+        layout = layouts[session.code]
+        if layout is None or participant._max_page_index != layout['max_page_index']:
+            # An all-session export can contain earlier pilot layouts. Preserve
+            # those rows but do not silently apply today's 15-task definition.
+            classifications[participant_key] = {
+                'eligible_final_screen_completion': False,
+                'study_complete': False,
+                'main_tasks_submitted': None,
+                'main_tasks_with_selection': None,
+                'main_tasks_missing_selection': None,
+                'minimum_valid_main_choices': MIN_VALID_MAIN_CHOICES,
+                'completion_status': 'incompatible_layout',
+            }
+            continue
+        index = participant._index_in_pages or 0
+        baseline_player = next((
+            player for player in round_players
+            if player.round_number == C.SCREENING_ROUND
+        ), None)
+        baseline = {
+            name: baseline_player.field_maybe_none(name)
+            for name in (
+                'consent_accepted', 'country_of_residence', 'nationality',
+                'lived_in_colombia', 'screening_excluded',
+                'screening_exclusion_reason', 'age_years', 'gender_identity',
+                'education_level', 'occupation_status',
+            )
+        } if baseline_player is not None else {}
+        # The public .vars getter marks JSON dirty even when only reading.
+        participant_vars = participant._vars
+        if not isinstance(participant_vars, dict):
+            participant_vars = {}
+        reason = _exclusion_reason(baseline, participant_vars)
+        eligible = bool(
+            _boolean(participant.visited)
+            and not _boolean(participant._is_bot)
+            and not _boolean(participant.is_browser_bot)
+            and _screening_passed(baseline, reason)
+            and index > layout['questionnaire']
+            and _age_band(baseline.get('age_years')) is not None
+            and all(_present(baseline.get(name)) for name in (
+                'age_years', 'gender_identity', 'education_level', 'occupation_status',
+            ))
+        )
+        submitted = {
+            player.round_number: player
+            for player in round_players
+            if player.round_number in layout['tasks']
+            and index > layout['tasks'][player.round_number]
+        }
+        valid_choices = sum(choice_is_valid({
+            name: player.field_maybe_none(name)
+            for name in ('decision_side', 'decision_candidate_id',
+                         'left_candidate_id', 'right_candidate_id')
+        }) for player in submitted.values())
+        classifications[participant_key] = classify_completion(
+            eligible=eligible,
+            reached_final_screen=index >= layout['summary'],
+            submitted_main_tasks=len(submitted),
+            valid_main_choices=valid_choices,
+            main_task_count=C.NUM_MAIN_ROUNDS,
+        )
+
+    for player in rows:
+        participant = player.participant
+        completion = classifications[(player.session.code, participant.code)]
+        yield (
+            [player.session.code]
+            + [getattr(participant, name) for name in participant_fields]
+            + [player.round_number]
+            + [player.field_maybe_none(name) for name in player_fields]
+            + [completion[name] for name in completion_fields]
+        )
+
+
 def draw_candidates_for_participant():
     ids = available_candidate_ids()
     needed = C.NUM_ROUNDS * 2

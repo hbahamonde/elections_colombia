@@ -16,7 +16,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent
 PUBLIC_SNAPSHOT_KEYS = frozenset({
     'status', 'message', 'mode', 'updated_at', 'summary', 'treatments',
     'quota_dimensions', 'age_gender', 'exclusions', 'targets_configured',
-    'main_task_count',
+    'main_task_count', 'completion_rule',
 })
 MONITOR_ROUTE_NAMES = frozenset({
     'monitor_dashboard', 'monitor_slash', 'monitor_data',

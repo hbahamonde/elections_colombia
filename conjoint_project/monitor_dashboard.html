@@ -67,20 +67,23 @@
                             <p class="card-note">Participación iniciada, aún sin finalizar</p>
                         </article>
                         <article class="summary-card summary-card-highlight">
-                            <p class="card-label">Elegibles que finalizaron</p>
+                            <p class="card-label">Encuestas completas elegibles</p>
                             <p class="card-value" id="count-completed">—</p>
-                            <p class="card-note">Finalizaciones que se cuentan para las cuotas</p>
+                            <p class="card-note">Página final y al menos 13 de 15 decisiones válidas</p>
                         </article>
                     </div>
                     <div class="stage-strip">
                         <p><span class="stage-label">Plazas creadas en la sesión</span> <strong id="count-assigned">—</strong><span class="stage-explanation">No equivale a personas que iniciaron</span></p>
                         <p><span class="stage-label">Sin iniciar</span> <strong id="count-not-started">—</strong></p>
                         <p><span class="stage-label">Elegibles con caracterización completa</span> <strong id="count-baseline">—</strong></p>
+                        <p><span class="stage-label">Finalizaron sin suficientes decisiones</span> <strong id="count-finished-incomplete">—</strong><span class="stage-explanation">No cuentan para las cuotas ni siguen en curso</span></p>
+                        <p><span class="stage-label">Elegibles que llegaron a la página final</span> <strong id="count-final-screen">—</strong><span class="stage-explanation">Incluye completas y finalizadas con decisiones insuficientes</span></p>
                     </div>
                 </section>
 
                 <div class="notice notice-information quota-notice" id="quota-notice">
                     <p id="quota-message">Metas no configuradas; el panel no cierra cuotas automáticamente.</p>
+                    <p id="completion-rule-note">Completa significa haber llegado a la página final, enviado las 15 tareas principales y registrado al menos 13 decisiones válidas. Se permiten hasta dos tareas sin selección. Las preguntas que no correspondía responder no se consideran faltantes.</p>
                 </div>
 
                 <section class="recruitment-section" aria-labelledby="composition-title">
@@ -90,11 +93,11 @@
                             <h2 id="composition-title">Quiénes están participando</h2>
                         </div>
                         <div class="legend" aria-label="Leyenda de las tablas">
-                            <span><span class="legend-dot legend-completed" aria-hidden="true"></span>Finalizaron</span>
+                            <span><span class="legend-dot legend-completed" aria-hidden="true"></span>Completas</span>
                             <span><span class="legend-dot legend-in-progress" aria-hidden="true"></span>En curso</span>
                         </div>
                     </div>
-                    <p class="section-description">Las finalizaciones cubren las cuotas; las personas en curso permiten anticipar su avance.</p>
+                    <p class="section-description">Solo las encuestas completas elegibles cubren las cuotas. Las personas en curso permiten anticipar su avance. Las finalizadas con menos de 13 decisiones se informan aparte.</p>
                     <div class="dimensions-grid" id="dimensions-grid"></div>
                 </section>
 
@@ -114,7 +117,7 @@
                             <div>
                                 <p class="eyebrow">Asignación experimental</p>
                                 <h2 id="treatment-title">Avance por grupo</h2>
-                                <p>La caracterización completa se muestra separada de las finalizaciones.</p>
+                                <p>Las encuestas completas se distinguen de las que siguen en curso y de las finalizadas con decisiones insuficientes.</p>
                             </div>
                         </div>
                         <div id="treatment-content"></div>

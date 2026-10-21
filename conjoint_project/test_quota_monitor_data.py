@@ -19,6 +19,7 @@ import unittest
 from unittest.mock import patch
 
 import quota_monitor_data as monitor
+from completion_rules import MIN_VALID_MAIN_CHOICES, choice_is_valid, classify_completion
 
 
 def metadata():
@@ -174,10 +175,78 @@ class AggregateSemanticsTests(unittest.TestCase):
         self.assertEqual(summary['eligible_baseline_complete'], 4)
         self.assertEqual(summary['eligible_in_progress'], 3)
         self.assertEqual(summary['eligible_completed'], 1)
+        self.assertEqual(summary['eligible_final_screen_completion'], 1)
+        self.assertEqual(summary['eligible_finished_incomplete'], 0)
         self.assertEqual(summary['assigned'], sum(summary[key] for key in (
             'not_started', 'screening_pending', 'screened_out', 'baseline_pending',
-            'eligible_in_progress', 'eligible_completed',
+            'eligible_in_progress', 'eligible_completed', 'eligible_finished_incomplete',
         )))
+
+    def test_thirteen_valid_choices_count_but_twelve_do_not_fill_quotas(self):
+        people = [participant(1, 200, 'timer_mostrar_mas'),
+                  participant(2, 200, 'timer_mostrar_mas')]
+        baselines = {i: baseline(i) for i in (1, 2)}
+        task_rows = [task(i, round_number,
+                          selected=round_number < 6 + valid_choices,
+                          expired=round_number >= 6 + valid_choices)
+                     for i, valid_choices in ((1, 13), (2, 12))
+                     for round_number in range(6, 21)]
+        snapshot = monitor._aggregate_records(
+            'official', metadata(), layout(), people, baselines, task_rows,
+            {'gender_identity': {'mujer': 2}},
+        )
+        summary = snapshot['summary']
+        self.assertEqual(summary['eligible_final_screen_completion'], 2)
+        self.assertEqual(summary['eligible_completed'], 1)
+        self.assertEqual(summary['eligible_finished_incomplete'], 1)
+        self.assertEqual(summary['eligible_in_progress'], 0)
+        self.assertEqual(summary['main_tasks_no_selection'], 5)
+        arm = next(row for row in snapshot['treatments']
+                   if row['key'] == 'timer_mostrar_mas')
+        self.assertEqual(arm['completed'], 1)
+        self.assertEqual(arm['finished_incomplete'], 1)
+        self.assertEqual(arm['in_progress'], 0)
+        gender = next(row for row in snapshot['quota_dimensions']
+                      if row['key'] == 'gender_identity')
+        women = next(row for row in gender['rows'] if row['key'] == 'mujer')
+        self.assertEqual(women['completed'], 1)
+        self.assertEqual(women['remaining'], 1)
+        self.assertFalse(women['is_full'])
+        self.assertEqual(snapshot['completion_rule']['minimum_valid_main_choices'], 13)
+        self.assertEqual(snapshot['completion_rule']['maximum_missing_main_choices'], 2)
+
+    def test_final_screen_without_recorded_choices_is_not_complete(self):
+        snapshot = monitor._aggregate_records(
+            'official', metadata(), layout(), [participant(1, 200)],
+            {1: baseline(1)}, [], {},
+        )
+        self.assertEqual(snapshot['summary']['eligible_completed'], 0)
+        self.assertEqual(snapshot['summary']['eligible_finished_incomplete'], 1)
+        self.assertEqual(snapshot['summary']['main_tasks_no_selection'], 15)
+
+    def test_choices_require_matching_candidate_id_and_recorded_side(self):
+        rows = [task(1, round_number) for round_number in range(6, 21)]
+        for row in rows[:3]:
+            row['decision_side'] = 'right'
+        snapshot = monitor._aggregate_records(
+            'official', metadata(), layout(), [participant(1, 200)],
+            {1: baseline(1)}, rows, {},
+        )
+        self.assertEqual(snapshot['summary']['main_tasks_with_selection'], 12)
+        self.assertEqual(snapshot['summary']['eligible_finished_incomplete'], 1)
+
+    def test_invalid_age_or_missing_required_metadata_cannot_count_as_complete(self):
+        rows = [task(1, round_number) for round_number in range(6, 21)]
+        for extra in ({'age_years': 17}, {'age_years': 66}, {'age_years': True},
+                      {'gender_identity': ''}, {'education_level': None},
+                      {'occupation_status': None}):
+            with self.subTest(extra=extra):
+                snapshot = monitor._aggregate_records(
+                    'official', metadata(), layout(), [participant(1, 200)],
+                    {1: baseline(1, **extra)}, rows, {},
+                )
+                self.assertEqual(snapshot['summary']['eligible_completed'], 0)
+                self.assertEqual(snapshot['summary']['baseline_pending'], 1)
 
     def test_task_submission_final_followup_and_timeout_are_distinct(self):
         summary = self.snapshot()['summary']
@@ -258,6 +327,56 @@ class AggregateSemanticsTests(unittest.TestCase):
             self.assertTrue(monitor._boolean(value))
         with self.assertRaises(monitor.MonitorConfigurationError):
             monitor._boolean('not-a-boolean')
+
+
+class SharedCompletionRuleTests(unittest.TestCase):
+    def classify(self, choices, *, eligible=True, final=True, submitted=15):
+        return classify_completion(
+            eligible=eligible, reached_final_screen=final,
+            submitted_main_tasks=submitted, valid_main_choices=choices,
+        )
+
+    def test_threshold_is_thirteen_of_fifteen(self):
+        self.assertEqual(MIN_VALID_MAIN_CHOICES, 13)
+        for choices in range(16):
+            with self.subTest(valid_choices=choices):
+                status = self.classify(choices)
+                self.assertEqual(status['study_complete'], choices >= 13)
+                self.assertTrue(status['eligible_final_screen_completion'])
+                self.assertEqual(status['main_tasks_missing_selection'], 15 - choices)
+                self.assertEqual(status['completion_status'],
+                                 'complete' if choices >= 13
+                                 else 'finished_insufficient_choices')
+
+    def test_final_screen_eligibility_and_all_submissions_are_required(self):
+        self.assertFalse(self.classify(15, final=False)['study_complete'])
+        self.assertEqual(self.classify(15, final=False)['completion_status'], 'in_progress')
+        self.assertFalse(self.classify(15, eligible=False)['study_complete'])
+        self.assertFalse(self.classify(15, eligible=False)['eligible_final_screen_completion'])
+        self.assertEqual(self.classify(15, eligible=False)['completion_status'], 'ineligible')
+        self.assertFalse(self.classify(13, submitted=14)['study_complete'])
+
+    def test_inconsistent_counts_fail_closed(self):
+        for submitted, choices in ((14, 15), (-1, 0), (16, 15), (15, -1), (True, 1)):
+            with self.subTest(submitted=submitted, choices=choices):
+                with self.assertRaises(ValueError):
+                    self.classify(choices, submitted=submitted)
+
+    def test_selection_must_match_its_side_and_cannot_be_empty(self):
+        self.assertTrue(choice_is_valid(task(1, 6)))
+        self.assertFalse(choice_is_valid(task(1, 6, selected=False, expired=True)))
+        self.assertFalse(choice_is_valid({**task(1, 6), 'decision_side': 'right'}))
+        self.assertFalse(choice_is_valid({**task(1, 6), 'decision_side': 'timeout'}))
+        self.assertFalse(choice_is_valid({
+            'decision_side': 'left', 'decision_candidate_id': '', 'left_candidate_id': '',
+        }))
+
+    def test_expired_timer_with_valid_choice_counts_and_followup_nas_do_not_enter_rule(self):
+        row = task(1, 6, expired=True)
+        row.update(realistic_vote=None, decision_factors=None,
+                   rushed_scale=None, info_cost_scale=None)
+        self.assertTrue(choice_is_valid(row))
+        self.assertTrue(self.classify(13)['study_complete'])
 
 
 class SessionSelectionTests(unittest.TestCase):
@@ -417,6 +536,7 @@ class DisposableOrmTests(unittest.TestCase):
             project = Path(temporary)
             shutil.copy2(source / 'settings.py', project / 'settings.py')
             shutil.copy2(source / 'quota_monitor_data.py', project / 'quota_monitor_data.py')
+            shutil.copy2(source / 'completion_rules.py', project / 'completion_rules.py')
             shutil.copytree(source / 'conjoint', project / 'conjoint',
                             ignore=shutil.ignore_patterns('__pycache__'))
             (project / '_static').symlink_to(source / '_static', target_is_directory=True)

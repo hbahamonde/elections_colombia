@@ -26,18 +26,22 @@
         requireCounts(data.summary, [
             "assigned", "not_started", "started", "screening_pending", "screened_out",
             "screening_passed", "baseline_pending", "eligible_baseline_complete",
-            "eligible_in_progress", "eligible_completed", "all_main_tasks_submitted",
+            "eligible_in_progress", "eligible_completed", "eligible_final_screen_completion",
+            "eligible_finished_incomplete", "all_main_tasks_submitted",
             "main_tasks_submitted", "main_tasks_with_selection", "main_tasks_no_selection",
             "deadline_expiries", "participants_with_timeouts"
         ]);
         requireCounts(data, ["main_task_count"]);
+        requireCounts(data.completion_rule, ["minimum_valid_main_choices", "main_task_count", "maximum_missing_main_choices"]);
+        if (data.completion_rule.main_task_count !== data.main_task_count ||
+            data.completion_rule.minimum_valid_main_choices + data.completion_rule.maximum_missing_main_choices !== data.main_task_count) throw new Error("invalid_completion_rule");
         if (!Array.isArray(data.quota_dimensions) || !Array.isArray(data.treatments) || !Array.isArray(data.exclusions)) throw new Error("invalid_data");
         data.quota_dimensions.forEach((dimension) => {
             requireCounts(dimension, ["completed_total", "in_progress_total", "missing_completed", "missing_in_progress"]);
             if (!Array.isArray(dimension.rows)) throw new Error("invalid_data");
             dimension.rows.forEach((row) => requireCounts(row, ["completed", "in_progress"]));
         });
-        data.treatments.forEach((row) => requireCounts(row, ["eligible_baseline_complete", "in_progress", "completed"]));
+        data.treatments.forEach((row) => requireCounts(row, ["eligible_baseline_complete", "in_progress", "completed", "finished_incomplete"]));
         data.exclusions.forEach((row) => requireCounts(row, ["count"]));
         if (!data.age_gender || !Array.isArray(data.age_gender.columns) || !Array.isArray(data.age_gender.rows)) throw new Error("invalid_data");
         data.age_gender.rows.forEach((row) => {
@@ -111,14 +115,14 @@
             const heading = element("div", "panel-heading");
             const title = element("h3", "dimension-title", dimension.label || "Composición");
             const totals = element("p", "panel-total");
-            totals.append(element("strong", "", formatCount(dimension.completed_total)), document.createTextNode(count(dimension.completed_total) === 1 ? " finalización" : " finalizaciones"));
+            totals.append(element("strong", "", formatCount(dimension.completed_total)), document.createTextNode(count(dimension.completed_total) === 1 ? " encuesta completa" : " encuestas completas"));
             heading.append(title, totals);
             card.append(heading);
             const rows = array(dimension.rows);
             if (!rows.length) {
                 card.append(element("p", "panel-empty", "Todavía no hay categorías disponibles."));
             } else {
-                const { wrapper, tbody } = tableShell(["Categoría", "Finalizaron", "En curso"], "dimension-table", dimension.label || "Composición");
+                const { wrapper, tbody } = tableShell(["Categoría", "Completas", "En curso"], "dimension-table", dimension.label || "Composición");
                 rows.forEach((row) => {
                     const tr = element("tr");
                     const label = element("th", "", row.label || "Sin dato");
@@ -127,7 +131,7 @@
                     completed.append(element("strong", "", formatCount(row.completed)));
                     const hasTarget = row.target !== null && row.target !== undefined;
                     const maximum = hasTarget ? row.target : dimension.completed_total;
-                    completed.append(makeProgress(row.completed, maximum, hasTarget ? `${row.label}: ${formatCount(row.completed)} de una meta de ${formatCount(row.target)}` : `${row.label}: ${formatCount(row.completed)} finalizaciones`));
+                    completed.append(makeProgress(row.completed, maximum, hasTarget ? `${row.label}: ${formatCount(row.completed)} de una meta de ${formatCount(row.target)}` : `${row.label}: ${formatCount(row.completed)} encuestas completas`));
                     if (hasTarget) {
                         const percentage = Math.round(Math.min(100, Math.max(0, Number(row.progress_percent) || 0)));
                         completed.append(element("span", row.is_full ? "target-note target-full" : "target-note", row.is_full ? `Meta ${formatCount(row.target)} · cubierta` : `Meta ${formatCount(row.target)} · ${percentage}%`));
@@ -140,10 +144,10 @@
             }
             const footnotes = [];
             if (count(dimension.missing_completed) || count(dimension.missing_in_progress)) {
-                footnotes.push(`Sin dato: ${formatCount(dimension.missing_completed)} finalizaron y ${formatCount(dimension.missing_in_progress)} en curso.`);
+                footnotes.push(`Sin dato: ${formatCount(dimension.missing_completed)} encuestas completas y ${formatCount(dimension.missing_in_progress)} en curso.`);
             }
             if (!rows.some((row) => row.target !== null && row.target !== undefined)) {
-                footnotes.push("Las barras muestran la distribución de las finalizaciones, no metas de reclutamiento.");
+                footnotes.push("Las barras muestran la distribución de las encuestas completas, no metas de reclutamiento.");
             }
             if (footnotes.length) card.append(element("p", "panel-footnote", footnotes.join(" ")));
             container.append(card);
@@ -160,7 +164,7 @@
             container.append(element("p", "panel-empty", "Todavía no hay datos disponibles para este cruce."));
             return;
         }
-        const { wrapper, tbody } = tableShell(["Edad", ...columns.map((column) => column.label)], "matrix-table", "Cruce de edad y género: finalizaciones y participación en curso");
+        const { wrapper, tbody } = tableShell(["Edad", ...columns.map((column) => column.label)], "matrix-table", "Cruce de edad y género: encuestas completas y participación en curso");
         rows.forEach((row) => {
             const tr = element("tr");
             const label = element("th", "", row.label || "Sin dato");
@@ -173,7 +177,7 @@
                     td.append(element("span", "", "—"));
                 } else {
                     const completed = element("strong", "completed-number", formatCount(cell.completed));
-                    completed.setAttribute("aria-label", `${formatCount(cell.completed)} finalizaron`);
+                    completed.setAttribute("aria-label", `${formatCount(cell.completed)} encuestas completas`);
                     td.append(completed, element("span", "matrix-in-progress", `${formatCount(cell.in_progress)} en curso`));
                     if (cell.target !== null && cell.target !== undefined) {
                         td.append(makeProgress(cell.completed, cell.target, `${row.label}, ${column.label}: ${formatCount(cell.completed)} de una meta de ${formatCount(cell.target)}`));
@@ -195,12 +199,12 @@
             container.append(element("p", "panel-empty", "Todavía no hay asignaciones de participantes elegibles."));
             return;
         }
-        const { wrapper, tbody } = tableShell(["Grupo", "Caracterización completa", "En curso", "Finalizaron"], "treatment-table", "Avance de participantes elegibles por grupo experimental");
+        const { wrapper, tbody } = tableShell(["Grupo", "Caracterización completa", "En curso", "Completas", "Finalizadas insuficientes"], "treatment-table", "Avance de participantes elegibles por grupo experimental");
         rows.forEach((row) => {
             const tr = element("tr");
             const label = element("th", "", row.label || "Grupo");
             label.scope = "row";
-            tr.append(label, element("td", "numeric", formatCount(row.eligible_baseline_complete)), element("td", "numeric in-progress-number", formatCount(row.in_progress)), element("td", "numeric completed-number", formatCount(row.completed)));
+            tr.append(label, element("td", "numeric", formatCount(row.eligible_baseline_complete)), element("td", "numeric in-progress-number", formatCount(row.in_progress)), element("td", "numeric completed-number", formatCount(row.completed)), element("td", "numeric", formatCount(row.finished_incomplete)));
             tbody.append(tr);
         });
         container.append(wrapper);
@@ -258,6 +262,8 @@
         [
             ["count-started", "started"], ["count-screened-out", "screened_out"],
             ["count-in-progress", "eligible_in_progress"], ["count-completed", "eligible_completed"],
+            ["count-finished-incomplete", "eligible_finished_incomplete"],
+            ["count-final-screen", "eligible_final_screen_completion"],
             ["count-assigned", "assigned"], ["count-not-started", "not_started"],
             ["count-baseline", "eligible_baseline_complete"]
         ].forEach(([id, key]) => { byId(id).textContent = formatCount(summary[key]); });
@@ -266,8 +272,10 @@
         renderTreatments(data.treatments);
         renderTaskSummary(summary, data.main_task_count);
         renderScreening(summary, data.exclusions);
+        const rule = data.completion_rule;
+        byId("completion-rule-note").textContent = `Completa significa haber llegado a la página final, enviado las ${formatCount(rule.main_task_count)} tareas principales y registrado al menos ${formatCount(rule.minimum_valid_main_choices)} decisiones válidas. Se permiten hasta ${formatCount(rule.maximum_missing_main_choices)} tareas sin selección. Las preguntas que no correspondía responder no se consideran faltantes.`;
         byId("quota-message").textContent = data.targets_configured
-            ? "Las metas configuradas se comparan con las finalizaciones elegibles. El panel informa el avance y no cierra cuotas automáticamente."
+            ? "Las metas configuradas se comparan solo con las encuestas completas elegibles. El panel informa el avance y no cierra cuotas automáticamente."
             : "Metas no configuradas; el panel no cierra cuotas automáticamente.";
         const date = new Date(data.updated_at);
         lastSuccessfulUpdate = date;
