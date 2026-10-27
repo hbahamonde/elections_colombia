@@ -13,6 +13,9 @@ import re
 import unicodedata
 
 from completion_rules import MIN_VALID_MAIN_CHOICES, choice_is_valid, classify_completion
+from conjoint.navigation import (
+    navigation_violation_recorded, study_is_terminated, submitted_task_rounds,
+)
 
 
 class MonitorConfigurationError(ValueError):
@@ -23,7 +26,8 @@ SUMMARY_KEYS = (
     'assigned', 'not_started', 'started', 'screening_pending', 'screened_out',
     'screening_passed', 'baseline_pending', 'eligible_baseline_complete',
     'eligible_in_progress', 'eligible_completed', 'eligible_final_screen_completion',
-    'eligible_finished_incomplete', 'all_main_tasks_submitted',
+    'eligible_finished_incomplete', 'eligible_navigation_incomplete',
+    'eligible_terminated_incomplete', 'all_main_tasks_submitted',
     'main_tasks_submitted', 'main_tasks_with_selection', 'main_tasks_no_selection',
     'deadline_expiries', 'participants_with_timeouts',
 )
@@ -350,7 +354,8 @@ def _empty_snapshot(mode, metadata, status, message):
         'treatments': [
             {'key': key, 'label': TREATMENT_LABELS.get(key, 'Otra condición'),
              'eligible_baseline_complete': 0, 'in_progress': 0, 'completed': 0,
-             'finished_incomplete': 0}
+             'finished_incomplete': 0, 'navigation_incomplete': 0,
+             'terminated_incomplete': 0}
             for key in metadata['treatments']
         ],
         'quota_dimensions': _quota_dimensions([], [], metadata, {}),
@@ -413,8 +418,7 @@ def _aggregate_records(mode, metadata, layout, participants, baselines, task_row
             summary['baseline_pending'] += 1
             continue
         summary['eligible_baseline_complete'] += 1
-        submitted_rounds = [round_number for round_number, task_index in layout['tasks'].items()
-                            if index > task_index]
+        submitted_rounds = submitted_task_rounds(index, layout['tasks'], participant_vars)
         summary['all_main_tasks_submitted'] += len(submitted_rounds) == metadata['main_rounds']
         participant_had_timeout = False
         valid_choices = 0
@@ -432,12 +436,23 @@ def _aggregate_records(mode, metadata, layout, participants, baselines, task_row
             eligible=True, reached_final_screen=index >= layout['summary'],
             submitted_main_tasks=len(submitted_rounds), valid_main_choices=valid_choices,
             main_task_count=metadata['main_rounds'],
+            navigation_violation=navigation_violation_recorded(participant_vars),
+            terminated=study_is_terminated(participant_vars),
+            termination_reason=participant_vars.get('study_termination_reason', ''),
         )
         summary['eligible_final_screen_completion'] += completion['eligible_final_screen_completion']
         if completion['study_complete']:
             cohort = 'completed'
             completed.append(baseline)
             summary['eligible_completed'] += 1
+        elif completion['completion_status'] == 'navigation_incomplete':
+            # Preserve all recorded answers but never fill complete/in-progress
+            # quotas with an interview that failed the navigation rule.
+            cohort = 'navigation_incomplete'
+            summary['eligible_navigation_incomplete'] += 1
+        elif completion['completion_status'].startswith('terminated_'):
+            cohort = 'terminated_incomplete'
+            summary['eligible_terminated_incomplete'] += 1
         elif completion['eligible_final_screen_completion']:
             # Finished questionnaires with fewer than 13 choices are not still
             # participating, and must not fill the recruitment quotas.
@@ -457,7 +472,9 @@ def _aggregate_records(mode, metadata, layout, participants, baselines, task_row
         {'key': key, 'label': TREATMENT_LABELS.get(key, 'Sin condición reconocida'),
          'eligible_baseline_complete': counts['eligible_baseline_complete'],
          'in_progress': counts['in_progress'], 'completed': counts['completed'],
-         'finished_incomplete': counts['finished_incomplete']}
+         'finished_incomplete': counts['finished_incomplete'],
+         'navigation_incomplete': counts['navigation_incomplete'],
+         'terminated_incomplete': counts['terminated_incomplete']}
         for key, counts in treatment_counts.items()
     ]
     snapshot['quota_dimensions'] = _quota_dimensions(completed, in_progress, metadata, targets)

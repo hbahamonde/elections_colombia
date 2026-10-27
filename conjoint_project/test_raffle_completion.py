@@ -30,7 +30,7 @@ from otree.lookup import url_i_should_be_on
 from otree.models import Participant
 from otree.session import create_session
 from starlette.testclient import TestClient
-from conjoint.models import C, Player, screen_out
+from conjoint.models import C, Player, screen_out, assign_candidates
 from conjoint.pages import page_sequence, raffle_registration_is_available
 
 RAFFLE_URL = 'https://bordedata.cl/encuestas/survey/42'
@@ -78,6 +78,11 @@ def prepare(code, index, arm='control_ver_mas', *, baseline=True,
     if excluded:
         screening.country_of_residence = 'CO'
         screen_out(screening, 'residence_colombia')
+    if index == C.NUM_ROUNDS * len(page_sequence) and baseline and not excluded:
+        for row in Player.objects_filter(participant=person):
+            assign_candidates(row)
+            row.decision_side = 'left'
+            row.decision_candidate_id = row.left_candidate_id
     if all_timeouts:
         for round_number in range(C.NUM_PRACTICE_ROUNDS + 1, C.NUM_ROUNDS + 1):
             row = Player.objects_get(participant=person, round_number=round_number)
@@ -132,6 +137,10 @@ class RaffleHTTPTests(unittest.TestCase):
                     document = rendered(prepare(PEOPLE[1], index, arm))
                     self.assertIn('Instrucciones', document)
                     text = readable(document).lower()
+                    self.assertEqual(document.count('aria-label="Cómo avanzar en el estudio"'), 1)
+                    self.assertIn('incompleta', text)
+                    self.assertIn('de inmediato', text)
+                    self.assertNotIn('entrevista', text)
                     self.assertIn('sorteo', text)
                     self.assertRegex(text, r'(?:final|última pantalla)')
                     self.assertRegex(text, r'(?:clic|click|botón|enlace)')
@@ -197,11 +206,11 @@ class RaffleHTTPTests(unittest.TestCase):
                                     baseline=False))
         self.assert_no_raffle_link(document)
 
-    def test_no_choice_timeouts_do_not_disqualify_eligible_completion(self):
+    def test_no_choice_timeouts_never_unlock_raffle_but_remain_recorded(self):
         document = rendered(prepare(PEOPLE[5], C.NUM_ROUNDS * len(page_sequence),
                                     'timer_mostrar_mas', all_timeouts=True))
-        self.assertEqual(sum(anchor.get('href') == RAFFLE_URL
-                             for anchor in Links(document).anchors), 1)
+        self.assert_no_raffle_link(document)
+        self.assertIn('incompleta', readable(document).lower())
         db.new_session()
         person = Participant.objects_get(code=PEOPLE[5])
         for round_number in range(C.NUM_PRACTICE_ROUNDS + 1, C.NUM_ROUNDS + 1):
@@ -211,9 +220,9 @@ class RaffleHTTPTests(unittest.TestCase):
             self.assertTrue(row.countdown_expired)
         db.rollback()
 
-    def test_experiment_page_sequence_and_timing_unchanged(self):
+    def test_experiment_page_sequence_and_nine_second_timing(self):
         self.assertEqual((C.NUM_PRACTICE_ROUNDS, C.NUM_MAIN_ROUNDS,
-                          C.NUM_ROUNDS, C.COUNTDOWN_SECONDS), (5, 15, 20, 20))
+                          C.NUM_ROUNDS, C.COUNTDOWN_SECONDS), (5, 15, 20, 9))
         self.assertEqual([page.__name__ for page in page_sequence], [
             'Consent', 'CountryResidence', 'Nationality', 'LivedInColombia',
             'Questionnaire', 'Intro', 'Task', 'PracticeDone', 'FollowUp', 'Summary'])
@@ -235,7 +244,8 @@ class DisposableRaffleTests(unittest.TestCase):
             interpreter = Path(sys.executable)
         with tempfile.TemporaryDirectory(prefix='conjoint-raffle-http-') as temporary:
             project = Path(temporary)
-            shutil.copy2(source / 'settings.py', project / 'settings.py')
+            for name in ('settings.py', 'completion_rules.py', 'quota_monitor_data.py'):
+                shutil.copy2(source / name, project / name)
             shutil.copytree(source / 'conjoint', project / 'conjoint',
                             ignore=shutil.ignore_patterns('__pycache__'))
             shutil.copytree(source / '_templates', project / '_templates')

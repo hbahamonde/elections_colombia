@@ -27,7 +27,7 @@
             "assigned", "not_started", "started", "screening_pending", "screened_out",
             "screening_passed", "baseline_pending", "eligible_baseline_complete",
             "eligible_in_progress", "eligible_completed", "eligible_final_screen_completion",
-            "eligible_finished_incomplete", "all_main_tasks_submitted",
+            "eligible_finished_incomplete", "eligible_navigation_incomplete", "eligible_terminated_incomplete", "all_main_tasks_submitted",
             "main_tasks_submitted", "main_tasks_with_selection", "main_tasks_no_selection",
             "deadline_expiries", "participants_with_timeouts"
         ]);
@@ -41,7 +41,7 @@
             if (!Array.isArray(dimension.rows)) throw new Error("invalid_data");
             dimension.rows.forEach((row) => requireCounts(row, ["completed", "in_progress"]));
         });
-        data.treatments.forEach((row) => requireCounts(row, ["eligible_baseline_complete", "in_progress", "completed", "finished_incomplete"]));
+        data.treatments.forEach((row) => requireCounts(row, ["eligible_baseline_complete", "in_progress", "completed", "finished_incomplete", "navigation_incomplete", "terminated_incomplete"]));
         data.exclusions.forEach((row) => requireCounts(row, ["count"]));
         if (!data.age_gender || !Array.isArray(data.age_gender.columns) || !Array.isArray(data.age_gender.rows)) throw new Error("invalid_data");
         data.age_gender.rows.forEach((row) => {
@@ -199,12 +199,12 @@
             container.append(element("p", "panel-empty", "Todavía no hay asignaciones de participantes elegibles."));
             return;
         }
-        const { wrapper, tbody } = tableShell(["Grupo", "Caracterización completa", "En curso", "Completas", "Finalizadas insuficientes"], "treatment-table", "Avance de participantes elegibles por grupo experimental");
+        const { wrapper, tbody } = tableShell(["Grupo", "Caracterización completa", "En curso", "Completas", "Finalizadas insuficientes", "Incompletas por navegación", "Terminadas antes de finalizar"], "treatment-table", "Avance de participantes elegibles por grupo experimental");
         rows.forEach((row) => {
             const tr = element("tr");
             const label = element("th", "", row.label || "Grupo");
             label.scope = "row";
-            tr.append(label, element("td", "numeric", formatCount(row.eligible_baseline_complete)), element("td", "numeric in-progress-number", formatCount(row.in_progress)), element("td", "numeric completed-number", formatCount(row.completed)), element("td", "numeric", formatCount(row.finished_incomplete)));
+            tr.append(label, element("td", "numeric", formatCount(row.eligible_baseline_complete)), element("td", "numeric in-progress-number", formatCount(row.in_progress)), element("td", "numeric completed-number", formatCount(row.completed)), element("td", "numeric", formatCount(row.finished_incomplete)), element("td", "numeric", formatCount(row.navigation_incomplete)), element("td", "numeric", formatCount(row.terminated_incomplete)));
             tbody.append(tr);
         });
         container.append(wrapper);
@@ -263,6 +263,8 @@
             ["count-started", "started"], ["count-screened-out", "screened_out"],
             ["count-in-progress", "eligible_in_progress"], ["count-completed", "eligible_completed"],
             ["count-finished-incomplete", "eligible_finished_incomplete"],
+            ["count-navigation-incomplete", "eligible_navigation_incomplete"],
+            ["count-terminated-incomplete", "eligible_terminated_incomplete"],
             ["count-final-screen", "eligible_final_screen_completion"],
             ["count-assigned", "assigned"], ["count-not-started", "not_started"],
             ["count-baseline", "eligible_baseline_complete"]
@@ -273,7 +275,7 @@
         renderTaskSummary(summary, data.main_task_count);
         renderScreening(summary, data.exclusions);
         const rule = data.completion_rule;
-        byId("completion-rule-note").textContent = `Completa significa haber llegado a la página final, enviado las ${formatCount(rule.main_task_count)} tareas principales y registrado al menos ${formatCount(rule.minimum_valid_main_choices)} decisiones válidas. Se permiten hasta ${formatCount(rule.maximum_missing_main_choices)} tareas sin selección. Las preguntas que no correspondía responder no se consideran faltantes.`;
+        byId("completion-rule-note").textContent = `Completa significa haber llegado a la página final, enviado las ${formatCount(rule.main_task_count)} tareas principales, registrado al menos ${formatCount(rule.minimum_valid_main_choices)} decisiones válidas y no tener recargas o regresos registrados desde el inicio de la práctica. Se permiten hasta ${formatCount(rule.maximum_missing_main_choices)} tareas sin selección. Las preguntas que no correspondía responder no se consideran faltantes.`;
         byId("quota-message").textContent = data.targets_configured
             ? "Las metas configuradas se comparan solo con las encuestas completas elegibles. El panel informa el avance y no cierra cuotas automáticamente."
             : "Metas no configuradas; el panel no cierra cuotas automáticamente.";

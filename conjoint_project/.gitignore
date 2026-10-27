@@ -11,3 +11,12 @@ __pycache__/
 *.py[cod]
 .DS_Store
 *.otreezip
+
+# Private response downloads and local credentials must never reach GitHub.
+data_exports/
+.Renviron
+.Renviron.*
+.env
+.env.*
+.Rhistory
+.RData

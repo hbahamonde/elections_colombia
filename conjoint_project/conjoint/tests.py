@@ -92,12 +92,16 @@ class PlayerBot(Bot):
         assert self.player.treatment_arm == self.player.participant.vars[
             'treatment_arm'
         ]
-        assert self.player.countdown_seconds == 20
+        assert C.COUNTDOWN_SECONDS == 9
+        assert self.player.countdown_seconds == C.COUNTDOWN_SECONDS
         assert self.player.timed_task == (
             self.player.treatment_arm == 'timer_mostrar_mas'
         )
 
-        if self.case == 'eligible_timeout' and self.round_number in {6, 7, 8}:
+        # A genuine completion may omit two main choices, but never three.
+        # Third-missing fail-fast behavior is tested through isolated HTTP and
+        # real-browser tests, rather than pretending that bot finishes normally.
+        if self.case == 'eligible_timeout' and self.round_number in {6, 7}:
             texts_opened = self.round_number - 6
             yield pages.Task, dict(
                 left_ideology_opened=texts_opened >= 1,

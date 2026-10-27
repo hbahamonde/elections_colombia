@@ -1,7 +1,14 @@
 import hashlib
+import json
 import random
 
 from otree.api import Page
+
+from .navigation import (
+    navigation_config, navigation_violation_recorded, raw_participant_vars,
+    record_navigation_events, start_navigation_monitoring, study_is_terminated,
+    submitted_task_rounds, terminate_participant,
+)
 
 from .models import (
     C,
@@ -22,9 +29,9 @@ RAFFLE_REGISTRATION_URL = 'https://bordedata.cl/encuestas/survey/42'
 def raffle_registration_is_available(player):
     """Offer the external draw only after eligible study completion.
 
-    A submitted timed task can have no choice. Such timeouts do not disqualify
-    an otherwise completed study, and the registration form is never sent
-    participant codes or questionnaire answers.
+    Up to two submitted main tasks may lack a choice. A third missing main
+    choice or a detected navigation violation prevents completion and access.
+    The registration form is never sent participant codes or questionnaire answers.
     """
     participant = player.participant
     max_index = participant._max_page_index or 0
@@ -40,7 +47,7 @@ def raffle_registration_is_available(player):
     baseline = player.in_round(C.SCREENING_ROUND)
     residence = baseline.field_maybe_none('country_of_residence')
     nationality = baseline.field_maybe_none('nationality')
-    return bool(
+    baseline_eligible = bool(
         baseline.field_maybe_none('consent_accepted')
         and residence
         and nationality
@@ -49,6 +56,49 @@ def raffle_registration_is_available(player):
         and baseline.field_maybe_none('lived_in_colombia') == 'no'
         and not player_was_screened_out(baseline)
         and profile_is_complete(baseline)
+    )
+    return baseline_eligible and study_completion_for_player(player)['study_complete']
+
+
+def study_completion_for_player(player):
+    """Read actual submitted rounds, including a documented fail-fast POST."""
+    from completion_rules import choice_is_valid, classify_completion
+    from quota_monitor_data import _page_layout
+
+    participant = player.participant
+    values = raw_participant_vars(participant)
+    layout = _page_layout(player.session, {
+        'practice_rounds': C.NUM_PRACTICE_ROUNDS,
+        'main_rounds': C.NUM_MAIN_ROUNDS, 'total_rounds': C.NUM_ROUNDS,
+    })
+    index = participant._index_in_pages or 0
+    rounds = submitted_task_rounds(index, layout['tasks'], values)
+    tasks = player.in_rounds(C.NUM_PRACTICE_ROUNDS + 1, C.NUM_ROUNDS)
+    valid = sum(choice_is_valid({
+        name: task.field_maybe_none(name)
+        for name in ('decision_side', 'decision_candidate_id',
+                     'left_candidate_id', 'right_candidate_id')
+    }) for task in tasks if task.round_number in rounds)
+    baseline = player.in_round(C.SCREENING_ROUND)
+    eligible = bool(
+        participant.visited
+        and participant._max_page_index == layout['max_page_index']
+        and baseline.field_maybe_none('consent_accepted')
+        and baseline.field_maybe_none('country_of_residence')
+        and baseline.field_maybe_none('nationality')
+        and not mentions_colombia(baseline.field_maybe_none('country_of_residence'))
+        and not mentions_colombia(baseline.field_maybe_none('nationality'))
+        and baseline.field_maybe_none('lived_in_colombia') == 'no'
+        and not player_was_screened_out(baseline)
+        and profile_is_complete(baseline)
+    )
+    return classify_completion(
+        eligible=eligible, reached_final_screen=index >= layout['summary'],
+        submitted_main_tasks=len(rounds), valid_main_choices=valid,
+        main_task_count=C.NUM_MAIN_ROUNDS,
+        navigation_violation=navigation_violation_recorded(values),
+        terminated=study_is_terminated(values),
+        termination_reason=values.get('study_termination_reason', ''),
     )
 
 
@@ -203,7 +253,87 @@ class LivedInColombia(Page):
             screen_out(self.player, reason)
 
 
-class Intro(Page):
+class NavigationPage(Page):
+    def _termination_response(self, reason=None):
+        from otree.templating import render
+
+        values = raw_participant_vars(self.participant)
+        reason = reason or values.get('study_termination_reason') or 'incomplete'
+        return render('conjoint/Terminated.html', {
+            'study_termination_reason': reason, 'termination_reason': reason,
+        })
+
+    def _must_stop(self):
+        if self.__class__.__name__ == 'Summary' and player_was_screened_out(self.player):
+            return False
+        values = raw_participant_vars(self.participant)
+        if study_is_terminated(values):
+            return True
+        if navigation_violation_recorded(values):
+            # An older recorded flag remains disqualifying after this update.
+            terminate_participant(self.participant, 'navigation_recorded')
+            return True
+        return False
+
+    def get(self):
+        if self._must_stop():
+            return self._termination_response()
+        if (
+            self.__class__.__name__ == 'Summary'
+            and not player_was_screened_out(self.player)
+            and not study_completion_for_player(self.player)['study_complete']
+        ):
+            return self._termination_response('insufficient_choices')
+        return super().get()
+
+    def _increment_index_in_pages(self):
+        if not study_is_terminated(raw_participant_vars(self.participant)):
+            return super()._increment_index_in_pages()
+
+    def post(self):
+        # The regular form POST is a bounded fallback for an unacknowledged
+        # live event. Record it in the same transaction before advancing, so a
+        # final follow-up submission cannot outrun its navigation report.
+        form_data = self._form_data
+        raw_events = form_data.get('_study_navigation_events') if form_data is not None else None
+        if isinstance(raw_events, str) and len(raw_events) <= 32768:
+            try:
+                events = json.loads(raw_events)
+            except (TypeError, ValueError):
+                events = None
+            if isinstance(events, list):
+                payload = {'navigation_events': events}
+                raw_task = form_data.get('_study_navigation_task')
+                if isinstance(raw_task, str) and len(raw_task) <= 8192:
+                    try:
+                        payload['navigation_task'] = json.loads(raw_task)
+                    except (TypeError, ValueError):
+                        pass
+                record_navigation_events(self.player, payload)
+        if self._must_stop():
+            return self._termination_response()
+        if (
+            self.__class__.__name__ == 'Summary'
+            and not player_was_screened_out(self.player)
+            and not study_completion_for_player(self.player)['study_complete']
+        ):
+            return self._termination_response('insufficient_choices')
+        response = super().post()
+        if self._must_stop():
+            return self._termination_response()
+        return response
+
+    def js_vars(self):
+        config = navigation_config(self.player, self.__class__.__name__)
+        config['request_method'] = self.request.method
+        return {'study_navigation': config}
+
+    @staticmethod
+    def live_method(player, data):
+        return record_navigation_events(player, data)
+
+
+class Intro(NavigationPage):
     def is_displayed(self):
         return self.round_number == 1 and player_is_eligible(self.player)
 
@@ -216,15 +346,19 @@ class Intro(Page):
             'is_practice_done_page': False,
             'num_practice_rounds': C.NUM_PRACTICE_ROUNDS,
             'num_main_rounds': C.NUM_MAIN_ROUNDS,
-            'countdown_seconds': C.COUNTDOWN_SECONDS,
+            'countdown_seconds': self.participant.vars['countdown_seconds'],
             'treatment_arm': treatment_arm,
             'is_timer_group': treatment_arm == 'timer_mostrar_mas',
             'is_info_cost_group': treatment_arm == 'captcha_ver_mas',
             'is_control_group': treatment_arm == 'control_ver_mas',
         }
 
+    def before_next_page(self):
+        # Reading/reloading the initial instructions itself is not a violation.
+        start_navigation_monitoring(self.participant)
 
-class Task(Page):
+
+class Task(NavigationPage):
     form_model = 'player'
 
     form_fields = [
@@ -285,9 +419,23 @@ class Task(Page):
         if self.player.field_maybe_none('decision_side') == 'timeout':
             self.player.decision_candidate_id = None
             self.player.decision_side = None
+        if self.round_number > C.NUM_PRACTICE_ROUNDS:
+            from completion_rules import choice_is_valid, MIN_VALID_MAIN_CHOICES
+
+            tasks = self.player.in_rounds(C.NUM_PRACTICE_ROUNDS + 1, self.round_number)
+            missing = sum(not choice_is_valid({
+                name: task.field_maybe_none(name)
+                for name in ('decision_side', 'decision_candidate_id',
+                             'left_candidate_id', 'right_candidate_id')
+            }) for task in tasks)
+            if missing > C.NUM_MAIN_ROUNDS - MIN_VALID_MAIN_CHOICES:
+                terminate_participant(
+                    self.participant, 'insufficient_choices',
+                    submitted_round=self.round_number,
+                )
 
 
-class PracticeDone(Page):
+class PracticeDone(NavigationPage):
     template_name = 'conjoint/Intro.html'
 
     def is_displayed(self):
@@ -305,7 +453,7 @@ class PracticeDone(Page):
             'is_practice_done_page': True,
             'num_practice_rounds': C.NUM_PRACTICE_ROUNDS,
             'num_main_rounds': C.NUM_MAIN_ROUNDS,
-            'countdown_seconds': C.COUNTDOWN_SECONDS,
+            'countdown_seconds': self.participant.vars['countdown_seconds'],
             'treatment_arm': treatment_arm,
             'is_timer_group': treatment_arm == 'timer_mostrar_mas',
             'is_info_cost_group': treatment_arm == 'captcha_ver_mas',
@@ -313,7 +461,7 @@ class PracticeDone(Page):
         }
 
 
-class FollowUp(Page):
+class FollowUp(NavigationPage):
     form_model = 'player'
 
     form_fields = [
@@ -448,7 +596,7 @@ class Questionnaire(Page):
             self.player.occupation_status_other = ''
 
 
-class Summary(Page):
+class Summary(NavigationPage):
     def is_displayed(self):
         return self.round_number == C.NUM_ROUNDS
 

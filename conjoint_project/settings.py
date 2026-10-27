@@ -27,7 +27,20 @@ SESSION_CONFIG_DEFAULTS = dict(
     doc="",
 )
 
-PARTICIPANT_FIELDS = []
+# JSON-backed virtual participant fields. Existing sessions need no SQL reset.
+PARTICIPANT_FIELDS = [
+    'navigation_monitoring_started',
+    'navigation_violation',
+    'navigation_reload_count',
+    'navigation_history_count',
+    'navigation_events',
+    'navigation_partial_task',
+    'study_terminated',
+    'study_termination_reason',
+    'study_terminated_at_utc',
+    'study_termination_page_index',
+    'study_termination_submitted_round',
+]
 SESSION_FIELDS = []
 
 LANGUAGE_CODE = 'en'

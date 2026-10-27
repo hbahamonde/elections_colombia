@@ -6,7 +6,29 @@ Finalización
 
 {{ block content }}
 
-<div style="max-width: 850px; margin: 0 auto; line-height: 1.55;">
+<style>
+    .study-final-check #study-final-content { display: none !important; }
+    .study-final-check #study-final-review { display: block !important; }
+</style>
+<script>
+    // Run before final content is parsed or painted. A previously queued event
+    // must be resolved before any completion statement or raffle link is shown.
+    (function() {
+        const config = window.js_vars && window.js_vars.study_navigation;
+        if (!config) return;
+        let blocked = Boolean(config.study_terminated || config.terminated || config.violation);
+        try {
+            const state = JSON.parse(sessionStorage.getItem('colombia-navigation:' + config.participant_code) || '{}');
+            blocked = blocked || Boolean(state.terminated) || Boolean(state.pending && state.pending.length);
+        } catch (error) { /* Storage restrictions alone do not imply a violation. */ }
+        window.studyFinalBlocked = blocked;
+        if (blocked) document.documentElement.classList.add('study-final-check');
+    }());
+</script>
+<div id="study-final-review" hidden role="status" style="max-width:850px;margin:24px auto;line-height:1.55;">
+    Estamos confirmando el cierre de su participación. Espere un momento.
+</div>
+<div id="study-final-content" style="max-width: 850px; margin: 0 auto; line-height: 1.55;">
     {{ if screened_out }}
     <p>
         Muchas gracias por su interés en participar.
@@ -78,5 +100,15 @@ Finalización
     {{ endif }}
     {{ endif }}
 </div>
+
+<script>
+    if (window.studyFinalBlocked) {
+        document.getElementById('study-final-content').hidden = true;
+        document.querySelectorAll('#study-final-content a[href]').forEach(function(link) {
+            link.removeAttribute('href');
+            link.setAttribute('aria-disabled', 'true');
+        });
+    }
+</script>
 
 {{ endblock }}

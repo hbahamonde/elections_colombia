@@ -1,6 +1,125 @@
 # Running and deploying the conjoint experiment
 
-## Recruitment plan: the soft launch counts toward the final sample
+## Non-negotiable data preservation and current recruitment
+
+**Never delete, reset, truncate, or replace the Render response database or its
+collection session.** Preserve completed, incomplete, screened-out, abandoned,
+and interrupted cases, including their recorded reasons. Do not use real
+collection slots for automated tests. All simulations and bots must run against
+isolated disposable local databases, with no Render credentials or connection.
+Existing participant and monitoring links must remain unchanged.
+
+The next recruitment batch is 30 additional people under the nine-second
+configuration. These paid observations must be retained for analysis, not
+discarded as disposable tests. The canonical R analysis now automatically
+includes qualifying post-pretest respondents whose displayed tasks consistently
+record the nine-second version and one treatment arm. An optional explicit UTC
+launch cutoff remains available. All other records remain in the raw/audit
+objects. The original October 19–20 twenty-second pre-test is kept separately
+for its frozen calibration figure. Do not create a new Figure A1 comparison
+panel until Hector requests it after the additional recruitment.
+
+These local source changes do not themselves update Render. Push through the
+existing GitHub workflow and confirm the deploy succeeds before recruitment
+uses the revised behavior. No reset or schema change is required.
+
+## Current source configuration: nine-second deadline
+
+New interviews in the time-pressure arm have a **nine-second deadline** in all
+five practice tasks and all fifteen main tasks. Instructions before and after
+practice use the same saved deadline as the participant's tasks. The countdown
+starts only when both photographs have loaded and become visible.
+
+Control and arithmetic-cost participants remain untimed. Assignment is still
+one treatment per participant for the entire interview, not a new treatment
+draw on each task. Arithmetic access requirements are unchanged.
+
+Previously started interviews retain their original deadline throughout the
+remaining tasks. Historical responses keep their recorded 20-second metadata;
+unused slots in an older session receive nine seconds on their first visit.
+The existing `treatment_arm`, `timed_task`, `info_condition`, `countdown_seconds`,
+`countdown_expired`, practice/main indices, candidate IDs and all response and
+information-acquisition fields remain in the export. A deadline value alone
+does not identify the timed arm: use `timed_task` and `treatment_arm`.
+
+No database reset or schema migration is needed. Source edits become live only
+after the updated code is pushed and successfully deployed. Do not run test
+participants in the live collection session. The local simulation below copies
+only source code into a temporary project and uses disposable SQLite, never
+Render or the project's response database:
+
+```bash
+.venv/bin/python -m unittest -v test_time_pressure test_raffle_completion
+```
+
+The paper and canonical R script use a common nine-second window for prospective
+timing comparisons, without truncating the stored raw response durations. The
+frozen pre-test and Figure A1 retain the exploratory twenty-second condition.
+Historical launch descriptions below document the earlier configuration.
+
+## Browser-navigation rule
+
+After acknowledging the initial instructions, participants must not reload the
+page or use browser Back/Forward during practice, the main tasks or follow-ups.
+The warning appears before and after practice, in all three arms. Detected
+events make participation **incomplete for quotas and analysis and immediately
+end participation**. The browser freezes while evidence is saved. The server
+then renders a separate stopped-participation screen at the current URL, never
+the normal completion screen or prize-registration link. Responses are retained.
+Refreshing the initial instructions before continuing or revisiting the final
+screen does not invalidate an interview.
+
+Evidence is stored through oTree's participant-scoped live channel, retried
+after reconnection, and included in normal form submissions as a backup. The
+dashboard separates navigation-related incomplete interviews from completed
+interviews and ordinary unfinished attempts. Navigation-excluded cases do not
+fill either completed or pending quota counts.
+
+Both standard wide and custom exports include the participant fields
+`navigation_monitoring_started`, `navigation_violation`,
+`navigation_reload_count`, `navigation_history_count`, and `navigation_events`.
+`navigation_partial_task` retains bounded last-observed telemetry separately
+from submitted answers; it never invents a submitted vote. The termination
+fields record `study_terminated`, `study_termination_reason`,
+`study_terminated_at_utc`, `study_termination_page_index`, and, only where an
+actual task POST caused termination, `study_termination_submitted_round`.
+Events record their type, page, round and server UTC using existing JSON
+storage, so no SQL columns or database reset are needed. Older responses
+without monitoring records remain **unknown**, not invented violations or
+proof of clean behavior.
+
+Timed tasks preserve first-visible timing and partial information records in
+browser session storage, but a detected reload now stops rather than restarting
+or resuming the task. Storage-disabled browsers may not preserve that clock,
+but observable reloads are still reported and stopped. Browser controls cannot
+reliably be disabled, and detection is
+best effort rather than proof of intent. Ordinary Continue, automatic timed
+advances, validation errors, reconnections and tab hiding do not themselves
+create violations. Failed photographs have an in-place retry button.
+
+Local-only tests, including real Chrome against disposable SQLite:
+
+```bash
+.venv/bin/python -m unittest -v test_navigation_backend test_navigation_frontend test_navigation_integration
+```
+
+Final local audit on 27 October 2026: `python -m unittest discover -v` passed
+all 63 tests, including seven full oTree bot cases, actual Chrome reload and
+Back/Forward, disconnected-live-channel fallback, final-screen GET/POST guards,
+13-versus-12-choice eligibility, third-missing termination, native/custom exports,
+monitor aggregation and synthetic downloader checks. Embedded checks also
+covered 17 navigation JavaScript scenarios and 15 task-clock scenarios. A
+separate in-memory R simulation accepted 30 complete nine-second cases across
+all three arms and excluded recorded terminations while retaining their audit
+records. No real participant was created and no production database was opened.
+Protected local response/export checksums were unchanged. Figure A1 was not
+regenerated. This audit verifies local source, not a successful Render deploy.
+
+## Historical recruitment plan before the calibration decision
+
+The following describes the earlier launch plan. The current analytical cohort
+and preservation rules above take precedence; historical raw responses are
+never deleted when analytical inclusion changes.
 
 The first **30 eligible, completed panel surveys** constitute the soft launch
 and count toward the **462 eligible completions in total**. After these 30,
@@ -99,6 +218,108 @@ The separate PageTimes export provides per-page submission timestamps as Unix
 seconds. There is no single overall completion-datetime field, and the final
 screen itself has no submit action. Do not mistake a task-duration field for a
 calendar timestamp.
+
+## Downloading the collected responses
+
+Download from the **oTree study website**, not from the Render infrastructure
+dashboard. Open <https://colombia-conjoint.onrender.com/login> and sign in as
+the researcher/admin account (normally `admin`). Its password is the value of
+`OTREE_ADMIN_PASSWORD` under the paid `colombia-conjoint` service's Render
+**Environment** settings. It is not your Render account password and not
+Gabriel's read-only monitor password. Do not share researcher credentials with
+the panel company.
+
+For the current official session, use this session-specific CSV download after
+signing in:
+
+<https://colombia-conjoint.onrender.com/ExportWide?session_code=fhcmy7rf&format=csv_bom>
+
+This wide export contains all questionnaire and task fields for this session,
+including the 30-person soft launch. Do not use an unfiltered all-session export
+for analysis without separating the archived technical sessions.
+
+### Refreshing the data from R
+
+The single `visual_conjoint_design.R` file now downloads the data, prepares the
+analysis datasets, calculates descriptive statistics and simple point estimates,
+and rebuilds the paper through `visual_conjoint_design.Rnw`. In R or RStudio, run:
+
+```r
+source("/Users/hectorbahamonde/research/elections_colombia/conjoint_project/visual_conjoint_design.R")
+```
+
+Or, from Terminal in this project folder:
+
+```bash
+Rscript visual_conjoint_design.R
+```
+
+On this Mac, the script retrieves the oTree administrator password from macOS
+Keychain. If it has not been saved yet, a secure prompt asks once. The script
+saves it only after a successful login and a validated official-session export.
+Subsequent runs reuse it automatically, without browser sign-in or password
+entry. macOS may request Keychain access permission, for example after an R
+update or when the Keychain is locked. Passwords are never written into this
+script, project files, or exported data. The required packages (`httr`, `xml2`,
+`askpass`, and `keyring`) are installed on this Mac. No API key, database
+connection, Render setting change, deployment, or recurring job is required.
+
+The saved item is specific to this server and admin account. An explicit
+`password` argument or `OTREE_ADMIN_PASSWORD` environment value takes precedence.
+If the admin password changes, run
+`download_study_data(password = .study_prompt_password())` once to verify and
+update the Keychain item. Do not type the password directly into R code or its
+console history. `remember_password = FALSE` disables Keychain use for that run.
+
+Each successful run validates the current official session and saves the raw
+CSV bytes in `data_exports/latest.csv`, plus a separate UTC-timestamped copy in
+`data_exports/snapshots/`. Existing snapshots are never overwritten. A failed
+login or invalid export leaves the previous latest copy untouched. These private
+downloads are excluded from Git by `.gitignore`. The saved login resides in
+macOS Keychain, outside the repository.
+
+The original CSV has one row per **allocated slot**, so this 600-slot session
+can produce 600 rows even when only 30 people have completed. `study$started`
+selects only rows whose `participant.visited` flag is true. This includes
+partial and screened-out attempts, not only eligible completed surveys.
+`study$all_allocated` retains every original row. The downloader does not
+redefine completion, exclude timed-out respondents, drop the soft-launch
+cohort, or modify any server data. All imported fields remain character values,
+preserving IDs and the original field names for later analysis.
+
+Run the function again whenever you need a fresh copy. This is a point-in-time
+download, not a live-linked dataframe or an ongoing background monitor.
+
+### One R file and one Rnw manuscript
+
+All downloading and analysis code lives in `visual_conjoint_design.R`. Its named,
+commented chunks are reused by `visual_conjoint_design.Rnw`. Edit the paper prose
+in the Rnw file. The TeX and PDF files are generated outputs. Running the R file
+refreshes the data once and then knits and compiles the paper. Knitting alone
+uses the saved local export and does not contact Render or Keychain.
+
+The current analysis supports straightforward daily monitoring. It reports
+sample characteristics, recruitment coverage, task means, perceived hurry and
+effort, arithmetic-access checks, eight primary process point estimates, and
+four candidate-gender interactions. It retains 95% confidence intervals and
+two-sided significance tests, using respondent clustering for process outcomes
+and respondent/candidate clustering for candidate outcomes. Raw and Holm-adjusted
+p-values follow the proposal's separate test families. More elaborate robustness
+models and mediation remain for later. Daily monitoring is not a sequential
+significance-based stopping rule.
+
+Useful R objects after a run are `dat` (visited respondents in the original wide
+format), `analysis_people` (one row per eligible sequence starter), `tasks` (one
+row per submitted analytical task), and `candidate_tasks` (two rows per task).
+The latter three are also saved privately under `data_exports/`. Aggregate
+point estimates and plot PDFs are saved under `analysis_outputs/` and included
+in the paper. No individual response records enter the manuscript.
+
+To rebuild without downloading again, set `options(colombia.refresh_data=FALSE)`
+before sourcing the R file. Set it back to `TRUE` for routine fresh-data runs.
+The Rnw reuses the analysis chunks but skips the live-download chunk automatically.
+The existing clear-workspace command at the top of your R file is retained, so
+sourcing the entire R file clears the current R workspace first.
 
 ## Prize-draw registration after completion
 
@@ -300,7 +521,7 @@ quotas or screen out participants automatically.
 
 ## Final pretest adjustments
 
-The timed condition allows 20 seconds per task, including practice. Practice
+The original pre-test timed condition allowed 20 seconds per task, including practice. Practice
 uses the participant's assigned condition throughout: the countdown, the
 addition before opening information, or unrestricted access to information.
 The decision clock starts after both candidate photos are loaded and visible.
@@ -308,9 +529,88 @@ The decision clock starts after both candidate photos are loaded and visible.
 The data export includes `stimulus_load_seconds` for photo-loading time and
 `time_spent_seconds` for elapsed decision time. Existing information-opening,
 click, hover, and timeout measures are retained. A timeout without a choice
-leaves the choice and follow-up fields missing and advances to the next task.
+leaves the choice and follow-up fields missing. The first two such missing main
+choices advance normally; a third now ends participation immediately because
+the 13-of-15 completion threshold can no longer be reached. Practice omissions
+do not count toward this threshold.
 
 The political self-placement question now uses the requested 1–10 scale
 (1 = left, 10 = right). Earlier test responses used 0–10 and are left unchanged.
 The project migration adds the loading-time column without deleting responses;
 the local launcher and Render's pre-deployment command run it automatically.
+
+### Completion rule and analytical sample
+
+An eligible completed interview must reach the final study screen, submit all
+15 main tasks, contain at least 13 valid candidate selections, and have no
+detected prohibited browser navigation. Up to two
+main tasks may have no candidate choice. Practice responses and intentionally
+inapplicable follow-up questions are not completion failures. A deadline expiry
+after a valid choice still counts as a valid choice.
+
+The public recruitment monitor and the oTree custom data export share the
+read-only rule in `completion_rules.py`. The monitor counts only qualifying
+interviews toward quotas. Finished interviews below the threshold are reported
+separately from participants who are still in progress. Navigation-excluded
+interviews are also reported separately and never fill quotas. Under the current
+rule, detected navigation and a third missing main choice stop participation
+immediately. Incomplete cases never receive the normal final screen or its
+prize-registration link, even if an old URL is revisited. The third submitted
+task is counted accurately without advancing the index or inventing future
+submissions. No inactivity timeout is imposed by this rule.
+
+In oTree administration, open **Data > Custom data exports > conjoint
+(custom_export)** to obtain original round responses together with
+`study_complete`, `eligible_final_screen_completion`, `completion_status`,
+the required threshold, and submitted/valid/missing main-task counts. These
+fields are computed when downloading, so existing responses are classified
+without resetting, migrating, or backfilling the database. The standard wide
+export also includes the participant navigation fields described above.
+
+The single `visual_conjoint_design.R` file applies the same 13-of-15 rule before
+all substantive analyses. `dat`, `analysis_people`, `tasks`, and
+`candidate_tasks` include only qualifying interviews. `raw_dat` preserves the
+unfiltered export. The private `data_exports/completion_status.csv` records
+recruitment classifications for auditing. Recruitment Table 1 retains screened-
+out counts but does not report allocated capacity.
+
+Paper Table 5 reports choice-page duration means, medians, and the 75th, 90th,
+and 95th percentiles. Its untimed baseline is the unrestricted timing benchmark.
+These durations do not include the full questionnaire, instructions, practice,
+or follow-up pages. Figure A1 reports mean main-task duration by task and arm
+among the same completed respondents. Completion-conditioned comparisons are
+not automatically full-sample intention-to-treat effects.
+
+### Candidate characteristics and conjoint-format analysis
+
+The same R file reads `_static/conjoint/data/base_final_merged.csv` as the
+candidate reference. It checks every recorded left/right candidate ID against
+that file, rejects duplicate or unmatched IDs, and verifies that the exported
+main classifications and information text match the corresponding source row.
+The current CSV contains 72 profiles, of which 71 have the text required for
+inclusion. All 71 candidate IDs recorded in the study match the reference.
+
+After running the script, use `conjoint_dat` for candidate-level analyses.
+It contains two rows per respondent/task, identified by `choice_set_id` and
+`side`, with the candidate ID, all original candidate metadata, readable
+gender/ideology/dominance/age categories, numerical facial measurements,
+information opening, condition, timing, and respondent characteristics.
+Only qualifying completed interviews enter this dataframe.
+
+`chosen` is the conventional 1/0 candidate-choice outcome and remains missing
+for both alternatives when no choice was registered. `selected` is the
+proposal's registered-selection event, with two zeros in such a submitted task.
+The original decision ID remains missing. These two variables answer different
+questions and must not be silently interchanged.
+
+`candidate_catalogue` retains the source CSV. `candidate_profiles` gives one row
+per presented candidate, all source metadata, and descriptive selection and
+information-opening rates. The existing private `analysis_candidates.csv`
+contains `conjoint_dat`; `analysis_candidate_profiles.csv` contains the lookup.
+
+Appendix B reports shown/chosen counts and rates, plus an exploratory joint
+four-characteristic model and coefficient plot. The model uses the registered-
+selection event and permits associations to differ across conditions. Estimates
+have two-way respondent/candidate clustered confidence intervals and unadjusted
+exploratory p-values. Because whole profiles, not their component attributes,
+were randomized, these are adjusted associations rather than causal AMCEs.

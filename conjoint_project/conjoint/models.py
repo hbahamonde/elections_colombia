@@ -364,7 +364,7 @@ class C(BaseConstants):
     NUM_MAIN_ROUNDS = 15
     NUM_ROUNDS = NUM_PRACTICE_ROUNDS + NUM_MAIN_ROUNDS
 
-    COUNTDOWN_SECONDS = 20
+    COUNTDOWN_SECONDS = 9
 
     TREATMENT_ARMS = [
         'timer_mostrar_mas',
@@ -601,7 +601,8 @@ def custom_export(players):
     """Export original round responses plus read-only completion metadata.
 
     Available under this app's custom data export in oTree administration. The
-    normal wide export is unchanged. Every original Player export field is
+    original wide fields are unchanged, with navigation added as JSON-backed
+    virtual participant fields. Every original Player export field is
     retained, including missing choices and intentionally skipped follow-ups.
     Participant-level status is recalculated from the responses at download
     time and repeated on each round, so historical responses need no migration
@@ -613,6 +614,11 @@ def custom_export(players):
     )
     from otree.export import get_fields_for_csv
     from otree.models import Participant
+    from .navigation import (
+        NAVIGATION_EXPORT_FIELDS, TERMINATION_EXPORT_FIELDS,
+        navigation_violation_recorded, raw_participant_vars,
+        study_is_terminated, submitted_task_rounds,
+    )
     from quota_monitor_data import (
         MonitorConfigurationError,
         _age_band,
@@ -634,6 +640,7 @@ def custom_export(players):
     yield (
         ['session.code']
         + [f'participant.{name}' for name in participant_fields]
+        + [f'participant.{name}' for name in NAVIGATION_EXPORT_FIELDS + TERMINATION_EXPORT_FIELDS]
         + ['subsession.round_number']
         + [f'player.{name}' for name in player_fields]
         + list(completion_fields)
@@ -703,11 +710,11 @@ def custom_export(players):
                 'age_years', 'gender_identity', 'education_level', 'occupation_status',
             ))
         )
+        submitted_rounds = submitted_task_rounds(index, layout['tasks'], participant_vars)
         submitted = {
             player.round_number: player
             for player in round_players
-            if player.round_number in layout['tasks']
-            and index > layout['tasks'][player.round_number]
+            if player.round_number in submitted_rounds
         }
         valid_choices = sum(choice_is_valid({
             name: player.field_maybe_none(name)
@@ -720,6 +727,9 @@ def custom_export(players):
             submitted_main_tasks=len(submitted),
             valid_main_choices=valid_choices,
             main_task_count=C.NUM_MAIN_ROUNDS,
+            navigation_violation=navigation_violation_recorded(participant_vars),
+            terminated=study_is_terminated(participant_vars),
+            termination_reason=participant_vars.get('study_termination_reason', ''),
         )
 
     for player in rows:
@@ -728,6 +738,8 @@ def custom_export(players):
         yield (
             [player.session.code]
             + [getattr(participant, name) for name in participant_fields]
+            + [raw_participant_vars(participant).get(name)
+               for name in NAVIGATION_EXPORT_FIELDS + TERMINATION_EXPORT_FIELDS]
             + [player.round_number]
             + [player.field_maybe_none(name) for name in player_fields]
             + [completion[name] for name in completion_fields]
@@ -771,6 +783,17 @@ def ensure_participant_vars(player):
 
     assign_treatment(player)
 
+    if 'countdown_seconds' not in participant.vars:
+        # Fix the deadline once for an interview, just like its treatment arm.
+        # A participant who already practised under an older deadline keeps it;
+        # unused slots in an existing session receive the current deadline.
+        first_task = player.in_round(C.SCREENING_ROUND)
+        already_practised = bool(first_task.field_maybe_none('left_candidate_id'))
+        participant.vars['countdown_seconds'] = (
+            first_task.countdown_seconds if already_practised
+            else C.COUNTDOWN_SECONDS
+        )
+
     if 'drawn_candidates' not in participant.vars:
         participant.vars['drawn_candidates'] = draw_candidates_for_participant()
 
@@ -786,7 +809,6 @@ def save_candidate_to_player(player, side, candidate):
 
 def assign_candidates(player):
     ensure_participant_vars(player)
-    player.countdown_seconds = C.COUNTDOWN_SECONDS
 
     if (
         player.field_maybe_none('left_candidate_id')
@@ -794,6 +816,8 @@ def assign_candidates(player):
     ):
         return
 
+    # Never relabel a previously displayed task or its recorded responses.
+    player.countdown_seconds = player.participant.vars['countdown_seconds']
     treatment_arm = player.participant.vars['treatment_arm']
 
     player.is_practice_round = player.round_number <= C.NUM_PRACTICE_ROUNDS

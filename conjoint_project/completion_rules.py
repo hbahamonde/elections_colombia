@@ -2,8 +2,10 @@
 
 Finishing the questionnaire and meeting the analytical completion threshold are
 separate events. A completed study requires all 15 main tasks to be submitted
-and at least 13 valid candidate choices. Practice responses and intentionally
-inapplicable follow-up questions do not enter this rule.
+and at least 13 valid candidate choices, without a recorded navigation violation
+after the initial instructions are acknowledged. Practice choices and purposely
+inapplicable follow-ups do not enter the choice threshold. Navigation monitoring
+does apply during practice as well as main tasks.
 """
 
 MIN_VALID_MAIN_CHOICES = 13
@@ -20,13 +22,17 @@ def choice_is_valid(task):
 
 
 def classify_completion(*, eligible, reached_final_screen, submitted_main_tasks,
-                        valid_main_choices, main_task_count=15):
+                        valid_main_choices, main_task_count=15,
+                        navigation_violation=False, terminated=False,
+                        termination_reason=''):
     """Return a reproducible status without changing any stored response.
 
     An expired timer with a previously registered valid choice still counts as
     a choice. Up to two submitted main tasks may have no valid choice. Reaching
     the last screen alone is not sufficient, and no-choice tasks remain missing
-    responses rather than being imputed or replaced by a candidate.
+    responses rather than being imputed or replaced by a candidate. A recorded
+    reload/history violation excludes the case without deleting any responses
+    or changing whether the participant reached the final screen.
     """
     counts = (submitted_main_tasks, valid_main_choices, main_task_count)
     if any(isinstance(value, bool) or not isinstance(value, int) for value in counts):
@@ -39,11 +45,19 @@ def classify_completion(*, eligible, reached_final_screen, submitted_main_tasks,
     final_screen_completion = bool(eligible and reached_final_screen)
     complete = bool(
         final_screen_completion
+        and not navigation_violation
+        and not terminated
         and submitted_main_tasks == main_task_count
         and valid_main_choices >= MIN_VALID_MAIN_CHOICES
     )
     if not eligible:
         status = 'ineligible'
+    elif navigation_violation:
+        status = 'navigation_incomplete'
+    elif terminated:
+        status = ('terminated_insufficient_choices'
+                  if termination_reason == 'insufficient_choices'
+                  else 'terminated_incomplete')
     elif complete:
         status = 'complete'
     elif reached_final_screen:

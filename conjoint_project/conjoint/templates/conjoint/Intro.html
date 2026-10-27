@@ -8,6 +8,20 @@ Instrucciones
 
 <div style="max-width: 850px; margin: 0 auto; line-height: 1.55;">
 
+    <section aria-label="Cómo avanzar en el estudio" style="margin: 20px 0; padding: 16px; border: 1px solid #a27b22; border-radius: 10px; background: #fff8e6;">
+        <p style="margin: 0;"><strong>Importante:</strong> Desde el inicio de la práctica y hasta finalizar el estudio,
+            no actualice ni recargue la página y no utilice los botones <strong>Atrás</strong> o
+            <strong>Adelante</strong> del navegador. Avance únicamente con los botones del estudio.
+            Si se detecta una recarga o el uso de esos botones del navegador, su participación
+            terminará de inmediato, quedará registrada como incompleta y se excluirá del análisis.
+            No podrá continuar ni acceder al formulario final de inscripción al sorteo.
+            Si una fotografía no carga, utilice el botón de reintento de la pantalla, sin recargar la página.</p>
+        <p style="margin: 10px 0 0;">Para completar el estudio, debe registrar una elección en al menos
+            <strong>13 de las 15 decisiones principales</strong>. Se permiten hasta dos decisiones principales
+            sin elección. Si acumula una tercera, su participación terminará de inmediato como incompleta
+            y no podrá acceder al formulario final de inscripción al sorteo. Las rondas de práctica no cuentan para este límite.</p>
+    </section>
+
         {% if is_practice_done_page %}
 
         <p style="font-size: 22px; text-align: center; margin-bottom: 24px;">
@@ -53,8 +67,9 @@ Instrucciones
                     <li>En este estudio, la ideología se presenta como de izquierda, centro o derecha.</li>
                     <li>Su tarea es elegir a quién le daría su voto en las elecciones para la alcaldía de su comuna.</li>
                     <li>Contará con <strong>{{ countdown_seconds }} segundos para cada decisión</strong>, como en la práctica. El tiempo restante será visible en pantalla.</li>
+                    <li>El contador comenzará cuando ambas fotografías estén listas y visibles.</li>
                     <li>Le pedimos tomar su decisión dentro del tiempo disponible.</li>
-                    <li>Una vez finalizado el tiempo, la plataforma avanzará automáticamente a la siguiente tarea.</li>
+                    <li>Al terminar el tiempo, se guardará la última opción que haya seleccionado y la plataforma avanzará automáticamente. Si no seleccionó ninguna opción, avanzará sin registrar una elección.</li>
                     <li>Responda utilizando la información disponible en ese momento.</li>
                 </ul>
 
@@ -136,12 +151,13 @@ Instrucciones
         <p>
             Contará con <strong>{{ countdown_seconds }} segundos para cada decisión</strong>,
             tanto en la práctica como en el estudio principal. El tiempo restante será visible en la
-            pantalla mediante un contador.
+            pantalla mediante un contador, que comenzará cuando ambas fotografías estén listas y visibles.
         </p>
 
         <p>
-            Le pedimos tomar su decisión dentro del tiempo disponible. Una vez finalizado el tiempo, la
-            plataforma avanzará automáticamente a la siguiente tarea.
+            Le pedimos tomar su decisión dentro del tiempo disponible. Al terminar el tiempo, se guardará
+            la última opción que haya seleccionado y la plataforma avanzará automáticamente. Si no
+            seleccionó ninguna opción, avanzará sin registrar una elección.
         </p>
     {% elif is_info_cost_group %}
         <p>

@@ -77,8 +77,8 @@
             {% endif %}
             <span id="stimulus-status" class="stimulus-status" role="status" aria-live="polite">Cargando fotografías. El tiempo aún no comienza.</span>
             <span id="stimulus-error" class="stimulus-error" role="alert" hidden>
-                No se pudieron cargar las fotografías. Vuelva a cargar para intentarlo de nuevo; el tiempo aún no comienza.
-                <button type="button" class="retry-btn" onclick="window.location.reload()">Volver a cargar</button>
+                No se pudieron cargar las fotografías. Utilice el botón de reintento; el tiempo aún no comienza.
+                <button type="button" class="retry-btn" onclick="retryCandidateImages()">Reintentar fotografías</button>
             </span>
         </div>
 
@@ -210,6 +210,8 @@
     let alreadySubmitted = false;
     let stimuliReady = false;
     let initializationStarted = false;
+    let elapsedBeforeReload = 0;
+    let savedTaskState = null;
     const taskForm = document.getElementById('next-btn').form;
 
     let timedTask = {{ timed_task|json }};
@@ -236,11 +238,64 @@
     let rightHoverSeconds = 0;
 
     function elapsedSeconds() {
-        return startTime === null ? 0 : ((endTime === null ? performance.now() : endTime) - startTime) / 1000;
+        return startTime === null ? 0 : elapsedBeforeReload + ((endTime === null ? performance.now() : endTime) - startTime) / 1000;
+    }
+
+    // Only timed tasks persist a first-visible deadline. Control and math keep
+    // exactly their existing timing and interaction behavior.
+    function saveTaskProgress() {
+        if (!timedTask || !savedTaskState || !window.studyNavigation) return;
+        const fields = {};
+        taskForm.querySelectorAll('input[type="hidden"][name]').forEach(function(input) {
+            fields[input.name] = input.value;
+        });
+        savedTaskState.fields = fields;
+        window.studyNavigation.saveTask(savedTaskState);
+    }
+
+    function restoreTaskProgress() {
+        if (!timedTask || !savedTaskState || !savedTaskState.fields) return;
+        Object.keys(savedTaskState.fields).forEach(function(name) {
+            const input = taskForm.querySelector('input[type="hidden"][name="' + name + '"]');
+            if (input) input.value = savedTaskState.fields[name];
+        });
+        const field = function(name) { return document.getElementById('id_' + name).value; };
+        currentChoiceSide = ['left', 'right'].includes(field('decision_side')) ? field('decision_side') : null;
+        firstChoiceMade = currentChoiceSide !== null;
+        choiceChanges = Number(field('choice_changes')) || 0;
+        learnMoreClicks = Number(field('learn_more_clicks')) || 0;
+        infoCostAttempts = Number(field('info_cost_attempts')) || 0;
+        mouseDistance = Number(field('mouse_distance_px')) || 0;
+        leftHoverSeconds = Number(field('left_hover_seconds')) || 0;
+        rightHoverSeconds = Number(field('right_hover_seconds')) || 0;
+        ['left', 'right'].forEach(function(side) {
+            if (field(side + '_ideology_opened') === 'True') {
+                document.getElementById(side + '-ideology-info').style.display = 'block';
+                const button = document.getElementById('learn-' + side);
+                button.disabled = true;
+                button.textContent = 'Información mostrada';
+            }
+        });
+        if (currentChoiceSide) {
+            document.getElementById('choose-' + currentChoiceSide).classList.add('selected-choice');
+            document.getElementById('next-btn').disabled = false;
+        }
+    }
+
+    function cacheActualPartialTask() {
+        const config = window.js_vars && window.js_vars.study_navigation;
+        if (!config || !stimuliReady) return;
+        const fields = {};
+        taskForm.querySelectorAll('input[type="hidden"][name]').forEach(function(input) {
+            if (!input.name.startsWith('_study_navigation_')) fields[input.name] = input.value;
+        });
+        const snapshot = { page_index: config.page_index, fields: fields };
+        window.studyNavigationPartialTask = snapshot;
+        if (window.studyNavigation) window.studyNavigation.savePartialTask(snapshot);
     }
 
     function canInteract() {
-        if (!stimuliReady || alreadySubmitted) {
+        if (!stimuliReady || alreadySubmitted || (window.studyNavigation && window.studyNavigation.isStopped())) {
             return false;
         }
         if (timedTask && elapsedSeconds() >= countdownSeconds) {
@@ -277,6 +332,7 @@
         document.getElementById('id_mouse_distance_px').value = mouseDistance.toFixed(2);
         document.getElementById('id_left_hover_seconds').value = leftHoverSeconds.toFixed(3);
         document.getElementById('id_right_hover_seconds').value = rightHoverSeconds.toFixed(3);
+        saveTaskProgress();
     }
 
     function updateMouseDistance(event) {
@@ -334,6 +390,7 @@
         if (costBox) {
             costBox.style.display = 'none';
         }
+        saveTaskProgress();
     }
 
     function startReveal(side) {
@@ -342,6 +399,7 @@
         }
         learnMoreClicks += 1;
         document.getElementById('id_learn_more_clicks').value = learnMoreClicks;
+        saveTaskProgress();
 
         if (infoCondition === 'captcha_ver_mas') {
             document.getElementById(`${side}-cost-box`).style.display = 'block';
@@ -394,6 +452,7 @@
         document.getElementById(`choose-${side}`).classList.add('selected-choice');
 
         document.getElementById('next-btn').disabled = false;
+        saveTaskProgress();
     }
 
     function stopIntervals() {
@@ -418,10 +477,11 @@
         stopIntervals();
         setTaskControlsEnabled(false);
         document.getElementById('next-btn').disabled = true;
+        if (window.studyNavigation) window.studyNavigation.allowSubmit();
     }
 
     function autoAdvanceAfterTimeout() {
-        if (!stimuliReady || alreadySubmitted) {
+        if (!stimuliReady || alreadySubmitted || (window.studyNavigation && window.studyNavigation.isStopped())) {
             return;
         }
 
@@ -505,27 +565,54 @@
     }
 
     function beginDecision() {
-        if (stimuliReady || alreadySubmitted) return;
+        if (stimuliReady || alreadySubmitted || (window.studyNavigation && window.studyNavigation.isStopped())) return;
         // Both photographs are decoded and revealed together before decision timing begins.
         startTime = performance.now();
+        if (timedTask && window.studyNavigation) {
+            const clock = window.studyNavigation.decisionClock(countdownSeconds);
+            savedTaskState = window.studyNavigation.readTask();
+            elapsedBeforeReload = Math.max(0, (Date.now() - clock.startedAt) / 1000);
+        }
         document.getElementById('id_stimulus_load_seconds').value = (startTime / 1000).toFixed(3);
         stimuliReady = true;
         document.getElementById('candidate-profiles').setAttribute('aria-busy', 'false');
         document.getElementById('stimulus-status').textContent = 'Fotografías listas.';
         setTaskControlsEnabled(true);
+        restoreTaskProgress();
         ['left', 'right'].forEach(function(side) {
             if (document.getElementById(`${side}-card`).matches(':hover')) startHover(side);
         });
-        elapsedInterval = setInterval(updateElapsedTime, 250);
+        elapsedInterval = setInterval(function() {
+            updateElapsedTime();
+            saveTaskProgress();
+        }, 250);
         if (timedTask) {
-            document.getElementById('timer').textContent = countdownSeconds;
+            document.getElementById('timer').textContent = Math.max(0, Math.ceil(countdownSeconds - elapsedSeconds()));
+            if (elapsedSeconds() >= countdownSeconds) {
+                autoAdvanceAfterTimeout();
+                return;
+            }
             countdownInterval = setInterval(function() {
                 const remaining = Math.max(0, Math.ceil(countdownSeconds - elapsedSeconds()));
                 document.getElementById('timer').textContent = remaining;
                 if (remaining === 0) autoAdvanceAfterTimeout();
             }, 100);
-            countdownTimeout = setTimeout(autoAdvanceAfterTimeout, countdownSeconds * 1000);
+            countdownTimeout = setTimeout(autoAdvanceAfterTimeout, Math.max(0, countdownSeconds - elapsedSeconds()) * 1000);
         }
+    }
+
+    function retryCandidateImages() {
+        if (stimuliReady || alreadySubmitted) return;
+        initializationStarted = false;
+        document.getElementById('stimulus-status').hidden = false;
+        document.getElementById('stimulus-error').hidden = true;
+        ['left', 'right'].forEach(function(side) {
+            const image = document.getElementById(side + '-candidate-image');
+            const url = new URL(image.src, window.location.href);
+            url.searchParams.set('_image_retry', String(Date.now()));
+            image.src = url.toString();
+        });
+        initializeStimuli();
     }
 
     async function initializeStimuli() {
@@ -536,6 +623,16 @@
                 imageReady(document.getElementById('left-candidate-image')),
                 imageReady(document.getElementById('right-candidate-image'))
             ]);
+            if (window.js_vars && window.js_vars.study_navigation && !window.studyNavigation) {
+                await new Promise(function(resolve) {
+                    const ready = function() {
+                        clearTimeout(fallback);
+                        resolve();
+                    };
+                    const fallback = setTimeout(resolve, 1500);
+                    window.addEventListener('study-navigation-ready', ready, { once: true });
+                });
+            }
             requestAnimationFrame(function() {
                 document.getElementById('candidate-profiles').classList.remove('stimuli-pending');
                 requestAnimationFrame(beginDecision);
@@ -549,8 +646,32 @@
     }
 
     fitTaskToViewport();
+    window.addEventListener('study-navigation-freeze', function() {
+        if (alreadySubmitted) return;
+        if (stimuliReady) {
+            endTime = performance.now();
+            endHover('left');
+            endHover('right');
+            syncHiddenFields();
+            cacheActualPartialTask();
+        }
+        alreadySubmitted = true;
+        stopIntervals();
+        setTaskControlsEnabled(false);
+        document.getElementById('next-btn').disabled = true;
+    });
     window.addEventListener('resize', fitTaskToViewport);
     window.addEventListener('load', fitTaskToViewport, { once: true });
+    window.addEventListener('pagehide', function() {
+        if (stimuliReady && !alreadySubmitted) {
+            endHover('left');
+            endHover('right');
+            syncHiddenFields();
+            cacheActualPartialTask();
+        } else {
+            saveTaskProgress();
+        }
+    });
     if (window.visualViewport) window.visualViewport.addEventListener('resize', fitTaskToViewport);
     initializeStimuli();
 </script>
