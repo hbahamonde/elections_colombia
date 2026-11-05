@@ -15,7 +15,14 @@
     <main id="study-terminated-screen">
         <h1>Su participación ha finalizado</h1>
         <p>Su participación ha finalizado antes de completar el estudio y ha quedado registrada como incompleta.</p>
+        <p id="termination-reason">{{ termination_explanation }}</p>
         <p>No podrá continuar con las siguientes etapas del estudio.</p>
+        <p>Como no se completó el estudio, no se habilita el formulario de inscripción al sorteo.
+            Esta finalización no constituye un juicio sobre la honestidad de sus respuestas.</p>
+        <p>Si considera que ocurrió un error técnico o necesita una aclaración, escriba al equipo de investigación:
+            <a href="mailto:alejandra.marin@postdoc.uoh.cl">alejandra.marin@postdoc.uoh.cl</a>.
+            Indique el código de referencia <strong>{{ participant_reference }}</strong> y describa lo sucedido.
+            No necesita enviar sus decisiones de voto ni sus respuestas personales.</p>
         <p>Gracias por el tiempo que ha dedicado a participar.</p>
     </main>
 </body>

@@ -1,0 +1,28 @@
+<section id="timing-understanding" aria-labelledby="timing-understanding-title"
+    style="margin: 24px 0; padding: 20px; border: 1px solid #8ca7bf; border-radius: 10px; background: #f2f7fb;">
+    <h4 id="timing-understanding-title">Antes de continuar, comprobemos que las instrucciones estén claras</h4>
+    <p>Estas preguntas no tienen límite de tiempo. Si se equivoca, podrá revisar las instrucciones
+        e intentarlo de nuevo; <strong>equivocarse aquí no lo descalifica</strong>.</p>
+    <fieldset style="margin: 20px 0;">
+        <legend style="font-size: 1rem; font-weight: 600;">¿Cuánto tiempo tendrá para cada decisión entre candidatos(as)?</legend>
+        <label style="display: block; margin: 8px 0;"><input type="radio" name="timing_check_deadline" value="assigned_limit" required {% if timing_check_deadline == 'assigned_limit' %}checked{% endif %}>
+            {{ countdown_seconds }} segundos por decisión, desde que ambas fotografías estén listas y visibles.</label>
+        <label style="display: block; margin: 8px 0;"><input type="radio" name="timing_check_deadline" value="unlimited" required {% if timing_check_deadline == 'unlimited' %}checked{% endif %}>
+            No hay límite de tiempo para las decisiones.</label>
+    </fieldset>
+    <fieldset style="margin: 20px 0;">
+        <legend style="font-size: 1rem; font-weight: 600;">¿Qué ocurre si termina el tiempo y no seleccionó ningún candidato(a)?</legend>
+        <label style="display: block; margin: 8px 0;"><input type="radio" name="timing_check_expiry" value="advance_without_choice" required {% if timing_check_expiry == 'advance_without_choice' %}checked{% endif %}>
+            La plataforma avanza sin registrar una elección.</label>
+        <label style="display: block; margin: 8px 0;"><input type="radio" name="timing_check_expiry" value="automatic_choice" required {% if timing_check_expiry == 'automatic_choice' %}checked{% endif %}>
+            La plataforma elige un candidato(a) por mí.</label>
+    </fieldset>
+    <fieldset style="margin: 20px 0;">
+        <legend style="font-size: 1rem; font-weight: 600;">¿Qué ocurre si acumula tres decisiones principales sin elección?</legend>
+        <label style="display: block; margin: 8px 0;"><input type="radio" name="timing_check_completion" value="third_missing_ends" required {% if timing_check_completion == 'third_missing_ends' %}checked{% endif %}>
+            Mi participación termina como incompleta y no puedo acceder al formulario de inscripción al sorteo.
+            Las omisiones de práctica no cuentan para este límite.</label>
+        <label style="display: block; margin: 8px 0;"><input type="radio" name="timing_check_completion" value="draw_anyway" required {% if timing_check_completion == 'draw_anyway' %}checked{% endif %}>
+            Puedo continuar y acceder al formulario de inscripción al sorteo sin cumplir ese requisito.</label>
+    </fieldset>
+</section>

@@ -1,12 +1,31 @@
 {{ extends 'global/Page.html' }}
 
 {{ block title }}
-Preguntas sobre su decisión
+{% if missing_choice_notice %}Información sobre su avance{% else %}Preguntas sobre su decisión{% endif %}
 {{ endblock }}
 
 {{ block content }}
 
 <div style="max-width: 850px; margin: 0 auto; line-height: 1.5;">
+
+    {% if missing_choice_notice %}
+    <section id="missing-choice-notice" role="status" style="margin: 22px 0; padding: 20px; border: 1px solid #a27b22; border-radius: 10px; background: #fff8e6;">
+        <h4>No se registró una elección en la decisión anterior</h4>
+        <p>Hasta ahora lleva <strong>{{ missing_main_choices }} de las 2 decisiones principales sin elección permitidas</strong>.</p>
+        {% if missing_main_choices == 2 %}
+        <p><strong>Si termina otra decisión principal sin una elección, su participación finalizará como incompleta
+            y no podrá acceder al formulario de inscripción al sorteo.</strong></p>
+        {% else %}
+        <p>Puede continuar. Recuerde que una tercera decisión principal sin elección finalizará su participación
+            como incompleta y no permitirá acceder al formulario de inscripción al sorteo.</p>
+        {% endif %}
+        <p>El límite corresponde a cada decisión, no al tiempo total de la encuesta. Puede elegir con las fotografías;
+            abrir las descripciones es opcional. La plataforma no selecciona un candidato(a) por usted.</p>
+        <p style="margin-bottom: 0;"><strong>Esta pantalla no tiene límite de tiempo.</strong>
+            Lea este aviso y presione Siguiente cuando esté listo(a) para la próxima etapa.</p>
+    </section>
+    <button class="otree-btn-next btn btn-primary" type="submit">Siguiente</button>
+    {% else %}
 
     <p>
         <strong>Decisión {{ main_round_number }} de {{ num_main_rounds }}</strong>
@@ -80,8 +99,11 @@ Preguntas sobre su decisión
 
     {{ next_button }}
 
+    {% endif %}
+
 </div>
 
+{% if not missing_choice_notice %}
 <script>
     function getRealisticVoteValue() {
         const selected = document.querySelector('input[name="realistic_vote"]:checked');
@@ -126,5 +148,6 @@ Preguntas sobre su decisión
         updateDecisionFactors();
     });
 </script>
+{% endif %}
 
 {{ endblock }}

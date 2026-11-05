@@ -92,7 +92,11 @@ Instrucciones
             {{ include 'conjoint/RaffleInstructions.html' }}
         </section>
 
-        {{ next_button }}
+        {% if is_timer_group %}
+            {{ include 'conjoint/TimingUnderstanding.html' }}
+        {% endif %}
+
+        <button class="otree-btn-next btn btn-primary" type="submit">Siguiente</button>
 
     {% else %}
 
@@ -152,6 +156,13 @@ Instrucciones
             Contará con <strong>{{ countdown_seconds }} segundos para cada decisión</strong>,
             tanto en la práctica como en el estudio principal. El tiempo restante será visible en la
             pantalla mediante un contador, que comenzará cuando ambas fotografías estén listas y visibles.
+        </p>
+
+        <p>
+            Este límite es intencional y corresponde a <strong>cada decisión</strong>, no al tiempo total
+            de la encuesta. Las instrucciones y las preguntas posteriores no tienen este límite.
+            Puede elegir solo con las fotografías; abrir y leer las descripciones es opcional.
+            No existen respuestas de voto correctas o incorrectas.
         </p>
 
         <p>
@@ -237,7 +248,11 @@ Instrucciones
         {{ include 'conjoint/RaffleInstructions.html' }}
     </section>
 
-    {{ next_button }}
+    {% if is_timer_group %}
+        {{ include 'conjoint/TimingUnderstanding.html' }}
+    {% endif %}
+
+    <button class="otree-btn-next btn btn-primary" type="submit">Siguiente</button>
 
     {% endif %}
 

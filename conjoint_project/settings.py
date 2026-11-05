@@ -40,6 +40,10 @@ PARTICIPANT_FIELDS = [
     'study_terminated_at_utc',
     'study_termination_page_index',
     'study_termination_submitted_round',
+    'procedure_notice_version',
+    'procedure_notice_acknowledged_at_utc',
+    'timing_understanding_before_practice_at_utc',
+    'timing_understanding_after_practice_at_utc',
 ]
 SESSION_FIELDS = []
 

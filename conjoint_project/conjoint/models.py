@@ -614,6 +614,7 @@ def custom_export(players):
     )
     from otree.export import get_fields_for_csv
     from otree.models import Participant
+    from .communication import PROCEDURE_EXPORT_FIELDS
     from .navigation import (
         NAVIGATION_EXPORT_FIELDS, TERMINATION_EXPORT_FIELDS,
         navigation_violation_recorded, raw_participant_vars,
@@ -640,7 +641,7 @@ def custom_export(players):
     yield (
         ['session.code']
         + [f'participant.{name}' for name in participant_fields]
-        + [f'participant.{name}' for name in NAVIGATION_EXPORT_FIELDS + TERMINATION_EXPORT_FIELDS]
+        + [f'participant.{name}' for name in NAVIGATION_EXPORT_FIELDS + TERMINATION_EXPORT_FIELDS + PROCEDURE_EXPORT_FIELDS]
         + ['subsession.round_number']
         + [f'player.{name}' for name in player_fields]
         + list(completion_fields)
@@ -739,7 +740,7 @@ def custom_export(players):
             [player.session.code]
             + [getattr(participant, name) for name in participant_fields]
             + [raw_participant_vars(participant).get(name)
-               for name in NAVIGATION_EXPORT_FIELDS + TERMINATION_EXPORT_FIELDS]
+               for name in NAVIGATION_EXPORT_FIELDS + TERMINATION_EXPORT_FIELDS + PROCEDURE_EXPORT_FIELDS]
             + [player.round_number]
             + [player.field_maybe_none(name) for name in player_fields]
             + [completion[name] for name in completion_fields]

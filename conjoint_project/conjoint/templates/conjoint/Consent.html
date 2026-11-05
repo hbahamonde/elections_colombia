@@ -60,6 +60,36 @@ Consentimiento informado
             perfiles de candidatos que se le presentarán. Este estudio se realizará de manera online y le tomará alrededor de
             30 minutos.
         </p>
+        <p>
+            Algunas personas, seleccionadas al azar, dispondrán de solo
+            <strong>{{ possible_countdown_seconds }} segundos para cada decisión entre candidatos(as)</strong>.
+            Este límite es intencional y forma parte del estudio; no corresponde a una falla de la plataforma.
+            No se aplica al tiempo para leer las instrucciones ni a las preguntas posteriores.
+            Antes de comenzar, realizará <strong>{{ num_practice_rounds }} rondas de práctica</strong>
+            bajo las mismas condiciones que tendrá en las {{ num_main_rounds }} decisiones principales.
+        </p>
+        <div style="padding: 16px; border: 1px solid #a27b22; border-radius: 10px; background: #fff8e6;">
+            <p style="margin-top: 0;"><strong>Requisitos para completar el estudio y acceder al sorteo</strong></p>
+            <p>
+                Debe llegar a la pantalla final y registrar una elección en al menos
+                <strong>13 de las 15 decisiones principales</strong>. Si se termina el tiempo sin una selección,
+                la plataforma avanzará sin registrar una elección. Se permiten hasta dos decisiones principales
+                sin elección; <strong>una tercera finalizará su participación como incompleta</strong>.
+                Las decisiones sin elección durante la práctica no cuentan para este límite.
+            </p>
+            <p>
+                Desde el inicio de la práctica, no recargue ni actualice la página y no utilice los botones
+                <strong>Atrás</strong> o <strong>Adelante</strong> del navegador. Si se detecta alguna de estas
+                acciones, su participación finalizará como incompleta. Si una fotografía no carga, utilice
+                el botón de reintento de la pantalla, sin recargar la página.
+            </p>
+            <p style="margin-bottom: 0;">
+                <strong>Si su participación finaliza como incompleta, no podrá acceder al formulario final
+                de inscripción al sorteo.</strong> Completar la encuesta tampoco garantiza un premio:
+                debe inscribirse por separado mediante el enlace que aparecerá en la pantalla final.
+                Su elección de candidato(a) no afecta su participación en el sorteo.
+            </p>
+        </div>
     </div>
 
     <div class="consent-section">
@@ -91,6 +121,8 @@ Consentimiento informado
         <p>
             Su participación en esta investigación es completamente voluntaria. Puede decidir no participar,
             retirarse en cualquier momento o negarse a participar en una parte del estudio, si así lo desea.
+            Si no se cumplen los requisitos de finalización descritos anteriormente, su participación
+            quedará incompleta y no podrá acceder al formulario final de inscripción al sorteo.
         </p>
     </div>
 
@@ -149,7 +181,7 @@ Consentimiento informado
         </label>
     </div>
 
-    {{ next_button }}
+    <button class="otree-btn-next btn btn-primary" type="submit">Siguiente</button>
 
 </div>
 

@@ -169,7 +169,53 @@ class NineSecondTests(unittest.TestCase):
                         self.assertNotIn('resolver correctamente una suma', text)
                         self.assertNotIn('plataforma avanzará automáticamente', text)
 
-    def test_timeout_posts_preserve_zero_one_two_opened_texts_and_skip_followups(self):
+    def test_instruction_understanding_can_be_corrected_without_disqualification(self):
+        db.new_session()
+        extra_session = create_session('colombia_conjoint', num_participants=1)
+        person = list(Participant.objects_filter(session=extra_session))[0]
+        person.vars['treatment_arm'] = 'timer_mostrar_mas'
+        code = person.code
+        db.commit()
+        correct = dict(timing_check_deadline='assigned_limit',
+                       timing_check_expiry='advance_without_choice',
+                       timing_check_completion='third_missing_ends')
+        for instruction_index, acknowledgment in (
+            (6, 'timing_understanding_before_practice_at_utc'),
+            (48, 'timing_understanding_after_practice_at_utc'),
+        ):
+            with self.subTest(instruction_index=instruction_index):
+                url, html = rendered(code, instruction_index)
+                for name in correct:
+                    self.assertIn('name="' + name + '"', html)
+                for answers in ({}, dict(correct, timing_check_deadline='wrong')):
+                    response = post_and_advance(url, answers)
+                    self.assertEqual(response.status_code, 200)
+                    self.assertIn('otree-form-errors', response.text)
+                    db.new_session()
+                    current = Participant.objects_get(code=code)
+                    self.assertEqual(current._index_in_pages, instruction_index)
+                    self.assertFalse(current._vars.get('study_terminated', False))
+                    self.assertFalse(current._vars.get('navigation_violation', False))
+                    self.assertNotIn(acknowledgment, current._vars)
+                response = post_and_advance(url, correct)
+                self.assertEqual(response.status_code, 200)
+                db.new_session()
+                current = Participant.objects_get(code=code)
+                self.assertIn(acknowledgment, current._vars)
+                self.assertEqual(current._vars['treatment_arm'], 'timer_mostrar_mas')
+                self.assertFalse(current._vars.get('study_terminated', False))
+        self.assertIn('procedure_notice_version', current._vars)
+        self.assertIn('procedure_notice_acknowledged_at_utc', current._vars)
+        rows = list(Player.objects_filter(session=extra_session).order_by('id'))
+        header, *exported = list(custom_export(rows))
+        for values in exported:
+            record = dict(zip(header, values))
+            for name in ('procedure_notice_version', 'procedure_notice_acknowledged_at_utc',
+                         'timing_understanding_before_practice_at_utc',
+                         'timing_understanding_after_practice_at_utc'):
+                self.assertEqual(record['participant.' + name], current._vars[name])
+
+    def test_timeout_posts_preserve_telemetry_and_show_only_untimed_notice(self):
         for opened_count, person_index in enumerate((4, 7, 10)):
             with self.subTest(opened_texts=opened_count):
                 code = codes[person_index]
@@ -178,7 +224,10 @@ class NineSecondTests(unittest.TestCase):
                 response = post_and_advance(url, payload)
                 self.assertEqual(response.status_code, 200, response.text[:800])
                 self.assertNotIn('¿habría votado usted', readable(response.text).lower())
-                self.assertIn('Decisión 2 de 15', readable(response.text))
+                self.assertIn('id="missing-choice-notice"', response.text)
+                for field in ('realistic_vote', 'decision_factors', 'rushed_scale', 'info_cost_scale'):
+                    self.assertNotIn('name="' + field + '"', response.text)
+                self.assertNotIn('id="timer"', response.text)
                 db.new_session()
                 row = row_for(code, 6)
                 self.assertIsNone(row.field_maybe_none('decision_candidate_id'))
@@ -194,6 +243,13 @@ class NineSecondTests(unittest.TestCase):
                 for name in ('realistic_vote', 'decision_factors',
                              'rushed_scale', 'info_cost_scale'):
                     self.assertIn(row.field_maybe_none(name), (None, ''))
+                person = Participant.objects_get(code=code)
+                self.assertEqual(person._index_in_pages, 59)
+                notice_url = url_i_should_be_on(code, person.session.code, 59)
+                response = post_and_advance(notice_url, {})
+                self.assertIn('Decisión 2 de 15', readable(response.text))
+                db.new_session()
+                self.assertFalse(Participant.objects_get(code=code)._vars.get('study_terminated', False))
 
     def test_expiry_preserves_a_choice_already_registered_and_asks_followups(self):
         code = codes[1]
@@ -282,6 +338,10 @@ class NineSecondTests(unittest.TestCase):
                     'stimulus_load_seconds', 'choice_changes', 'mouse_distance_px',
                     'left_hover_seconds', 'right_hover_seconds')
         self.assertTrue(all('player.' + field in header for field in expected))
+        for name in ('procedure_notice_version', 'procedure_notice_acknowledged_at_utc',
+                     'timing_understanding_before_practice_at_utc',
+                     'timing_understanding_after_practice_at_utc'):
+            self.assertIn('participant.' + name, header)
         records = [dict(zip(header, value)) for value in values]
         for record in records:
             self.assertEqual(record['player.countdown_seconds'], 9)

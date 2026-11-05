@@ -113,8 +113,11 @@ uvicorn.run(app, host='127.0.0.1', port=int(os.environ['NAVIGATION_TEST_PORT']),
 BROWSER = r'''
 const {chromium} = require(process.env.NAVIGATION_TEST_PLAYWRIGHT);
 const assert = require('node:assert/strict');
+const path = require('node:path');
+const fs = require('node:fs');
 const base = process.env.NAVIGATION_TEST_URL;
 const origin = new URL(base).origin;
+const qaDir = process.env.NAVIGATION_QA_DIR;
 const passed = [];
 passed.push = function(message) {
   process.stderr.write(message + '\n');
@@ -147,6 +150,12 @@ passed.push = function(message) {
   async function ready(page) {
     await page.waitForFunction(() => document.getElementById('stimulus-status')?.textContent === 'Fotografías listas.');
   }
+  async function screenshot(page, name) {
+    if(qaDir) {
+      fs.mkdirSync(qaDir, {recursive:true});
+      await page.screenshot({path:path.join(qaDir, `communication-${name}.png`), fullPage:true});
+    }
+  }
   async function stopped(page, person, reason) {
     await page.waitForFunction(() => document.body.innerText.toLowerCase().includes('incompleta'));
     const actual = await state(person);
@@ -154,6 +163,12 @@ passed.push = function(message) {
     assert.equal(actual.vars.study_termination_reason, reason);
     assert.ok(actual.vars.study_terminated_at_utc);
     assert.equal(await page.locator('#choose-left').count(), 0);
+    assert.equal(await page.locator('#termination-reason').count(), 1);
+    assert.ok(await page.locator('a[href^="mailto:"]').count() > 0);
+    const reasonText = await page.locator('#termination-reason').innerText();
+    if(reason === 'navigation_reload') assert.match(reasonText, /actualización o recarga/i);
+    if(reason === 'navigation_history') assert.match(reasonText, /navegación Atrás o Adelante/i);
+    if(reason === 'insufficient_choices') assert.match(reasonText, /(?:tres|3).*sin (?:una )?elección/i);
     assert.equal(await page.locator('a[href*="bordedata.cl"]').count(), 0);
     assert.equal(actual.player_rows, 20, 'Every original task row is retained.');
     assert.equal(actual.participant_rows, 12, 'No participant is deleted.');
@@ -164,9 +179,26 @@ passed.push = function(message) {
     const page = await context.newPage();
     await page.goto(base + fixture.url);
     assert.match(await page.locator('body').innerText(), /(?:actualice|recargue|refresque)/i);
+    if(person === 2) await screenshot(page, 'timed-intro');
+    await answerReadiness(page);
     await page.locator('button.otree-btn-next').click();
     await ready(page);
     return page;
+  }
+
+  if(qaDir) {
+    const consentFixture = await prepare(0, 1);
+    const consent = await context.newPage();
+    await consent.goto(base + consentFixture.url);
+    await screenshot(consent, 'consent');
+    await consent.close();
+  }
+  async function answerReadiness(page) {
+    if(await page.locator('input[name="timing_check_deadline"]').count()) {
+      await page.locator('input[name="timing_check_deadline"][value="assigned_limit"]').check();
+      await page.locator('input[name="timing_check_expiry"][value="advance_without_choice"]').check();
+      await page.locator('input[name="timing_check_completion"][value="third_missing_ends"]').check();
+    }
   }
 
   // Ordinary, untimed progress must never be mistaken for prohibited history.
@@ -304,6 +336,7 @@ passed.push = function(message) {
     return route.continue();
   });
   await retry.goto(base + retryFixture.url);
+  await answerReadiness(retry);
   await retry.locator('button.otree-btn-next').click();
   await retry.locator('#stimulus-error').waitFor({state:'visible'});
   await retry.locator('.retry-btn').click();
@@ -317,14 +350,21 @@ passed.push = function(message) {
   const missingFixture = await prepare(9, 57, 'timer_mostrar_mas');
   const missing = await context.newPage();
   await missing.goto(base + missingFixture.url);
-  for (const expectedIndex of [67, 77]) {
+  for (const [noticeIndex, expectedIndex] of [[59,67],[69,77]]) {
     await ready(missing);
+    await missing.locator('#missing-choice-notice').waitFor({state:'visible', timeout:15000});
+    await screenshot(missing, noticeIndex === 59 ? 'notice-first' : 'notice-second');
+    assert.equal((await state(9)).page_index, noticeIndex);
+    assert.equal(await missing.locator('input[name="realistic_vote"]').count(), 0);
+    assert.equal(await missing.locator('#timer').count(), 0, 'The warning is untimed.');
+    await missing.locator('button.otree-btn-next').click();
     await missing.waitForURL(url => url.toString().includes(`/${expectedIndex}`), {timeout:15000});
     const actual = await state(9);
     assert.equal(Boolean(actual.vars.study_terminated), false);
     assert.equal(Boolean(actual.vars.navigation_violation), false);
   }
   await stopped(missing, 9, 'insufficient_choices');
+  await screenshot(missing, 'termination');
   const missingState = await state(9);
   assert.equal(missingState.page_index, 77, 'Stop on the actual third submitted task.');
   assert.equal(missingState.vars.study_termination_submitted_round, 8);

@@ -63,6 +63,18 @@ class PlayerBot(Bot):
                 'está Ud. en la política?'
             ) in self.html
 
+            # Fix the synthetic arm before Questionnaire POST renders Intro.
+            # Real participants keep their one random assignment throughout.
+            treatment_by_case = {
+                'eligible': 'control_ver_mas',
+                'eligible_timer': 'timer_mostrar_mas',
+                'eligible_info_cost': 'captcha_ver_mas',
+                'eligible_timeout': 'timer_mostrar_mas',
+            }
+            self.player.participant.vars['treatment_arm'] = treatment_by_case[
+                self.case
+            ]
+
             yield pages.Questionnaire, dict(
                 age_years=35,
                 gender_identity='mujer',
@@ -76,17 +88,12 @@ class PlayerBot(Bot):
                 left_right_self_placement='4',
             )
 
-            treatment_by_case = {
-                'eligible': 'control_ver_mas',
-                'eligible_timer': 'timer_mostrar_mas',
-                'eligible_info_cost': 'captcha_ver_mas',
-                'eligible_timeout': 'timer_mostrar_mas',
-            }
-            self.player.participant.vars['treatment_arm'] = treatment_by_case[
-                self.case
-            ]
-
-            yield pages.Intro
+            readiness = dict(
+                timing_check_deadline='assigned_limit',
+                timing_check_expiry='advance_without_choice',
+                timing_check_completion='third_missing_ends',
+            ) if treatment_by_case[self.case] == 'timer_mostrar_mas' else {}
+            yield pages.Intro, readiness
 
         information_revealed = self.round_number % 2 == 0
         assert self.player.treatment_arm == self.player.participant.vars[
@@ -131,6 +138,9 @@ class PlayerBot(Bot):
             assert self.player.field_maybe_none('decision_factors') in (None, '')
             assert self.player.field_maybe_none('rushed_scale') is None
             assert self.player.field_maybe_none('info_cost_scale') is None
+            assert 'id="missing-choice-notice"' in self.html
+            assert 'name="realistic_vote"' not in self.html
+            yield pages.FollowUp
             return
 
         yield pages.Task, dict(
@@ -154,7 +164,12 @@ class PlayerBot(Bot):
         )
 
         if self.round_number == 5:
-            yield pages.PracticeDone
+            readiness = dict(
+                timing_check_deadline='assigned_limit',
+                timing_check_expiry='advance_without_choice',
+                timing_check_completion='third_missing_ends',
+            ) if self.player.timed_task else {}
+            yield pages.PracticeDone, readiness
 
         if self.round_number > 5:
             asks_hurry = self.player.treatment_arm in {

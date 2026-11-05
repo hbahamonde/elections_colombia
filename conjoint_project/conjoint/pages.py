@@ -1,8 +1,14 @@
 import hashlib
 import json
 import random
+from datetime import datetime, timezone
 
 from otree.api import Page
+
+from .communication import (
+    NOTICE_VERSION, TERMINATION_MESSAGES, TIMING_CHECK_ANSWERS,
+    timing_understanding_error,
+)
 
 from .navigation import (
     navigation_config, navigation_violation_recorded, raw_participant_vars,
@@ -148,6 +154,33 @@ def candidate_choice_was_registered(player):
     )
 
 
+def missing_main_choice_count(player):
+    """Count only the main tasks reached so far, never practice or future rows."""
+    if player.round_number <= C.NUM_PRACTICE_ROUNDS:
+        return 0
+    return sum(not candidate_choice_was_registered(task) for task in
+               player.in_rounds(C.NUM_PRACTICE_ROUNDS + 1, player.round_number))
+
+
+def record_instruction_acknowledgment(page, *, after_practice=False):
+    """Timestamp new safeguards in existing JSON; never relabel older responses."""
+    now = datetime.now(timezone.utc).isoformat(timespec='milliseconds')
+    values = page.participant.vars
+    if not after_practice:
+        values.setdefault('procedure_notice_version', NOTICE_VERSION)
+        values.setdefault('procedure_notice_acknowledged_at_utc', now)
+    if values.get('treatment_arm') == 'timer_mostrar_mas':
+        name = ('timing_understanding_after_practice_at_utc' if after_practice
+                else 'timing_understanding_before_practice_at_utc')
+        values.setdefault(name, now)
+
+
+def check_timed_instructions(page):
+    if raw_participant_vars(page.participant).get('treatment_arm') == 'timer_mostrar_mas':
+        return timing_understanding_error(
+            page._form_data or {}, page.participant.vars['countdown_seconds'])
+
+
 def selected_decision_factors(raw_value):
     return {
         value.strip()
@@ -184,6 +217,11 @@ class Consent(Page):
 
     def is_displayed(self):
         return self.round_number == 1
+
+    def vars_for_template(self):
+        return {'possible_countdown_seconds': C.COUNTDOWN_SECONDS,
+                'num_practice_rounds': C.NUM_PRACTICE_ROUNDS,
+                'num_main_rounds': C.NUM_MAIN_ROUNDS}
 
     def error_message(self, values):
         if not values.get('consent_accepted'):
@@ -259,8 +297,18 @@ class NavigationPage(Page):
 
         values = raw_participant_vars(self.participant)
         reason = reason or values.get('study_termination_reason') or 'incomplete'
+        explanation_reason = reason
+        if reason == 'insufficient_choices' and values.get('study_termination_reason') != reason:
+            # A final-screen eligibility guard need not be a third-timeout event.
+            explanation_reason = 'incomplete'
         return render('conjoint/Terminated.html', {
             'study_termination_reason': reason, 'termination_reason': reason,
+            'termination_explanation': TERMINATION_MESSAGES.get(explanation_reason, (
+                'No se cumplieron los requisitos de finalización explicados '
+                'antes de comenzar. Si considera que ocurrió un error técnico, '
+                'puede solicitar una revisión al equipo de investigación.'
+            )),
+            'participant_reference': self.participant.code,
         })
 
     def _must_stop(self):
@@ -343,6 +391,7 @@ class Intro(NavigationPage):
         treatment_arm = self.participant.vars.get('treatment_arm', '')
 
         return {
+            **{name: (self._form_data or {}).get(name, '') for name in TIMING_CHECK_ANSWERS},
             'is_practice_done_page': False,
             'num_practice_rounds': C.NUM_PRACTICE_ROUNDS,
             'num_main_rounds': C.NUM_MAIN_ROUNDS,
@@ -355,7 +404,11 @@ class Intro(NavigationPage):
 
     def before_next_page(self):
         # Reading/reloading the initial instructions itself is not a violation.
+        record_instruction_acknowledgment(self)
         start_navigation_monitoring(self.participant)
+
+    def error_message(self, values):
+        return check_timed_instructions(self)
 
 
 class Task(NavigationPage):
@@ -450,6 +503,7 @@ class PracticeDone(NavigationPage):
         treatment_arm = self.participant.vars.get('treatment_arm', '')
 
         return {
+            **{name: (self._form_data or {}).get(name, '') for name in TIMING_CHECK_ANSWERS},
             'is_practice_done_page': True,
             'num_practice_rounds': C.NUM_PRACTICE_ROUNDS,
             'num_main_rounds': C.NUM_MAIN_ROUNDS,
@@ -459,6 +513,12 @@ class PracticeDone(NavigationPage):
             'is_info_cost_group': treatment_arm == 'captcha_ver_mas',
             'is_control_group': treatment_arm == 'control_ver_mas',
         }
+
+    def error_message(self, values):
+        return check_timed_instructions(self)
+
+    def before_next_page(self):
+        record_instruction_acknowledgment(self, after_practice=True)
 
 
 class FollowUp(NavigationPage):
@@ -475,13 +535,20 @@ class FollowUp(NavigationPage):
         return (
             self.round_number > C.NUM_PRACTICE_ROUNDS
             and player_is_eligible(self.player)
-            and candidate_choice_was_registered(self.player)
+            and (candidate_choice_was_registered(self.player)
+                 or missing_main_choice_count(self.player) in {1, 2})
         )
+
+    def get_form_fields(self):
+        # A missed choice gets an untimed notice, never substantive follow-ups.
+        return self.form_fields if candidate_choice_was_registered(self.player) else []
 
     def vars_for_template(self):
         information_revealed = revealed_candidate_information(self.player)
 
         return {
+            'missing_choice_notice': not candidate_choice_was_registered(self.player),
+            'missing_main_choices': missing_main_choice_count(self.player),
             'main_round_number': self.player.main_round_number,
             'num_main_rounds': C.NUM_MAIN_ROUNDS,
             'timed_task': self.player.timed_task,
@@ -498,6 +565,8 @@ class FollowUp(NavigationPage):
         }
 
     def error_message(self, values):
+        if not candidate_choice_was_registered(self.player):
+            return
         if not values.get('realistic_vote'):
             return (
                 'Por favor, indique si habría votado por el/la candidato(a) '
@@ -533,6 +602,8 @@ class FollowUp(NavigationPage):
             return 'Por favor, indique qué tanto le costó informarse.'
 
     def before_next_page(self):
+        if not candidate_choice_was_registered(self.player):
+            return
         if self.player.realistic_vote != 'yes':
             self.player.decision_factors = ''
 

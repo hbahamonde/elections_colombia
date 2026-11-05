@@ -332,6 +332,14 @@ for i, index in enumerate((57, 67, 77), 1):
     db.new_session()
     person = Participant.objects_get(code=timeout_codes[0])
     assert person.vars.get('study_terminated', False) == (i == 3)
+    if i < 3:
+        # Missing decisions now pause on an untimed notice, not a question.
+        notice_url = url_i_should_be_on(timeout_codes[0], timeout_session_code, index + 2)
+        notice = client.get(notice_url)
+        assert 'id="missing-choice-notice"' in notice.text
+        assert 'name="realistic_vote"' not in notice.text
+        advanced = client.post(notice_url, data={}, allow_redirects=False)
+        assert advanced.status_code in (302, 303, 307)
     if i == 3:
         assert person._index_in_pages == 77
         assert person.vars['study_termination_reason'] == 'insufficient_choices'

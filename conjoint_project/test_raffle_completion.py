@@ -124,6 +124,14 @@ class RaffleHTTPTests(unittest.TestCase):
         self.assertIn('Consentimiento informado', document)
         self.assert_prize_details(document)
         self.assert_no_raffle_link(document)
+        text = readable(document).lower()
+        self.assertIn('algunas personas', text)
+        self.assertRegex(text, r'9\s+segundos')
+        self.assertRegex(text, r'(?:5|cinco)\s+rondas de práctica')
+        self.assertIn('13 de las 15', text)
+        self.assertIn('tercera', text)
+        self.assertIn('sin elección', text)
+        self.assertIn('recarg', text)
 
     def test_both_instruction_stages_have_raffle_reminder_in_every_treatment(self):
         intro_position = next(i for i, page in enumerate(page_sequence, 1)
@@ -145,6 +153,12 @@ class RaffleHTTPTests(unittest.TestCase):
                     self.assertRegex(text, r'(?:final|última pantalla)')
                     self.assertRegex(text, r'(?:clic|click|botón|enlace)')
                     self.assert_no_raffle_link(document)
+                    self.assertEqual('name="timing_check_deadline"' in document,
+                                     arm == 'timer_mostrar_mas')
+                    self.assertEqual('name="timing_check_expiry"' in document,
+                                     arm == 'timer_mostrar_mas')
+                    self.assertEqual('name="timing_check_completion"' in document,
+                                     arm == 'timer_mostrar_mas')
 
     def test_eligible_completion_displays_one_exact_link_without_participant_data(self):
         document = rendered(prepare(PEOPLE[2], C.NUM_ROUNDS * len(page_sequence)))
@@ -250,7 +264,9 @@ class DisposableRaffleTests(unittest.TestCase):
                             ignore=shutil.ignore_patterns('__pycache__'))
             shutil.copytree(source / '_templates', project / '_templates')
             (project / '_static').symlink_to(source / '_static', target_is_directory=True)
-            environment = dict(os.environ)
+            environment = {key: value for key, value in os.environ.items()
+                           if not any(part in key.upper() for part in
+                                      ('DATABASE', 'POSTGRES', 'RENDER', 'SENTRY', 'OTREE'))}
             environment.update({
                 'DATABASE_URL': 'sqlite:///db.sqlite3', 'OTREE_PRODUCTION': '0',
                 'OTREE_AUTH_LEVEL': '', 'PYTHONPATH': str(project),
