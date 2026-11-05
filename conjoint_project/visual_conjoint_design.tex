@@ -150,6 +150,9 @@
 
 
 
+
+
+
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
 \begin{document}
 
@@ -249,7 +252,7 @@ Let $Z_i\in\{T,C,B\}$ denote assignment to one of three decision environments. I
 
 The time-pressure manipulation is calibrated to the demands of the decision task rather than to a universal threshold for rapid judgment. Ord\'o\~nez and Benson (1997, 122) distinguish the existence of a deadline from its psychological consequences, noting that ``it is possible to have time constraint but no time pressure.'' A consequential deadline must therefore restrict the time respondents would otherwise use to acquire and evaluate information. Experimental evidence shows that temporal constraints can induce faster processing, more selective information search, and changes in decision strategy (Payne, Bettman, and Johnson 1988). Although Ballew and Todorov (2007) elicited electorally predictive competence judgments under a two-second deadline, their task involved photographs alone. The present task additionally permits respondents to reveal and compare political descriptions. Across the available candidate pairs, these descriptions contain a median of 28 words in total. Brysbaert's (2019) estimated Spanish silent-reading rate of 278 words per minute implies approximately six seconds of uninterrupted reading, before allowing for information access, comparison, and candidate selection. This calculation provides context rather than a minimum comprehension time. Moreover, cursor movement and target selection depend on interface geometry and input devices, making fixed allowances per click inappropriate (MacKenzie 1992). The relevant benchmark is consequently respondents' observed performance on the experimental task itself.
 
-The nine-second deadline is informed jointly by research on task-relative time constraints and evidence from a pre-test of the experimental task. The pre-test evaluated an exploratory twenty-second deadline against an unconstrained baseline to assess how strongly that ceiling restricted task-completion time. The pre-test comprised 30 eligible completed interviews, contributing 450 observations across 15 analytical tasks per respondent. Figure~\ref{fig:task-duration-completes} reports mean task duration by task position among these completed pre-test participants. Across these tasks, pooled mean duration was 13.68 seconds (SD 14.64, 13 respondents and 195 task observations) in the unconstrained condition and 9.99 seconds (SD 4.28, 10 respondents and 150 task observations) under the exploratory 20-second deadline. The arithmetic-cost condition contributed the remaining 7 respondents and 105 task observations. The corresponding unconstrained median was 10.47 seconds (interquartile range 6.43--15.27), and only 15.9 percent of unconstrained tasks (31 of 195) lasted longer than 20 seconds. These observations suggest that the exploratory ceiling frequently exceeded the time respondents used without a deadline, although they do not establish an absence of experienced pressure. To impose a more binding restriction, we adapt the calibration principle employed by Kocher et al. (2019, 220--221), whose deadlines represented ``a 20\% reduction of the median decision times in the absence of constraints.'' Their restrictions applied to blocks of choices rather than individual tasks, so the present design adopts their relative calibration principle rather than their implementation. Applying that reduction to the unconstrained median yields 8.38 seconds, rounded upward to nine seconds, approximately 14 percent below the observed median. Rounding upward retains a modest margin for information access and response registration while keeping the deadline below typical unconstrained task duration. Although nine seconds exceeds the unconstrained median time to first selection of 8.39 seconds, it remains below the typical time used to complete the full task. This restriction therefore compresses opportunities for information acquisition and comparison without assuming that political information becomes inaccessible. Its effectiveness will be assessed jointly through reported hurry, information acquisition, and nonselection at the deadline, rather than inferred from mechanically shortened task durations alone. These completion-conditioned pre-test statistics inform calibration but do not establish that nine seconds is optimal.
+The nine-second deadline is informed jointly by research on task-relative time constraints and evidence from a pre-test of the experimental task. The pre-test evaluated an exploratory twenty-second deadline against an unconstrained baseline to assess how strongly that ceiling restricted task-completion time. The pre-test comprised 30 eligible completed interviews, contributing 450 observations across 15 analytical tasks per respondent. Panel A of Figure~\ref{fig:task-duration-completes} reports mean task duration by task position among these completed pre-test participants. Across these tasks, pooled mean duration was 13.68 seconds (SD 14.64, 13 respondents and 195 task observations) in the unconstrained condition and 9.99 seconds (SD 4.28, 10 respondents and 150 task observations) under the exploratory 20-second deadline. The arithmetic-cost condition contributed the remaining 7 respondents and 105 task observations. The corresponding unconstrained median was 10.47 seconds (interquartile range 6.43--15.27), and only 15.9 percent of unconstrained tasks (31 of 195) lasted longer than 20 seconds. These observations suggest that the exploratory ceiling frequently exceeded the time respondents used without a deadline, although they do not establish an absence of experienced pressure. To impose a more binding restriction, we adapt the calibration principle employed by Kocher et al. (2019, 220--221), whose deadlines represented ``a 20\% reduction of the median decision times in the absence of constraints.'' Their restrictions applied to blocks of choices rather than individual tasks, so the present design adopts their relative calibration principle rather than their implementation. Applying that reduction to the unconstrained median yields 8.38 seconds, rounded upward to nine seconds, approximately 14 percent below the observed median. Rounding upward retains a modest margin for information access and response registration while keeping the deadline below typical unconstrained task duration. Although nine seconds exceeds the unconstrained median time to first selection of 8.39 seconds, it remains below the typical time used to complete the full task. This restriction therefore compresses opportunities for information acquisition and comparison without assuming that political information becomes inaccessible. Its effectiveness will be assessed jointly through reported hurry, information acquisition, and nonselection at the deadline, rather than inferred from mechanically shortened task durations alone. These completion-conditioned pre-test statistics inform calibration but do not establish that nine seconds is optimal.
 
 \subsection{Outcomes and measurement}
 
@@ -325,12 +328,22 @@ Because the decision environment may affect reaching the final screen, recording
 
 Candidate-level analyses use two observations per analytical task among completed interviews, one for each displayed candidate, including retained tasks that terminate without a selection. Linear probability models for $M^s$ and the derived registered-selection outcome $Y^s$ include treatment indicators, candidate gender, treatment-by-gender interactions, randomized side, and task-order indicators. Their interaction coefficients are completion-conditioned empirical counterparts of $\Psi_M(z)$ and $\Psi_Y(z)$ and share the same selection limitation. Primary uncertainty for these models uses two-way clustering by respondent and candidate. Profile-specific selection probabilities likewise condition on completed interviews and are not interpreted as attribute-level average marginal component effects.
 
-Supplementary analyses describe which candidate characteristics are associated with registered selection in each decision environment. For gender, displayed ideology, dominance classification, and candidate age category, we report both the proportion selected among displayed profiles and the composition of the selected profiles. The former accounts for how often each characteristic is encountered, whereas the latter describes the candidates respondents choose. A joint linear probability model includes these four classifications, their interactions with the assigned condition, randomized side, and task-order indicators. Within-condition contrasts compare women with men, left- and right-identified profiles with centrist profiles, high with low dominance, and older with younger age categories. These are adjusted associations across observed profile bundles rather than causal effects of independently assigned attributes. The model does not condition on whether respondents opened political information, which is itself a response to the experimental environment. Two-way clustered confidence intervals and unadjusted two-sided tests accompany these exploratory contrasts\ifnum0=1 in Appendix~\ref{app:candidate-characteristics}\fi, separately from the primary hypothesis families.
+Supplementary analyses describe which candidate characteristics are associated with registered selection in each decision environment. For gender, displayed ideology, dominance classification, and candidate age category, we report both the proportion selected among displayed profiles and the composition of the selected profiles. The former accounts for how often each characteristic is encountered, whereas the latter describes the candidates respondents choose. A joint linear probability model includes these four classifications, their interactions with the assigned condition, randomized side, and task-order indicators. Within-condition contrasts compare women with men, left- and right-identified profiles with centrist profiles, high with low dominance, and older with younger age categories. These are adjusted associations across observed profile bundles rather than causal effects of independently assigned attributes. The model does not condition on whether respondents opened political information, which is itself a response to the experimental environment. Two-way clustered confidence intervals and unadjusted two-sided tests accompany these exploratory contrasts\ifnum1=1 in Appendix~\ref{app:candidate-characteristics}\fi, separately from the primary hypothesis families.
+
+Covariate-adjusted predictions complement these unadjusted comparisons without replacing the primary tests. Separate logistic working-mean models describe any information acquisition, acquisition of both descriptions, failure to select within the common observation window, candidate-specific information acquisition, and registered candidate selection. Mean-bias-reduced estimation yields finite logistic estimates in the presence of separation, which can arise when every member of a small subgroup opens information (Kosmidis and Firth 2021). A fractional-logit model with a quasi-binomial variance describes the proportion of descriptions acquired, with predictions rescaled to the expected number of descriptions. Capped selection latency is modeled by ordinary least squares and reported in seconds rather than as a probability. Every specification adjusts for respondent age, gender, completion of tertiary education, baseline political interest, and task position. Candidate-level models additionally include randomized side and treatment-by-candidate-gender interactions. An exploratory information-acquisition model adds interactions with respondent gender. No model controls for realized information acquisition, response time, reported hurry, or arithmetic success when these variables are consequences of the assigned environment.
+
+For each decision environment, fitted outcomes are averaged over the same observed covariate distribution rather than evaluated for an artificial average respondent (Arel-Bundock, Greifer, and Heiss 2024). Thus, for a task-level outcome $R$, the adjusted mean is
+\[
+\widehat{\mu}^{R}_{\mathrm{adj}}(z)
+=\frac{1}{nT}\sum_{i:H_i=1}\sum_{t=1}^{T}
+\widehat{m}_{R}(z,X_i,t),
+\]
+where $n$ is the number of eligible completed respondents, $T$ is the number of analytical tasks, and $X_i$ contains pretreatment characteristics. Candidate-level predictions change only the decision environment and retain the observed profile bundles, averaging separately within candidate-gender groups. Respondent-gender panels likewise retain the observed members of each subgroup. Approximate pointwise confidence intervals use respondent-clustered covariance for task-level models and two-way respondent--candidate clustering for candidate-level models. Probability intervals are calculated on the logit of the average predicted probability and transformed back, preserving the empirical averaging target and the probability bounds. Student-$t$ reference distributions are used, with the smaller cluster count determining degrees of freedom in two-way analyses. These model-based comparisons remain conditional on completion and on the chosen working specification. Neither adjustment nor nonlinear estimation removes completion-related selection or identifies an isolated causal effect of candidate gender.
 
 Within the primary process and gender-interaction families, two-sided $p$-values are adjusted separately by Holm's sequential procedure. The two baseline gender contrasts constitute a third, descriptive multiplicity family. Unadjusted estimates with 95\% confidence intervals are also reported. Pretreatment characteristics and the distribution of candidate profiles and positions are summarized within the completed sample. Manipulation checks examine arithmetic-problem completion, information acquisition, $D^{9}$, $S^{9}$, and $Q$, together with reported hurry in \armT\ relative to \armB\ among tasks with a registered selection. These checks are conditional on interview completion, and the hurry comparison additionally conditions on an observed answer. The timeout frequency among completed interviews excludes respondents with more than two missing choices and therefore does not represent the timeout frequency of all recruits. Task-order analyses also use only retained interviews, while practice tasks remain outside the analytical sample. Candidate gender and respondent gender are distinguished throughout.
 
 % Main-study displays stay out of the paper until all treatment arms are represented.
-\iffalse
+
 \section{Preliminary tables and figures}
 \label{sec:preliminary}
 \noindent\textit{Incomplete fieldwork.} Tables report descriptive statistics, regression estimates,
@@ -344,14 +357,37 @@ significance-based stopping rule.
 \caption{Recruitment and analytical coverage}
 \label{tab:recruitment}
 
+\begin{tabular}{lr}
+\toprule
+Stage & N\\
+\midrule
+Survey entrants across study versions & 110\\
+Screened out & 3\\
+Initial screening or baseline not completed & 33\\
+Eligible participants not yet finished & 11\\
+Finished below the response threshold & 0\\
+\addlinespace
+Excluded after detected reload or browser-history navigation & 4\\
+Stopped after exceeding the permitted missing choices & 1\\
+Other terminated incomplete cases & 0\\
+Other-protocol completes excluded from analysis & 33\\
+Eligible completes included in analysis & 25\\
+\bottomrule
+\end{tabular}
+
+
 \par\smallskip
 \begin{minipage}{0.95\linewidth}\footnotesize
 \textit{Notes.} An eligible completed interview reaches the final screen,
 submits all 15 analytical tasks, and records at least
 13 valid choices, with no detected prohibited
 browser navigation. Detected navigation exclusions are reported separately.
-Screened-out respondents and incomplete attempts do not enter substantive analyses.
-The analytical sample contains 0 eligible completed interviews.
+Recruitment accounting covers all started attempts across study versions.
+The cumulative total comprises 58 eligible completes,
+of which 33 belong to other protocol versions
+and are excluded from the current analyses. Screened-out respondents and incomplete
+attempts do not enter substantive analyses.
+The analytical sample contains 25 eligible completed interviews.
 \end{minipage}
 \end{table}
 
@@ -360,10 +396,21 @@ The analytical sample contains 0 eligible completed interviews.
 \caption{Completed interviews and analytical choices by assigned condition}
 \label{tab:arm-coverage}
 
+\begin{tabular}{lrrrr}
+\toprule
+Condition & Respondents & Tasks & Valid choices & Missing choices\\
+\midrule
+Baseline & 9 & 135 & 135 & 0\\
+Time & 8 & 120 & 112 & 8\\
+Cost & 8 & 120 & 120 & 0\\
+\bottomrule
+\end{tabular}
+
+
 \par\smallskip
 \begin{minipage}{0.95\linewidth}\footnotesize
-\textit{Notes.} The 0 eligible completed
-interviews contribute 0 analytical tasks.
+\textit{Notes.} The 25 eligible completed
+interviews contribute 375 analytical tasks.
 Each interview contributes 15 submitted analytical tasks and at
 least 13 valid candidate choices. Missing choices
 remain missing in the original response and are retained in the information and
@@ -377,9 +424,31 @@ timing denominators. Practice tasks are excluded.
 \caption{Pretreatment characteristics of eligible completed interviews}
 \label{tab:sample}
 
+\begin{tabular}{P{1.2in}P{1.1in}rrrrr}
+\toprule
+Characteristic & Category & Overall & Baseline & Time & Cost & Missing\\
+\midrule
+n &  & 25 & 9 & 8 & 8 & \\
+Age &  & 37.5 (12.6) & 41.4 (15.0) & 34.0 (7.9) & 36.5 (13.7) & 0.0\\
+Gender (\%) & Woman & 9 (36.0) & 3 (33.3) & 2 (25.0) & 4 (50.0) & 0.0\\
+ & Man & 16 (64.0) & 6 (66.7) & 6 (75.0) & 4 (50.0) & \\
+ & Another identity & 0 (0.0) & 0 (0.0) & 0 (0.0) & 0 (0.0) & \\
+\addlinespace
+ & No response & 0 (0.0) & 0 (0.0) & 0 (0.0) & 0 (0.0) & \\
+Education (\%) & Basic or less & 0 (0.0) & 0 (0.0) & 0 (0.0) & 0 (0.0) & 0.0\\
+ & Secondary & 3 (12.0) & 2 (22.2) & 0 (0.0) & 1 (12.5) & \\
+ & Technical or university & 16 (64.0) & 5 (55.6) & 6 (75.0) & 5 (62.5) & \\
+ & Postgraduate & 6 (24.0) & 2 (22.2) & 2 (25.0) & 2 (25.0) & \\
+\addlinespace
+Political interest (1-7) &  & 5.0 (1.9) & 4.7 (1.7) & 5.2 (2.4) & 5.0 (1.9) & 0.0\\
+Left-right position (1-10) &  & 3.8 (2.7) & 5.1 (2.8) & 2.9 (2.3) & 3.1 (2.6) & 8.0\\
+\bottomrule
+\end{tabular}
+
+
 \par\smallskip
 \begin{minipage}{0.95\linewidth}\footnotesize
-\textit{Notes.} The sample comprises 0
+\textit{Notes.} The sample comprises 25
 eligible completed interviews. Continuous entries are means with standard deviations in
 parentheses. Categorical entries are counts and percentages. Each respondent is
 counted once and meets the interview-completion criteria. Missing numeric
@@ -393,10 +462,29 @@ side. The final column reports the overall percentage missing.
 \caption{Task-level descriptive statistics by decision environment}
 \label{tab:task-descriptive}
 
+\begin{tabular}{llll}
+\toprule
+Measure & Baseline & Time & Cost\\
+\midrule
+Respondents & 9 & 8 & 8\\
+Tasks & 135 & 120 & 120\\
+Any information (\%) & 100.00 & 82.50 & 87.50\\
+Descriptions (mean) & 1.95 & 1.61 & 1.67\\
+Both descriptions (\%) & 94.81 & 78.33 & 79.17\\
+\addlinespace
+Capped first-selection time (s) & 7.26 & 4.87 & 8.28\\
+No selection by 9 s (\%) & 57.04 & 6.67 & 82.50\\
+Terminal nonselection (\%) & 0.00 & 6.67 & 0.00\\
+Expired deadlines & 0 & 19 & 0\\
+Task duration (median s) & 11.03 & 5.90 & 28.24\\
+\bottomrule
+\end{tabular}
+
+
 \par\smallskip
 \begin{minipage}{0.95\linewidth}\footnotesize
-\textit{Notes.} The 0 analytical tasks come only
-from 0 eligible completed interviews and
+\textit{Notes.} The 375 analytical tasks come only
+from 25 eligible completed interviews and
 exclude practice. Information acquisition covers the entire choice task. Capped
 time concerns the first selection, not submission, and uses a
 9-second window. The permitted terminal
@@ -407,10 +495,18 @@ An expired timer can retain a choice and is not necessarily a nonselection.
 
 \begin{figure}[!htbp]
 \centering
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
+{\centering \includegraphics[width=\linewidth]{analysis_outputs/figure-treatment-means-1}
+
+}
+
+
+\end{knitrout}
 \caption{Observed condition means for the primary process outcomes.
-Means use 0 analytical tasks from
-0 eligible completed interviews.
+Means use 375 analytical tasks from
+25 eligible completed interviews.
 Panels retain their natural units and use different vertical scales.}
 \label{fig:treatment-means}
 \end{figure}
@@ -420,20 +516,51 @@ Panels retain their natural units and use different vertical scales.}
 \caption{Timing, perceived pressure, and information-cost checks}
 \label{tab:manipulation}
 
+\begin{tabular}{llll}
+\toprule
+Measure & Baseline & Time & Cost\\
+\midrule
+First selection (median s) & 9.95 & 4.64 & 25.91\\
+Full task duration (mean s) & 16.96 & 5.93 & 34.23\\
+Full task duration (median s) & 11.03 & 5.90 & 28.24\\
+Full task duration (75th percentile s) & 19.38 & 7.53 & 39.54\\
+Full task duration (90th percentile s) & 36.06 & 9.00 & 55.06\\
+\addlinespace
+Full task duration (95th percentile s) & 51.83 & 9.00 & 91.37\\
+Hurry responses (n) & 135 & 112 & 0\\
+Reported hurry (1-7) & 1.96 & 4.31 & --\\
+Cost responses (n) & 0 & 0 & 105\\
+Reported effort (1-7) & -- & -- & 3.77\\
+\addlinespace
+Arithmetic attempts (mean) & -- & -- & 1.91\\
+Arithmetic passed (\%) & -- & -- & 87.50\\
+\bottomrule
+\end{tabular}
+
+
 \par\smallskip
+
+\begin{tabular}{lrll}
+\toprule
+Contrast & Estimate & 95\% CI & p\\
+\midrule
+Hurry: Time - Baseline & 2.35 & {}[0.832, 3.867] & 0.0047\\
+\bottomrule
+\end{tabular}
+
 
 \par\smallskip
 \begin{minipage}{0.95\linewidth}\footnotesize
-\textit{Notes.} The sample includes 0
-eligible completed interviews and 0 analytical tasks.
+\textit{Notes.} The sample includes 25
+eligible completed interviews and 375 analytical tasks.
 Timing measures
 describe the choice page, not the duration of the full study or its follow-up
 questions. Hurry is asked in the deadline and baseline conditions after a
 registered choice. Effort is asked in the cost condition after information is
 revealed. Follow-up means condition on an observed answer. Arithmetic success
 refers to at least one successful access during a cost-condition task.
-The hurry contrast uses 0 observed answers from
-0 respondents, respondent-clustered
+The hurry contrast uses 247 observed answers from
+17 respondents, respondent-clustered
 95\% confidence intervals, and an unadjusted two-sided test.
 Undefined items remain missing.
 Untimed baseline durations provide an unrestricted descriptive reference for the
@@ -449,14 +576,31 @@ condition alone do not establish experienced pressure.
 \caption{Primary process contrasts among completed interviews}
 \label{tab:process-effects}
 
+\begin{tabular}{P{1.65in}P{0.95in}rrrr}
+\toprule
+Outcome & Contrast & Estimate & 95\% CI & p & Holm p\\
+\midrule
+Any information & Time - Baseline & -0.175 & {}[-0.371, 0.021] & 0.0776 & 0.4656\\
+Any information & Cost - Baseline & -0.125 & {}[-0.372, 0.122] & 0.3066 & 0.6773\\
+Descriptions revealed & Time - Baseline & -0.340 & {}[-0.785, 0.105] & 0.1283 & 0.6414\\
+Descriptions revealed & Cost - Baseline & -0.281 & {}[-0.765, 0.202] & 0.2414 & 0.6773\\
+Capped first-selection time (s) & Time - Baseline & -2.390 & {}[-4.013, -0.767] & 0.0057 & 0.0396\\
+\addlinespace
+Capped first-selection time (s) & Cost - Baseline & 1.015 & {}[-0.670, 2.699] & 0.2258 & 0.6773\\
+No selection within 9 seconds & Time - Baseline & -0.504 & {}[-0.786, -0.221] & 0.0012 & 0.0094\\
+No selection within 9 seconds & Cost - Baseline & 0.255 & {}[-0.105, 0.614] & 0.1568 & 0.6414\\
+\bottomrule
+\end{tabular}
+
+
 \par\smallskip
 \begin{minipage}{0.95\linewidth}\footnotesize
 \textit{Notes.} Unadjusted linear models use
-0 analytical tasks from
-0 eligible completed interviews, with
+375 analytical tasks from
+25 eligible completed interviews, with
 15 tasks per interview.
 Standard errors are clustered by respondent. Intervals are pointwise 95\% intervals.
-The two-sided $p$-values are shown unadjusted and Holm-adjusted across the 0
+The two-sided $p$-values are shown unadjusted and Holm-adjusted across the 8
 primary process contrasts. Binary-outcome coefficients are probability differences, description
 coefficients are counts, and timing coefficients are seconds. Every retained
 respondent contributes equally many tasks. Completion can be affected by treatment,
@@ -467,10 +611,18 @@ intention-to-treat effects.
 
 \begin{figure}[!htbp]
 \centering
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
+{\centering \includegraphics[width=\linewidth]{analysis_outputs/figure-process-1}
+
+}
+
+
+\end{knitrout}
 \caption{Direction and magnitude of the primary process contrasts.
-Estimates use 0 analytical tasks from
-0 eligible completed interviews.
+Estimates use 375 analytical tasks from
+25 eligible completed interviews.
 The vertical line marks no difference from the unconstrained baseline.
 Bars show respondent-clustered pointwise 95\% confidence intervals.}
 \label{fig:process-effects}
@@ -481,15 +633,27 @@ Bars show respondent-clustered pointwise 95\% confidence intervals.}
 \caption{Between-condition differences in gender-indexed profile contrasts}
 \label{tab:gender-effects}
 
+\begin{tabular}{P{1.65in}P{0.95in}rrrr}
+\toprule
+Outcome & Contrast & Estimate & 95\% CI & p & Holm p\\
+\midrule
+Information acquisition & Time - Baseline & -0.119 & {}[-0.234, -0.004] & 0.042 & 0.17\\
+Information acquisition & Cost - Baseline & -0.052 & {}[-0.124, 0.021] & 0.154 & 0.46\\
+Registered selection & Time - Baseline & -0.003 & {}[-0.208, 0.202] & 0.975 & 1.00\\
+Registered selection & Cost - Baseline & 0.010 & {}[-0.231, 0.251] & 0.934 & 1.00\\
+\bottomrule
+\end{tabular}
+
+
 \par\smallskip
 \begin{minipage}{0.95\linewidth}\footnotesize
 \textit{Notes.} Completion-conditioned counterparts of $\Psi_M(z)$ and $\Psi_Y(z)$
-come from models using 0 candidate
-appearances from 0 eligible completed interviews
+come from models using 750 candidate
+appearances from 25 eligible completed interviews
 with condition, candidate gender, their interactions, randomized side, and task
 position. Standard errors are clustered by respondent and candidate. Intervals
 are pointwise 95\% intervals. The two-sided tests are shown unadjusted and
-Holm-adjusted across the 0 primary interaction contrasts. The covariance
+Holm-adjusted across the 4 primary interaction contrasts. The covariance
 calculation uses a positive-semidefinite correction when necessary.
 A submitted terminal nonselection contributes zero registered-selection
 events for both candidates, while the original vote remains missing. Gender is
@@ -500,10 +664,18 @@ completion-related selection limits their causal interpretation.
 
 \begin{figure}[!htbp]
 \centering
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
+{\centering \includegraphics[width=\linewidth]{analysis_outputs/figure-gender-effects-1}
+
+}
+
+
+\end{knitrout}
 \caption{Direction of the gender-indexed condition interactions.
-Estimates use 0 candidate appearances
-from 0 eligible completed interviews.
+Estimates use 750 candidate appearances
+from 25 eligible completed interviews.
 Positive values indicate a larger women-minus-men profile contrast than
 under baseline. Bars show two-way clustered pointwise 95\% confidence intervals.}
 \label{fig:gender-effects}
@@ -514,15 +686,30 @@ under baseline. Bars show two-way clustered pointwise 95\% confidence intervals.
 \caption{Gender-indexed contrasts within each decision environment}
 \label{tab:gamma}
 
+\begin{tabular}{P{1.55in}lrrrr}
+\toprule
+Outcome & Condition & Gamma & 95\% CI & p & Holm p\\
+\midrule
+Information acquisition & Baseline & 0.006 & {}[-0.022, 0.033] & 0.676 & 1\\
+Information acquisition & Time & -0.113 & {}[-0.226, -0.000] & 0.049 & --\\
+Information acquisition & Cost & -0.046 & {}[-0.115, 0.023] & 0.180 & --\\
+Registered selection & Baseline & 0.040 & {}[-0.088, 0.168] & 0.522 & 1\\
+Registered selection & Time & 0.037 & {}[-0.132, 0.206] & 0.654 & --\\
+\addlinespace
+Registered selection & Cost & 0.050 & {}[-0.157, 0.257] & 0.622 & --\\
+\bottomrule
+\end{tabular}
+
+
 \par\smallskip
 \begin{minipage}{0.95\linewidth}\footnotesize
 \textit{Notes.} Entries give completion-conditioned counterparts of
 $\Gamma_M(z)$ and $\Gamma_Y(z)$ from the same
-candidate-level models using 0 candidate
-appearances from 0 eligible completed
+candidate-level models using 750 candidate
+appearances from 25 eligible completed
 interviews, with two-way clustered pointwise 95\% intervals. They compare
 complete profiles grouped by gender, not an isolated causal effect of gender.
-The 0 baseline descriptive tests form a separate Holm family. Other within-arm
+The 2 baseline descriptive tests form a separate Holm family. Other within-arm
 $p$-values are unadjusted descriptive comparisons.
 \end{minipage}
 \end{table}
@@ -534,17 +721,197 @@ $p$-values are unadjusted descriptive comparisons.
 \caption{Additional pretreatment sample characteristics}
 \label{tab:sample-additional}
 
+\begin{tabular}{P{1.2in}P{1.3in}rrrrr}
+\toprule
+Characteristic & Category & Overall & Baseline & Time & Cost & Missing\\
+\midrule
+n &  & 25 & 9 & 8 & 8 & \\
+Occupation (\%) & Full-time paid work & 10 (40.0) & 3 (33.3) & 4 (50.0) & 3 (37.5) & 0.0\\
+ & Part-time paid work & 1 (4.0) & 0 (0.0) & 1 (12.5) & 0 (0.0) & \\
+ & Self-employed & 7 (28.0) & 3 (33.3) & 2 (25.0) & 2 (25.0) & \\
+ & Student & 2 (8.0) & 1 (11.1) & 0 (0.0) & 1 (12.5) & \\
+\addlinespace
+ & Unpaid domestic or care work & 1 (4.0) & 1 (11.1) & 0 (0.0) & 0 (0.0) & \\
+ & Retired & 1 (4.0) & 1 (11.1) & 0 (0.0) & 0 (0.0) & \\
+ & Unemployed, seeking work & 1 (4.0) & 0 (0.0) & 1 (12.5) & 0 (0.0) & \\
+ & Unemployed, not seeking work & 2 (8.0) & 0 (0.0) & 0 (0.0) & 2 (25.0) & \\
+ & Other & 0 (0.0) & 0 (0.0) & 0 (0.0) & 0 (0.0) & \\
+\addlinespace
+Voted last election (\%) & Yes & 21 (84.0) & 8 (88.9) & 7 (87.5) & 6 (75.0) & 0.0\\
+ & No & 3 (12.0) & 1 (11.1) & 1 (12.5) & 1 (12.5) & \\
+ & Do not recall & 1 (4.0) & 0 (0.0) & 0 (0.0) & 1 (12.5) & \\
+Political discussion (\%) & Never & 2 (8.0) & 1 (11.1) & 0 (0.0) & 1 (12.5) & 0.0\\
+ & Less than weekly & 5 (20.0) & 3 (33.3) & 2 (25.0) & 0 (0.0) & \\
+\addlinespace
+ & Once or twice weekly & 3 (12.0) & 0 (0.0) & 0 (0.0) & 3 (37.5) & \\
+ & Several times weekly & 7 (28.0) & 2 (22.2) & 2 (25.0) & 3 (37.5) & \\
+ & Daily & 8 (32.0) & 3 (33.3) & 4 (50.0) & 1 (12.5) & \\
+Residence (ISO) (\%) & CL & 22 (88.0) & 7 (77.8) & 7 (87.5) & 8 (100.0) & 0.0\\
+ & CR & 1 (4.0) & 0 (0.0) & 1 (12.5) & 0 (0.0) & \\
+\addlinespace
+ & PE & 2 (8.0) & 2 (22.2) & 0 (0.0) & 0 (0.0) & \\
+Nationality (ISO) (\%) & CL & 21 (84.0) & 7 (77.8) & 7 (87.5) & 7 (87.5) & 0.0\\
+ & CR & 1 (4.0) & 0 (0.0) & 1 (12.5) & 0 (0.0) & \\
+ & PE & 2 (8.0) & 2 (22.2) & 0 (0.0) & 0 (0.0) & \\
+ & UY & 1 (4.0) & 0 (0.0) & 0 (0.0) & 1 (12.5) & \\
+\bottomrule
+\end{tabular}
+
+
 \par\smallskip
 \begin{minipage}{0.95\linewidth}\footnotesize
 \textit{Notes.} Counts and percentages refer to the
-0 eligible completed interviews.
+25 eligible completed interviews.
 ISO country codes identify residence and nationality.
 \end{minipage}
 \end{table}
 \clearpage
 
 
-\fi
+
+
+\clearpage
+\subsection{Covariate-adjusted predictions}
+\label{sec:adjusted-predictions}
+
+\begin{figure}[!htbp]
+\centering
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\linewidth]{analysis_outputs/figure-adjusted-process-probabilities-1}
+
+}
+
+
+\end{knitrout}
+\caption{Adjusted probabilities of information acquisition and slow selection}
+\label{fig:adjusted-process-probabilities}
+\par\smallskip
+\begin{minipage}{\linewidth}\footnotesize
+\textit{Notes.} Points report average predicted probabilities from separate
+mean-bias-reduced logistic regressions using 375
+analytical tasks from 25 eligible completed respondents.
+All specifications adjust for age, respondent gender, tertiary education,
+baseline political interest, and linear task position. Each condition is evaluated
+over the same observed respondents and task positions. Bars are approximate pointwise
+95\% confidence intervals based on respondent-clustered covariance
+and 24 degrees of freedom.
+Intervals are calculated on the logit of the average probability and transformed back.
+Slow selection denotes no first selection within 9 seconds
+in any condition, not necessarily a terminal timeout.
+Permitted no-choice submissions remain in the sample. These are completion-conditioned
+model-based predictions, not unconditional intention-to-treat estimates.
+\end{minipage}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\linewidth]{analysis_outputs/figure-adjusted-process-means-1}
+
+}
+
+
+\end{knitrout}
+\caption{Adjusted expected information acquisition and first-selection latency}
+\label{fig:adjusted-process-means}
+\par\smallskip
+\begin{minipage}{\linewidth}\footnotesize
+\textit{Notes.} Expected descriptions are estimated by a fractional-logit
+quasi-binomial model for the share of the 2 available descriptions opened,
+then rescaled to a count. Capped first-selection latency is estimated by ordinary
+least squares in seconds, using the common 9-second window.
+The panels retain their different natural units and vertical scales.
+Models use 375 analytical tasks from
+25 eligible completes and the pretreatment
+controls and empirical standardization described in Figure~\ref{fig:adjusted-process-probabilities}.
+Bars show approximate respondent-clustered pointwise 95\% confidence intervals.
+The description-count intervals use a transformed probability scale before rescaling.
+A task with no selection within the common window contributes
+9 seconds to capped latency. The figure concerns the
+first selection, not full task duration, which is reported separately in Figure~\ref{fig:task-duration-completes}.
+\end{minipage}
+\end{figure}
+
+\clearpage
+\begin{figure}[!htbp]
+\centering
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\linewidth]{analysis_outputs/figure-adjusted-candidate-probabilities-1}
+
+}
+
+
+\end{knitrout}
+\caption{Adjusted information acquisition and registered selection by candidate gender}
+\label{fig:adjusted-candidate-probabilities}
+\par\smallskip
+\begin{minipage}{\linewidth}\footnotesize
+\textit{Notes.} Separate mean-bias-reduced logistic models use
+750 candidate appearances from
+25 eligible completed respondents.
+Specifications include treatment-by-candidate-gender interactions, respondent age
+and gender, tertiary education, baseline political interest, task position, and
+randomized side. Predictions replace only the assigned environment and average
+over the observed profiles within each candidate-gender group.
+Bars show approximate pointwise 95\% confidence intervals using two-way
+respondent--candidate clustering and 24
+degrees of freedom. Positive-semidefinite covariance correction is used when required.
+Registered selection is a marginal binary event, not a structural paired-choice model.
+A permitted task without a selection contributes zero selection events for both profiles
+while its recorded candidate response remains missing. The profiles' gender and
+other characteristics remain bundled. Differences between candidate-gender groups
+are therefore not isolated causal effects of gender, and all predictions condition
+on study completion.
+\end{minipage}
+\end{figure}
+
+\begin{table}[!htbp]
+\centering\footnotesize
+\setlength{\tabcolsep}{3pt}
+\caption{Covariate-adjusted process contrasts relative to the unconstrained condition}
+\label{tab:adjusted-process-contrasts}
+
+\begin{tabular}{P{1.65in}P{1.0in}rrr}
+\toprule
+Outcome & Contrast & Estimate & 95\% CI & p\\
+\midrule
+Any description opened & Cost - Baseline & -0.160 & {}[-0.305, -0.015] & 0.032\\
+Any description opened & Time - Baseline & -0.143 & {}[-0.318, 0.032] & 0.106\\
+Descriptions opened & Cost - Baseline & -0.294 & {}[-0.624, 0.037] & 0.079\\
+Descriptions opened & Time - Baseline & -0.254 & {}[-0.634, 0.127] & 0.181\\
+Capped first-selection time (s) & Cost - Baseline & 1.006 & {}[-0.391, 2.403] & 0.150\\
+\addlinespace
+Capped first-selection time (s) & Time - Baseline & -2.087 & {}[-3.827, -0.348] & 0.021\\
+No selection within common window & Cost - Baseline & 0.237 & {}[-0.032, 0.506] & 0.081\\
+No selection within common window & Time - Baseline & -0.471 & {}[-0.710, -0.232] & <0.001\\
+Both descriptions opened & Cost - Baseline & -0.162 & {}[-0.366, 0.042] & 0.114\\
+Both descriptions opened & Time - Baseline & -0.140 & {}[-0.366, 0.085] & 0.211\\
+\bottomrule
+\end{tabular}
+
+
+\par\smallskip
+\begin{minipage}{\linewidth}\footnotesize
+\textit{Notes.} Contrasts average response-scale differences over the same
+25 eligible completed respondents and
+their 375 analytical tasks.
+Probability differences are proportions, description differences are counts, and
+latency differences are seconds. Covariates and working models match
+Figures~\ref{fig:adjusted-process-probabilities} and~\ref{fig:adjusted-process-means}.
+Confidence intervals are respondent-clustered pointwise 95\% intervals.
+Two-sided $p$-values are unadjusted supplementary tests. The unadjusted primary
+comparisons and their Holm corrections remain reported separately.
+\end{minipage}
+\end{table}
+
+
+\clearpage
 \section{Discussion}
 
 The experiment examines whether randomized constraints alter political information acquisition, candidate choice, and the scrutiny applied to women candidates. The reported comparisons are restricted to eligible completed interviews, so their causal interpretation depends on assumptions about completion-related selection. Because gender, ideology, party, and facial characteristics remain bundled within observed candidates, gender-indexed comparisons additionally capture heterogeneity across naturally occurring profiles rather than isolated attribute effects. Observed information acquisition locates a stage at which unequal evaluation may emerge but does not, by itself, establish an unconscious psychological mechanism. Combining randomized decision environments, repeated choices, and behavioral measures of political learning connects appearance-based judgment to the acquisition and use of substantive information in the Colombian electoral context.
@@ -565,6 +932,8 @@ The experiment examines whether randomized constraints alter political informati
 \item Andersen, D. J., \& Ditonto, T. (2020). The importance of candidate sex and partisan preference over time: A multiday study of voter decision making. \emph{The Journal of Politics, 82}(4), 1337--1353. \url{https://doi.org/10.1086/708340}
 
 \item Antonakis, J., \& Dalgas, O. (2009). Predicting elections: Child's play! \emph{Science, 323}(5918), 1183. \url{https://doi.org/10.1126/science.1167748}
+
+\item Arel-Bundock, V., Greifer, N., \& Heiss, A. (2024). How to interpret statistical models using marginaleffects for R and Python. \emph{Journal of Statistical Software, 111}(9), 1--32. \url{https://doi.org/10.18637/jss.v111.i09}
 
 \item Bahamonde, H., \& Sarpila, O. (2024). Physical appearance and elections: An inequality perspective. \emph{Political Psychology, 45}(3), 623--642. \url{https://doi.org/10.1111/pops.12940}
 
@@ -597,6 +966,8 @@ The experiment examines whether randomized constraints alter political informati
 \item Jenke, L. (2025). An eye tracking study of gender biased information acquisition in candidate evaluation. \emph{Political Psychology, 46}(3), 673--690. \url{https://doi.org/10.1111/pops.13031}
 
 \item Kocher, M. G., Schindler, D., Trautmann, S. T., \& Xu, Y. (2019). Risk, time pressure, and selection effects. \emph{Experimental Economics, 22}(1), 216--246. \url{https://doi.org/10.1007/s10683-018-9576-1}
+
+\item Kosmidis, I., \& Firth, D. (2021). Jeffreys-prior penalty, finiteness and shrinkage in binomial-response generalized linear models. \emph{Biometrika, 108}(1), 71--82. \url{https://doi.org/10.1093/biomet/asaa052}
 
 \item Lawson, C., Lenz, G. S., Baker, A., \& Myers, M. (2010). Looking like a winner: Candidate appearance and electoral success in new democracies. \emph{World Politics, 62}(4), 561--593.
 
@@ -632,7 +1003,7 @@ The experiment examines whether randomized constraints alter political informati
 
 \clearpage
 \appendix
-\section{Task duration in the pre-test}
+\section{Task duration by study version}
 \label{app:task-duration}
 \renewcommand{\thefigure}{A\arabic{figure}}
 \setcounter{figure}{0}
@@ -642,17 +1013,17 @@ The experiment examines whether randomized constraints alter political informati
 \begin{knitrout}
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=\linewidth]{analysis_outputs/figure-pretest-task-duration-1}
+{\centering \includegraphics[width=\linewidth]{analysis_outputs/figure-task-duration-comparison-1}
 
 }
 
 
 \end{knitrout}
-\caption{Mean choice-task duration by condition among completed pre-test participants}
+\caption{Mean choice-task duration by condition and study version among eligible completes}
 \label{fig:task-duration-completes}
 \par\smallskip
 \begin{minipage}{\linewidth}\footnotesize
-\textit{Notes.} The pre-test comprises 30 eligible
+\textit{Notes.} Panel A comprises the original 30 eligible pre-test
 participants who reached the final study screen, submitted all 15 analytical
 tasks, and recorded at least 13 valid candidate choices.
 The unconstrained, exploratory timed, and arithmetic-cost conditions include
@@ -668,13 +1039,15 @@ task submission. It includes information acquisition and arithmetic operations
 when applicable, but excludes image loading and follow-up questions.
 Up to 2 timed submissions without a candidate selection are permitted per
 retained interview and remain in the figure. No long durations are removed or
-capped. The dotted line marks the exploratory 20-second deadline.
+capped. Panel A's dotted line marks the exploratory 20-second deadline.
+Confidence limits may extend below zero, although observed durations are nonnegative.
 Comparisons are descriptive and conditional on study completion, which may
 itself be affected by treatment.
+Panel B includes 25 qualifying completes from the revised 9-second version, contributing 375 analytical task observations. Its condition-specific respondent counts appear in the panel header. Recorded navigation violations and terminated cases are excluded from this panel but retained in the source data. Both panels use the same seconds scale. Their dotted lines mark their respective deadlines. The two cohorts are distinct, and differences between panels are not randomized effects of deadline length.
 \end{minipage}
 \end{figure}
 
-\iffalse
+
 \clearpage
 \section{Candidate characteristics and registered selection}
 \label{app:candidate-characteristics}
@@ -689,11 +1062,51 @@ itself be affected by treatment.
 \caption{Displayed and selected candidate characteristics by condition}
 \label{tab:candidate-trait-composition}
 
+\begin{tabular}{P{0.85in}P{0.7in}P{0.7in}rrP{0.8in}P{0.8in}}
+\toprule
+Attribute & Level & Condition & Shown & Chosen & Chosen / shown & Among chosen\\
+\midrule
+Age category & Older & Baseline & 139 & 69 & 49.6 & 51.1\\
+Age category & Older & Time & 130 & 70 & 53.8 & 62.5\\
+Age category & Older & Cost & 123 & 65 & 52.8 & 54.2\\
+Age category & Younger & Baseline & 131 & 66 & 50.4 & 48.9\\
+Age category & Younger & Time & 110 & 42 & 38.2 & 37.5\\
+\addlinespace
+Age category & Younger & Cost & 117 & 55 & 47.0 & 45.8\\
+Dominance & High & Baseline & 139 & 67 & 48.2 & 49.6\\
+Dominance & High & Time & 126 & 65 & 51.6 & 58.0\\
+Dominance & High & Cost & 126 & 61 & 48.4 & 50.8\\
+Dominance & Low & Baseline & 131 & 68 & 51.9 & 50.4\\
+\addlinespace
+Dominance & Low & Time & 114 & 47 & 41.2 & 42.0\\
+Dominance & Low & Cost & 114 & 59 & 51.8 & 49.2\\
+Gender & Men & Baseline & 143 & 69 & 48.3 & 51.1\\
+Gender & Men & Time & 121 & 54 & 44.6 & 48.2\\
+Gender & Men & Cost & 122 & 58 & 47.5 & 48.3\\
+\addlinespace
+Gender & Women & Baseline & 127 & 66 & 52.0 & 48.9\\
+Gender & Women & Time & 119 & 58 & 48.7 & 51.8\\
+Gender & Women & Cost & 118 & 62 & 52.5 & 51.7\\
+Ideology & Center & Baseline & 88 & 46 & 52.3 & 34.1\\
+Ideology & Center & Time & 76 & 36 & 47.4 & 32.1\\
+\addlinespace
+Ideology & Center & Cost & 79 & 38 & 48.1 & 31.7\\
+Ideology & Left & Baseline & 97 & 55 & 56.7 & 40.7\\
+Ideology & Left & Time & 91 & 52 & 57.1 & 46.4\\
+Ideology & Left & Cost & 82 & 57 & 69.5 & 47.5\\
+Ideology & Right & Baseline & 85 & 34 & 40.0 & 25.2\\
+\addlinespace
+Ideology & Right & Time & 73 & 24 & 32.9 & 21.4\\
+Ideology & Right & Cost & 79 & 25 & 31.6 & 20.8\\
+\bottomrule
+\end{tabular}
+
+
 \par\smallskip
 \begin{minipage}{0.98\linewidth}\footnotesize
-\textit{Notes.} The table includes 0 candidate
-appearances from 0 distinct candidates evaluated by
-0 eligible completed respondents.
+\textit{Notes.} The table includes 750 candidate
+appearances from 71 distinct candidates evaluated by
+25 eligible completed respondents.
 Each submitted analytical task contributes its 2 displayed candidate profiles.
 Shown counts profile appearances, and chosen counts registered selections.
 Chosen / shown is the percentage of displayed profiles with that characteristic
@@ -716,6 +1129,31 @@ The cost condition requires an arithmetic operation to access information.
 \caption{Adjusted associations between candidate characteristics and selection}
 \label{tab:candidate-trait-associations}
 
+\begin{tabular}{P{0.85in}P{1.35in}P{0.7in}rrr}
+\toprule
+Attribute & Contrast & Condition & Estimate & 95\% CI & p\\
+\midrule
+Gender & Women - Men & Baseline & 4.9 & {}[-8.2, 18.0] & 0.4447\\
+Gender & Women - Men & Time & 3.9 & {}[-10.6, 18.4] & 0.5833\\
+Gender & Women - Men & Cost & 4.9 & {}[-15.0, 24.9] & 0.6134\\
+Ideology & Left - Center & Baseline & 5.6 & {}[-21.4, 32.5] & 0.6743\\
+Ideology & Right - Center & Baseline & -12.2 & {}[-38.2, 13.9] & 0.3442\\
+\addlinespace
+Ideology & Left - Center & Time & 11.0 & {}[-6.2, 28.1] & 0.1983\\
+Ideology & Right - Center & Time & -13.7 & {}[-31.9, 4.5] & 0.1322\\
+Ideology & Left - Center & Cost & 21.3 & {}[2.4, 40.3] & 0.0288\\
+Ideology & Right - Center & Cost & -16.4 & {}[-35.6, 2.9] & 0.0916\\
+Dominance & High - Low & Baseline & -3.8 & {}[-18.8, 11.2] & 0.6078\\
+\addlinespace
+Dominance & High - Low & Time & 11.3 & {}[3.1, 19.6] & 0.0091\\
+Dominance & High - Low & Cost & -2.3 & {}[-14.9, 10.3] & 0.7116\\
+Age category & Older - Younger & Baseline & -1.8 & {}[-20.2, 16.6] & 0.8410\\
+Age category & Older - Younger & Time & 14.0 & {}[0.8, 27.2] & 0.0387\\
+Age category & Older - Younger & Cost & 5.1 & {}[-11.8, 22.0] & 0.5391\\
+\bottomrule
+\end{tabular}
+
+
 \par\smallskip
 \begin{minipage}{0.98\linewidth}\footnotesize
 \textit{Notes.} Estimates are within-condition differences in the probability
@@ -729,8 +1167,8 @@ clustering by respondent and candidate. Two-sided $p$-values are unadjusted
 exploratory tests and do not enter the primary multiplicity families.
 When required, the software's standard positive-semidefinite covariance correction
 is applied.
-The model uses 0 candidate appearances from
-0 eligible completed interviews. Retained submissions
+The model uses 750 candidate appearances from
+25 eligible completed interviews. Retained submissions
 without a choice contribute zero registered selections for both displayed
 candidates, while the original candidate response remains missing.
 Because candidate attributes remain bundled within real profiles, these contrasts
@@ -742,7 +1180,15 @@ They do not isolate the effect of reading political information.
 \clearpage
 \begin{figure}[!htbp]
 \centering
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
+{\centering \includegraphics[width=\linewidth]{analysis_outputs/figure-candidate-trait-associations-1}
+
+}
+
+
+\end{knitrout}
 \caption{Candidate characteristics and registered selection by decision environment}
 \label{fig:candidate-trait-associations}
 \par\smallskip
@@ -751,8 +1197,8 @@ They do not isolate the effect of reading political information.
 selection in percentage points from the joint model in
 Table~\ref{tab:candidate-trait-associations}. Bars show two-way clustered pointwise
 95\% confidence intervals. The vertical line marks no difference from the relevant
-reference category. Estimates use 0 candidate
-appearances from 0 eligible completed interviews.
+reference category. Estimates use 750 candidate
+appearances from 25 eligible completed interviews.
 The layout follows a conjoint coefficient plot, but the estimates are associations
 across naturally occurring candidate profiles rather than causal effects of
 independently randomized attributes. Baseline has no time or arithmetic constraint,
@@ -768,7 +1214,15 @@ time imposes a 9-second deadline, and cost requires an arithmetic operation.
 
 \begin{figure}[!htbp]
 \centering
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
+{\centering \includegraphics[width=\linewidth]{analysis_outputs/figure-respondent-scrutiny-1}
+
+}
+
+
+\end{knitrout}
 \caption{Candidate information acquisition among male and female respondents}
 \label{fig:respondent-scrutiny}
 \par\smallskip
@@ -781,11 +1235,11 @@ opening rates, not differences between respondent groups. Bars show pointwise
 of condition, candidate gender, respondent gender, and their interactions.
 The covariance is clustered by respondent and candidate, with a
 positive-semidefinite correction when required. Student-$t$ critical values use
-0 degrees of freedom. Intervals are calculated on the log-odds
+24 degrees of freedom. Intervals are calculated on the log-odds
 scale and transformed to probabilities.
-The figure uses 0 candidate appearances
-from 0 eligible completed interviews.
-Respondent counts by condition are .
+The figure uses 750 candidate appearances
+from 25 eligible completed interviews.
+Respondent counts by condition are Baseline men 6 and women 3. Time men 6 and women 2. Cost men 4 and women 4.
 Participants reporting another gender identity or not reporting gender are
 outside this specific comparison, but remain in the other analyses if eligible.
 This excludes 0 completed
@@ -797,5 +1251,42 @@ associations are not causal effects of respondent or candidate gender.
 \end{minipage}
 \end{figure}
 
-\fi
+\clearpage
+\begin{figure}[!htbp]
+\centering
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\linewidth]{analysis_outputs/figure-adjusted-respondent-scrutiny-1}
+
+}
+
+
+\end{knitrout}
+\caption{Covariate-adjusted information acquisition by respondent and candidate gender}
+\label{fig:adjusted-respondent-scrutiny}
+\par\smallskip
+\begin{minipage}{\linewidth}\footnotesize
+\textit{Notes.} Panels distinguish observed male and female respondents.
+Within each panel, points show average predicted information-opening probabilities
+for profiles of male and female candidates in each decision environment.
+A mean-bias-reduced logistic model includes the three-way interaction among
+treatment, candidate gender, and respondent gender, adjusting for age, tertiary
+education, baseline political interest, task position, and randomized side.
+The model uses 750 candidate appearances from
+25 eligible completed respondents.
+Respondent counts by condition are Baseline men 6 and women 3. Time men 6 and women 2. Cost men 4 and women 4.
+Each treatment prediction averages over the observed members and profiles of
+the relevant respondent--candidate-gender subgroup, without changing either gender.
+Bars are approximate pointwise 95\% confidence intervals based on
+two-way respondent--candidate clustering, 24
+degrees of freedom, and logit transformation of the average probability.
+Positive-semidefinite covariance correction is used when required.
+Subgroup differences are exploratory, completion-conditioned associations,
+not causal effects of respondent or candidate gender. Information opening does
+not establish that the text was read.
+\end{minipage}
+\end{figure}
+
+
 \end{document}

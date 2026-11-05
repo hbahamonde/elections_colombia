@@ -1,0 +1,4 @@
+arm,First selection (median s),Full task duration (mean s),Full task duration (median s),Full task duration (75th percentile s),Full task duration (90th percentile s),Full task duration (95th percentile s),Hurry responses (n),Reported hurry (1-7),Cost responses (n),Reported effort (1-7),Arithmetic attempts (mean),Arithmetic passed (%)
+Baseline,9.946,16.955814814814815,11.034,19.381,36.05820000000003,51.83110000000004,135,1.9629629629629635,0,NA,NA,NA
+Time,4.6419999999999995,5.9277,5.896,7.53175,9.002,9.002,112,4.3125,0,NA,NA,NA
+Cost,25.912999999999997,34.229425,28.240000000000002,39.539249999999996,55.06320000000001,91.37039999999998,0,NA,105,3.771428571428571,1.9083333333333334,87.5

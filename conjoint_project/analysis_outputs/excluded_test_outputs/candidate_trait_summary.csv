@@ -1,0 +1,10 @@
+Attribute,Level,arm,Shown,Chosen,No_vote,chosen_per_shown_pct,information_opened_pct,among_chosen_pct
+Age category,Older,Time,16,6,0,37.5,100,40
+Age category,Younger,Time,14,9,0,64.28571428571429,100,60
+Dominance,High,Time,17,9,0,52.94117647058824,100,60
+Dominance,Low,Time,13,6,0,46.15384615384615,100,40
+Gender,Men,Time,15,7,0,46.666666666666664,100,46.666666666666664
+Gender,Women,Time,15,8,0,53.333333333333336,100,53.333333333333336
+Ideology,Center,Time,9,5,0,55.55555555555556,100,33.333333333333336
+Ideology,Left,Time,12,2,0,16.666666666666664,100,13.333333333333334
+Ideology,Right,Time,9,8,0,88.88888888888889,100,53.333333333333336
