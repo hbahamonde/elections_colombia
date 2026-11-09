@@ -1,0 +1,22 @@
+{
+  "title": "Faces or Facts? oTree implementation of a visual candidate conjoint with time pressure and information costs",
+  "upload_type": "software",
+  "description": "oTree application for an online visual conjoint experiment on candidate choice in Colombia. Respondents choose between pairs of candidates shown by photograph and are randomly assigned, for the whole interview, to a control arm, a time-pressure arm (nine-second deadline per task) or an information-cost arm in which candidate information is available only after solving an arithmetic task. Includes navigation and timing safeguards, quota monitoring dashboard, completion rules, tests, deployment instructions and aggregate analysis outputs. Participant screens are in Spanish.",
+  "creators": [
+    {
+      "name": "Bahamonde, Hector",
+      "affiliation": "INVEST Research Flagship Centre, University of Turku"
+    }
+  ],
+  "license": "MIT",
+  "keywords": [
+    "oTree",
+    "conjoint experiment",
+    "candidate choice",
+    "information costs",
+    "time pressure",
+    "physical appearance",
+    "Colombia"
+  ],
+  "access_right": "open"
+}
