@@ -25,16 +25,16 @@ uses the revised behavior. No reset or schema change is required.
 
 ## Current source configuration: nine-second deadline
 
-New interviews in the time-pressure arm have a **nine-second deadline** in all
+New participants in the time-pressure arm have a **nine-second deadline** in all
 five practice tasks and all fifteen main tasks. Instructions before and after
 practice use the same saved deadline as the participant's tasks. The countdown
 starts only when both photographs have loaded and become visible.
 
 Control and arithmetic-cost participants remain untimed. Assignment is still
-one treatment per participant for the entire interview, not a new treatment
+one treatment per participant for the entire study, not a new treatment
 draw on each task. Arithmetic access requirements are unchanged.
 
-Previously started interviews retain their original deadline throughout the
+Participants who already started retain their original deadline throughout the
 remaining tasks. Historical responses keep their recorded 20-second metadata;
 unused slots in an older session receive nine seconds on their first visit.
 The existing `treatment_arm`, `timed_task`, `info_condition`, `countdown_seconds`,
@@ -67,12 +67,12 @@ end participation**. The browser freezes while evidence is saved. The server
 then renders a separate stopped-participation screen at the current URL, never
 the normal completion screen or prize-registration link. Responses are retained.
 Refreshing the initial instructions before continuing or revisiting the final
-screen does not invalidate an interview.
+screen does not invalidate a response.
 
 Evidence is stored through oTree's participant-scoped live channel, retried
 after reconnection, and included in normal form submissions as a backup. The
-dashboard separates navigation-related incomplete interviews from completed
-interviews and ordinary unfinished attempts. Navigation-excluded cases do not
+dashboard separates navigation-related incomplete responses from complete
+responses and ordinary unfinished attempts. Navigation-excluded cases do not
 fill either completed or pending quota counts.
 
 Both standard wide and custom exports include the participant fields
@@ -295,8 +295,22 @@ download, not a live-linked dataframe or an ongoing background monitor.
 All downloading and analysis code lives in `visual_conjoint_design.R`. Its named,
 commented chunks are reused by `visual_conjoint_design.Rnw`. Edit the paper prose
 in the Rnw file. The TeX and PDF files are generated outputs. Running the R file
-refreshes the data once and then knits and compiles the paper. Knitting alone
-uses the saved local export and does not contact Render or Keychain.
+refreshes the data once and then knits and compiles the paper. Knitting the Rnw
+directly also downloads the current official export by default, using the saved
+Keychain login. An explicit offline option is required to reuse a saved export.
+Compiling the generated `.tex` alone does not execute R and cannot refresh data.
+For a complete fresh-data rebuild, run `Rscript visual_conjoint_design.R`.
+If authentication or downloading fails, the build stops rather than silently
+substituting old data. The previous PDF remains available but has not been updated.
+
+`analysis_outputs/analysis_provenance.txt` records whether a build downloaded
+fresh data, reused that same build's verified download, or explicitly ran offline.
+The analysis checks the export checksum before and after import. It also reports
+cumulative eligible completions, current-protocol analytical completions, and
+other-protocol completions excluded from analysis. The recruitment dashboard's
+cumulative total need not equal the paper's current-protocol sample. Figure A1's
+original pre-test panel remains deliberately fixed; its current-protocol panel
+and all substantive analyses update from the latest qualifying responses.
 
 The current analysis supports straightforward daily monitoring. It reports
 sample characteristics, recruitment coverage, task means, perceived hurry and
@@ -317,7 +331,10 @@ in the paper. No individual response records enter the manuscript.
 
 To rebuild without downloading again, set `options(colombia.refresh_data=FALSE)`
 before sourcing the R file. Set it back to `TRUE` for routine fresh-data runs.
-The Rnw reuses the analysis chunks but skips the live-download chunk automatically.
+The Rnw reuses the analysis chunks. When the whole R file has already downloaded
+the data, its paper-building step suppresses only the duplicate download during
+that knit. A standalone Rnw knit downloads fresh data unless the explicit offline
+option is set.
 The existing clear-workspace command at the top of your R file is retained, so
 sourcing the entire R file clears the current R workspace first.
 
@@ -541,7 +558,7 @@ the local launcher and Render's pre-deployment command run it automatically.
 
 ### Completion rule and analytical sample
 
-An eligible completed interview must reach the final study screen, submit all
+An eligible complete response must reach the final study screen, submit all
 15 main tasks, contain at least 13 valid candidate selections, and have no
 detected prohibited browser navigation. Up to two
 main tasks may have no candidate choice. Practice responses and intentionally
@@ -550,9 +567,9 @@ after a valid choice still counts as a valid choice.
 
 The public recruitment monitor and the oTree custom data export share the
 read-only rule in `completion_rules.py`. The monitor counts only qualifying
-interviews toward quotas. Finished interviews below the threshold are reported
+responses toward quotas. Finished responses below the threshold are reported
 separately from participants who are still in progress. Navigation-excluded
-interviews are also reported separately and never fill quotas. Under the current
+responses are also reported separately and never fill quotas. Under the current
 rule, detected navigation and a third missing main choice stop participation
 immediately. Incomplete cases never receive the normal final screen or its
 prize-registration link, even if an old URL is revisited. The third submitted
@@ -569,7 +586,7 @@ export also includes the participant navigation fields described above.
 
 The single `visual_conjoint_design.R` file applies the same 13-of-15 rule before
 all substantive analyses. `dat`, `analysis_people`, `tasks`, and
-`candidate_tasks` include only qualifying interviews. `raw_dat` preserves the
+`candidate_tasks` include only qualifying responses. `raw_dat` preserves the
 unfiltered export. The private `data_exports/completion_status.csv` records
 recruitment classifications for auditing. Recruitment Table 1 retains screened-
 out counts but does not report allocated capacity.
@@ -595,7 +612,7 @@ It contains two rows per respondent/task, identified by `choice_set_id` and
 `side`, with the candidate ID, all original candidate metadata, readable
 gender/ideology/dominance/age categories, numerical facial measurements,
 information opening, condition, timing, and respondent characteristics.
-Only qualifying completed interviews enter this dataframe.
+Only qualifying complete responses enter this dataframe.
 
 `chosen` is the conventional 1/0 candidate-choice outcome and remains missing
 for both alternatives when no choice was registered. `selected` is the

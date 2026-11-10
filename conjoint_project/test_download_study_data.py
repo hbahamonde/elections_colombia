@@ -6,6 +6,7 @@ All downloaded responses are invented and confined to temporary directories.
 """
 
 import csv
+import hashlib
 from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from io import StringIO
@@ -41,6 +42,21 @@ LOAD_DOWNLOAD_FUNCTIONS = r'''
     eval(parse(text = .test_script[seq.int(.test_start + 1L, .test_end - 1L)]),
          envir = globalenv())
     rm(.test_script, .test_start, .test_boundaries, .test_end)
+'''
+
+
+LOAD_NAMED_CHUNK_HELPER = r'''
+    # Exercise only the requested R chunk. Do not source the whole analysis,
+    # contact production, invoke Keychain, or compile the real manuscript.
+    evaluate_test_chunk <- function(label) {
+      lines <- readLines(Sys.getenv("TEST_R_SCRIPT"), warn = FALSE)
+      start <- which(lines == paste("## ----", label))
+      boundaries <- which(trimws(lines) == "## ----")
+      end <- boundaries[boundaries > start][1L]
+      stopifnot(length(start) == 1L, !is.na(end), end > start + 1L)
+      eval(parse(text = lines[seq.int(start + 1L, end - 1L)]),
+           envir = globalenv())
+    }
 '''
 
 
@@ -303,7 +319,11 @@ class RDownloadIntegrationTests(unittest.TestCase):
                           sum(study$all_allocated[["participant._index_in_pages"]] ==
                               "200") == 30L,
                           all(study$all_allocated$session.code == Sys.getenv("TEST_SESSION")),
-                          file.exists(study$latest_file), file.exists(study$snapshot_file))
+                          file.exists(study$latest_file), file.exists(study$snapshot_file),
+                          identical(study$export_md5,
+                                    unname(tools::md5sum(study$latest_file))),
+                          identical(study$export_md5,
+                                    unname(tools::md5sum(study$snapshot_file))))
             '''
         result = subprocess.run(
             [shutil.which('Rscript'), '--vanilla', '-e', invocation + extra],
@@ -500,7 +520,7 @@ class RDownloadIntegrationTests(unittest.TestCase):
         self.assertEqual(self.fixture.requests, [])
 
     def test_download_and_refresh_keep_all_raw_rows_and_previous_snapshot(self):
-        self.run_r()
+        first_result = self.run_r('cat("Returned export hash:", study$export_md5, "\\n")')
         first_payload = self.fixture.latest_payload
         latest = self.output / 'latest.csv'
         first_snapshots = list((self.output / 'snapshots').glob('*.csv'))
@@ -508,16 +528,95 @@ class RDownloadIntegrationTests(unittest.TestCase):
         first_snapshot = first_snapshots[0]
         self.assertEqual(latest.read_bytes(), first_payload)
         self.assertEqual(first_snapshot.read_bytes(), first_payload)
+        self.assertIn('Returned export hash: ' + hashlib.md5(first_payload).hexdigest(),
+                      first_result.stdout)
         self.assertRegex(first_snapshot.name, r'conjoint_test1234_\d{8}T\d{6}Z_')
         self.fixture.revision = 'second'
-        self.run_r()
+        second_result = self.run_r('cat("Returned export hash:", study$export_md5, "\\n")')
         snapshots = list((self.output / 'snapshots').glob('*.csv'))
         self.assertEqual(len(snapshots), 2)
         self.assertEqual(first_snapshot.read_bytes(), first_payload)
         self.assertEqual(latest.read_bytes(), self.fixture.latest_payload)
         self.assertNotEqual(latest.read_bytes(), first_payload)
+        self.assertIn('Returned export hash: ' +
+                      hashlib.md5(self.fixture.latest_payload).hexdigest(),
+                      second_result.stdout)
         self.assertEqual(latest.stat().st_mode & 0o777, 0o600)
         self.assertEqual(first_snapshot.stat().st_mode & 0o777, 0o600)
+        self.assert_only_allowed_requests()
+
+    def test_download_chunk_marks_fresh_and_same_build_reuse_without_second_fetch(self):
+        self.run_r(LOAD_NAMED_CHUNK_HELPER + r'''
+            # The actual download above used only our loopback fixture. This
+            # adapter counts requested refreshes without making more requests.
+            refresh_calls <- 0L
+            download_study_data <- function(...) {
+              refresh_calls <<- refresh_calls + 1L
+              study
+            }
+            options(colombia.refresh_data = TRUE, knitr.in.progress = FALSE,
+                    colombia.download_for_knit = NULL)
+            evaluate_test_chunk("download-data")
+            stopifnot(identical(data_refresh_mode, "fresh_download"),
+                      refresh_calls == 1L,
+                      identical(download$export_md5, study$export_md5))
+
+            # A knit started by the same script must reuse its verified object,
+            # not authenticate or download again.
+            options(colombia.refresh_data = FALSE, knitr.in.progress = TRUE,
+                    colombia.download_for_knit = study)
+            evaluate_test_chunk("download-data")
+            stopifnot(identical(data_refresh_mode, "same_build_download"),
+                      refresh_calls == 1L,
+                      identical(download$export_md5, study$export_md5),
+                      identical(download$downloaded_at_utc, study$downloaded_at_utc))
+        ''')
+        self.assert_only_allowed_requests()
+        self.assertEqual(sum(path == '/ExportWide' for _method, path, _query
+                             in self.fixture.requests), 1)
+
+    def test_offline_chunk_is_explicit_and_cannot_claim_an_ordinary_fresh_download(self):
+        self.run_r(LOAD_NAMED_CHUNK_HELPER + r'''
+            download_study_data <- function(...) stop("Offline mode must not fetch")
+            options(colombia.refresh_data = FALSE, knitr.in.progress = FALSE,
+                    colombia.download_for_knit = study)
+            offline_warnings <- character()
+            withCallingHandlers(evaluate_test_chunk("download-data"),
+              warning = function(warning) {
+                offline_warnings <<- c(offline_warnings, conditionMessage(warning))
+                invokeRestart("muffleWarning")
+              })
+            stopifnot(identical(data_refresh_mode, "explicit_offline"),
+                      length(offline_warnings) >= 1L)
+
+            # A standalone offline knit without the current script's download
+            # object must also remain explicitly offline.
+            options(knitr.in.progress = TRUE, colombia.download_for_knit = NULL)
+            withCallingHandlers(evaluate_test_chunk("download-data"),
+              warning = function(warning) invokeRestart("muffleWarning"))
+            stopifnot(identical(data_refresh_mode, "explicit_offline"))
+        ''')
+        self.assert_only_allowed_requests()
+
+    def test_same_build_import_rejects_changed_csv_before_parsing(self):
+        self.run_r(LOAD_NAMED_CHUNK_HELPER + r'''
+            download <- study
+            data_refresh_mode <- "same_build_download"
+            input_file <- study$latest_file
+            # Change only this disposable fixture export. Neither a real
+            # response file nor the experiment database is opened.
+            writeLines("synthetic bytes changed after download", input_file)
+            parser_called <- FALSE
+            read_csv <- function(...) {
+              parser_called <<- TRUE
+              stop("Parser must not run after a checksum mismatch")
+            }
+            failure <- tryCatch({evaluate_test_chunk("analysis-import"); NULL},
+                                error = identity)
+            stopifnot(inherits(failure, "error"), !parser_called,
+                      grepl("export changed after download", conditionMessage(failure),
+                            fixed = TRUE))
+        ''')
         self.assert_only_allowed_requests()
 
     def test_invalid_responses_do_not_replace_previous_latest_or_snapshot(self):

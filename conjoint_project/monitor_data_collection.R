@@ -1,6 +1,6 @@
 # Daily monitoring of the Colombia experiment. Run this file with Source in RStudio.
 # It downloads fresh responses, excludes pre-test cases, keeps eligible main-study
-# completed interviews, opens dat,
+# complete responses, opens dat,
 # displays Figure A1 in Plots, and prints respondent counts by treatment/gender.
 # It does not fit models, compile the paper, or change the experiment/database.
 #
@@ -17,7 +17,7 @@
 # respondents, treatment counts, or this current main-study timing figure.
 # A complete reaches the final screen, submits all 15 main tasks, and records
 # at least 13 valid choices. Up to two missing choices remain NA, not invented votes.
-# Detected reload/history violations also make an interview incomplete. Missing
+# Detected reload/history violations also make a response incomplete. Missing
 # historical navigation records remain unknown, not invented violations.
 # Fail-fast terminations remain incomplete even if a saved Task POST preceded
 # the stop. New completed nine-second-version cases enter analysis automatically;
@@ -164,7 +164,7 @@ monitor <- local({
     eval(parse(text = knitr::knit_code$get("analysis-duration-completes")))
     figure_A1 <- plot_task_duration_completes +
       labs(title = "Mean time per choice task",
-        subtitle = paste(nrow(respondents), "eligible completed interviews"),
+        subtitle = paste(nrow(respondents), "eligible complete responses"),
         caption = paste("Downloaded:", downloaded_at,
           "\nPointwise 95% confidence intervals. Dotted line: timed-condition deadline.")) +
       theme(plot.title = element_text(face = "bold"),
@@ -202,6 +202,6 @@ cat("Main-task rows:", nrow(dat), "\n")
 cat("\nCompleted MAIN-STUDY RESPONDENTS by treatment and respondent gender:\n")
 print(treatment_by_gender)
 print(figure_A1)
-if (interactive()) View(dat, title = "Latest completed interviews - task data")
+if (interactive()) View(dat, title = "Latest complete responses - task data")
 rm(monitor)
 ## ---- 

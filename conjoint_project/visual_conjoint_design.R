@@ -10,7 +10,7 @@
 # Running/source-ing the whole file does everything. To refresh the data only,
 # run the download-functions and download-data sections, without later sections.
 # dat and substantive analytical dataframes contain ONLY eligible completed
-# interviews from MAIN FIELDWORK. The 30 completed PRE-TEST / SOFT-LAUNCH cases
+# responses from MAIN FIELDWORK. The 30 completed PRE-TEST / SOFT-LAUNCH cases
 # are excluded from those analyses and retained separately in pretest for A1.
 # Complete = final screen reached, all 15 main tasks submitted, >=13 valid votes,
 # and no DETECTED prohibited reload/history event. Historical unmonitored records
@@ -278,6 +278,7 @@ download_study_data <- function(
   message("Snapshot: ", snapshot)
   invisible(list(all_allocated = raw, started = started, session_code = codes,
                  latest_file = latest, snapshot_file = snapshot,
+                 export_md5 = unname(tools::md5sum(snapshot)),
                  downloaded_at_utc = format(Sys.time(), tz = "UTC", usetz = TRUE)))
 }
 
@@ -287,12 +288,22 @@ download_study_data <- function(
 
 ## ---- download-data
 # One refresh per run. The saved Mac Keychain login is reused automatically.
-# A direct Rnw build also refreshes the data. The build-paper chunk below turns
-# off only the SECOND download when this whole R script has already refreshed it.
+# A direct Rnw build also refreshes the data. The build-paper chunk below passes
+# this run's verified download to knitr, rather than downloading a second time.
 # Set options(colombia.refresh_data = FALSE) explicitly for an offline build.
 if (isTRUE(getOption("colombia.refresh_data", TRUE))) {
   download <- download_study_data()
+  data_refresh_mode <- "fresh_download"
   dat <- download$started
+} else if (isTRUE(getOption("knitr.in.progress")) &&
+           !is.null(getOption("colombia.download_for_knit"))) {
+  download <- getOption("colombia.download_for_knit")
+  data_refresh_mode <- "same_build_download"
+} else {
+  download <- NULL
+  data_refresh_mode <- "explicit_offline"
+  warning("OFFLINE BUILD: using the last saved export, not current server data. ",
+          "Set options(colombia.refresh_data = TRUE) for a fresh build.", call. = FALSE)
 }
 
 ## ---- 
@@ -328,11 +339,25 @@ theme_set(theme_bw(base_size = 11))
 # analyses on that file. Offline builds reuse the last successfully saved export.
 # IDs remain text. Empty cells become NA, but the literal text "NA" is preserved.
 stopifnot(file.exists(input_file))
-export_time <- format(file.info(input_file)$mtime, tz = "UTC", usetz = TRUE)
 export_checksum <- unname(tools::md5sum(input_file))
+if (data_refresh_mode != "explicit_offline") {
+  # The paper must analyze the exact bytes downloaded for this build. If another
+  # process replaced latest.csv between stages, stop rather than mix versions.
+  if (!identical(normalizePath(input_file), normalizePath(download$latest_file)) ||
+      !identical(export_checksum, download$export_md5)) {
+    stop("The export changed after download. Rebuild from the R file or Rnw; ",
+         "the paper will not be compiled using a different dataset.")
+  }
+  export_time <- download$downloaded_at_utc
+} else {
+  export_time <- format(file.info(input_file)$mtime, tz = "UTC", usetz = TRUE)
+}
+message("DATA SOURCE: ", data_refresh_mode, "; export saved at ", export_time,
+        "; MD5 ", export_checksum)
 raw_dat <- read_csv(input_file, col_types = cols(.default = col_character()),
                 na = "", trim_ws = FALSE, name_repair = "minimal",
                 show_col_types = FALSE)
+stopifnot(identical(export_checksum, unname(tools::md5sum(input_file))))
 stopifnot(!anyDuplicated(raw_dat$participant.code),
           all(raw_dat$session.code == "fhcmy7rf"),
           all(raw_dat$session.config.official_data_collection %in% c("1", "True", "TRUE")))
@@ -344,7 +369,7 @@ stopifnot(!anyDuplicated(raw_dat$participant.code),
 # PRE-TEST / SOFT LAUNCH: 19-20 October 2026, inclusive, in Chile/Santiago time.
 # Earlier records are dropped from working analyses, NOT erased from raw files
 # or Render. The 30 frozen complete pre-test cases are used ONLY for deadline
-# calibration and Figure A1. New completed NINE-SECOND-version interviews are
+# calibration and Figure A1. New completed NINE-SECOND-version responses are
 # retained for analysis, including the next 30-person collection wave.
 cohort_timezone <- "America/Santiago"
 pretest_start_date <- as.Date("2026-10-19")
@@ -703,7 +728,7 @@ task_counts <- tasks |>
 # Mirror the live monitor's completion_rules.py. Do not use complete.cases():
 # intentionally skipped follow-ups and up to two unanswered choices are allowed.
 # A detected monitored reload/history event overrides completion, including for
-# an interview stopped before the final screen. Unknown historical records are
+# a response stopped before the final screen. Unknown historical records are
 # not retroactively flagged; the frozen pre-test is therefore unchanged.
 participants <- participants |>
   left_join(task_counts, by = "respondent_id") |>
@@ -1244,7 +1269,7 @@ if (has_model_data) {
   # Show BOTH respondent groups, not a women-minus-men contrast. The outcome is
   # whether a displayed candidate's information was opened at least once. It is
   # not a count of clicks and cannot establish that the description was read.
-  # All rows already come from eligible completed interviews. Other respondent
+  # All rows already come from eligible completed responses. Other respondent
   # gender categories remain in the other analyses, but are not relabelled here.
   scrutiny_dat <- conjoint_dat |>
     filter(respondent_gender %in% c("Man", "Woman")) |>
@@ -2012,16 +2037,27 @@ if (has_model_data) {
 }
 writeLines(c(
   "Substantive analysis cohort: MAIN FIELDWORK ONLY; PRE-TEST EXCLUDED.",
-  paste("Pre-test completed interviews excluded:", pretest$n_respondents),
+  paste("Data refresh mode:", data_refresh_mode),
+  paste("Pre-test completed responses in frozen calibration:", pretest$n_respondents),
+  paste("Started responses across study versions:", paper_counts$source_entrants),
+  paste("Cumulative eligible completes (dashboard definition):", paper_counts$cumulative_completes),
+  paste("Other-protocol completes excluded from current analyses:", paper_counts$other_protocol_completes),
   paste("Main-fieldwork eligible completes:", nrow(analysis_people)),
   paste("Treatment models available:", has_model_data),
-  paste("Fresh export timestamp:", export_time), paste("Export MD5:", export_checksum),
+  paste(if (data_refresh_mode == "explicit_offline") "Offline export file timestamp:" else
+          "Verified live download timestamp:", export_time),
+  paste("Export MD5:", export_checksum),
   paste("Candidate catalogue MD5:", candidate_file_checksum),
   capture.output(sessionInfo())), file.path(output_dir, "analysis_provenance.txt"))
 Sys.umask(private_umask)
 message("MAIN FIELDWORK: ", nrow(analysis_people), " eligible completes; ",
   nrow(tasks), " analytical tasks. PRE-TEST: ", pretest$n_respondents,
   " completes retained ONLY for calibration and Figure A1.")
+message("RECRUITMENT RECONCILIATION: ", paper_counts$source_entrants,
+  " started responses; ", paper_counts$cumulative_completes,
+  " cumulative eligible completes = ", paper_counts$completed_respondents,
+  " current-protocol analytical completes + ", paper_counts$other_protocol_completes,
+  " other-protocol completes excluded from current analyses.")
 if (!has_model_data) message(
   "Substantive model outputs are omitted until main-fieldwork data cover all three arms.")
 
@@ -2181,8 +2217,11 @@ if (render_in_paper) {
 
 ## ---- build-paper
 # Knit the matching Rnw manuscript with the named chunks in THIS R file.
-# Knitting reuses the export downloaded above; it does not contact Render again.
-previous_refresh_option <- options(colombia.refresh_data = FALSE)
+# Knitting reuses the exact export downloaded above; it does not contact Render
+# again. Only this build receives that object, and every option is restored.
+previous_refresh_option <- options(
+  colombia.refresh_data = FALSE,
+  colombia.download_for_knit = if (data_refresh_mode != "explicit_offline") download else NULL)
 tryCatch(
   knitr::knit(file.path(project_dir, "visual_conjoint_design.Rnw"),
               output = file.path(project_dir, "visual_conjoint_design.tex"),
