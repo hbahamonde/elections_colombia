@@ -1765,6 +1765,157 @@ if (has_model_data) {
 
 ## ----
 
+## ---- analysis-dominance-gender
+if (has_model_data) {
+  # Exploratory: facial dominance by candidate gender, and by gender affinity
+  # (does the candidate share the respondent's gender?). Dominance and gender
+  # belong to real people, so these are adjusted associations, not AMCEs;
+  # respondent gender is not randomized, so affinity contrasts are descriptive.
+  # Every model is fitted SEPARATELY in each condition, with displayed ideology,
+  # age group, side and task position held fixed, and two-way clustering.
+  # Predictions average over the displayed profiles ('proportional' weights).
+  dominance_controls <- "candidate_ideology + candidate_age_group + side + factor(task)"
+  condition_df <- function(d) min(n_distinct(d$respondent_id), n_distinct(d$candidate_id)) - 1L
+
+  # (a) Candidate gender x dominance, Equation (8) in the paper.
+  dominance_fit <- function(z) {
+    d <- conjoint_dat |> filter(arm == z)
+    fit <- feols(as.formula(paste("selected ~ candidate_gender * candidate_dominance +",
+                                  dominance_controls)),
+                 data = d, vcov = ~respondent_id + candidate_id)
+    grid <- emmeans(fit, ~ candidate_dominance * candidate_gender, data = d,
+                    df = condition_df(d), weights = "proportional")
+    means <- as.data.frame(summary(grid, infer = c(TRUE, FALSE), level = confidence_level))
+    gap <- as.data.frame(summary(contrast(grid, interaction = list(
+        candidate_dominance = list(`High - Low` = c(-1, 1)),
+        candidate_gender = list(`Women - Men` = c(-1, 1)))),
+      infer = c(TRUE, TRUE), level = confidence_level))
+    list(means = means |> mutate(arm = z),
+         interaction = gap |> transmute(arm = z, estimate, std.error = SE,
+           conf.low = lower.CL, conf.high = upper.CL, p.value))
+  }
+  dominance_fits <- lapply(levels(conjoint_dat$arm), dominance_fit)
+  dominance_gender_means <- bind_rows(lapply(dominance_fits, `[[`, "means")) |>
+    mutate(arm = factor(arm, levels = levels(conjoint_dat$arm)))
+  dominance_gender_interactions <- bind_rows(lapply(dominance_fits, `[[`, "interaction")) |>
+    mutate(arm = factor(arm, levels = levels(conjoint_dat$arm)))
+
+  # (b) Gender affinity, Equations (9)-(10): respondent x candidate gender x dominance.
+  # Same-gender predictions average the two own-gender cells (men rating men,
+  # women rating women) with equal weight, and other-gender predictions the two
+  # cross-gender cells, so no impossible combination is ever predicted.
+  # Respondents reporting another gender identity or none are excluded here only.
+  affinity_dat <- conjoint_dat |>
+    filter(respondent_gender %in% c("Man", "Woman")) |>
+    mutate(respondent_group = factor(respondent_gender, levels = c("Man", "Woman"),
+                                     labels = c("Men", "Women")))
+  affinity_fit <- function(z) {
+    d <- affinity_dat |> filter(arm == z)
+    fit <- feols(as.formula(paste("selected ~ respondent_group * candidate_gender *",
+                                  "candidate_dominance +", dominance_controls)),
+                 data = d, vcov = ~respondent_id + candidate_id)
+    grid <- emmeans(fit, ~ candidate_dominance * candidate_gender * respondent_group,
+                    data = d, df = condition_df(d), weights = "proportional")
+    cells <- as.data.frame(grid@grid)
+    same <- as.character(cells$candidate_gender) == as.character(cells$respondent_group)
+    high <- cells$candidate_dominance == "High"
+    weight <- function(keep) as.numeric(keep) / sum(keep)
+    affinity_weights <- list(
+      `Same gender, Low` = weight(same & !high), `Same gender, High` = weight(same & high),
+      `Other gender, Low` = weight(!same & !high), `Other gender, High` = weight(!same & high))
+    means <- as.data.frame(summary(contrast(grid, method = affinity_weights),
+      infer = c(TRUE, FALSE), level = confidence_level)) |>
+      tidyr::separate(contrast, into = c("affinity", "candidate_dominance"), sep = ", ") |>
+      transmute(arm = z, affinity, candidate_dominance, estimate, std.error = SE,
+                conf.low = lower.CL, conf.high = upper.CL)
+    difference <- with(affinity_weights,
+      (`Same gender, High` - `Same gender, Low`) - (`Other gender, High` - `Other gender, Low`))
+    nu <- as.data.frame(summary(contrast(grid, method = list(nu = difference)),
+      infer = c(TRUE, TRUE), level = confidence_level)) |>
+      transmute(arm = z, estimate, std.error = SE, conf.low = lower.CL,
+                conf.high = upper.CL, p.value,
+                respondents = n_distinct(d$respondent_id))
+    list(means = means, interaction = nu)
+  }
+  affinity_fits <- lapply(levels(conjoint_dat$arm), affinity_fit)
+  same_gender_means <- bind_rows(lapply(affinity_fits, `[[`, "means")) |>
+    mutate(arm = factor(arm, levels = levels(conjoint_dat$arm)),
+           affinity = factor(affinity, levels = c("Same gender", "Other gender")),
+           candidate_dominance = factor(candidate_dominance, levels = c("Low", "High")))
+  same_gender_interactions <- bind_rows(lapply(affinity_fits, `[[`, "interaction")) |>
+    mutate(arm = factor(arm, levels = levels(conjoint_dat$arm)))
+  stopifnot(nrow(dominance_gender_means) == 12L, nrow(same_gender_means) == 12L,
+            nrow(dominance_gender_interactions) == 3L, nrow(same_gender_interactions) == 3L)
+
+  # Joint guard before reading any single condition: do the affinity contrasts
+  # (the three-way terms) differ from zero in ANY condition? One pooled model
+  # with every term interacted with condition gives a single Wald test.
+  affinity_pooled <- feols(as.formula(paste("selected ~ arm * respondent_group *",
+      "candidate_gender * candidate_dominance + arm * (candidate_ideology +",
+      "candidate_age_group) + side + factor(task)")),
+    data = affinity_dat, vcov = ~respondent_id + candidate_id)
+  affinity_wald <- wald(affinity_pooled,
+    keep = "respondent_group.*:candidate_gender.*:candidate_dominance", print = FALSE)
+  affinity_n_respondents <- n_distinct(affinity_dat$respondent_id)
+  affinity_excluded <- n_distinct(conjoint_dat$respondent_id) - affinity_n_respondents
+
+  # The dominance label is not one common fWHR cut-off: report medians by gender.
+  dominance_fwhr <- eligible_candidate_catalogue |>
+    transmute(Sexo, Dominancia,
+              fwhr = parse_double(fhwr_correg, locale = locale(decimal_mark = ","))) |>
+    group_by(Sexo, Dominancia) |>
+    summarise(median_fwhr = median(fwhr, na.rm = TRUE), .groups = "drop")
+  fwhr_median <- function(sexo, dominancia) sprintf("%.2f", dominance_fwhr$median_fwhr[
+    dominance_fwhr$Sexo == sexo & dominance_fwhr$Dominancia == dominancia])
+  # FIGURES 6-7: predicted probability of selection, one panel per condition.
+  # Colour = condition; candidate gender keeps the paper's filled/hollow circles;
+  # gender affinity uses filled/hollow squares so the two are never confused.
+  # Each panel names its contrast with the equation's symbol (xi or nu) in
+  # plotmath, which every pdf device renders; numbers use ASCII minus signs.
+  signed_pp <- function(x, plus = FALSE) paste0(ifelse(x < 0, "-", if (plus) "+" else ""),
+                                               sprintf("%.1f", abs(100 * x)))
+  annotate_interaction <- function(df, symbol) df |>
+    mutate(label = sprintf("atop(%s == '%s pp', '95%% CI %s to %s; p = %s')", symbol,
+                           signed_pp(estimate, TRUE), signed_pp(conf.low),
+                           signed_pp(conf.high), formatC(p.value, format = "f", digits = 3)))
+  dominance_arm_titles <- c(Baseline = "Baseline", Time = "Time (deadline)",
+                            Cost = "Cost (arithmetic to open)")
+  dominance_dodge <- position_dodge(width = 0.22)
+  dominance_panel <- function(data, group, shapes, linetypes, legend, labels) {
+    ggplot(data, aes(candidate_dominance, 100 * estimate, colour = arm,
+                     shape = .data[[group]], linetype = .data[[group]],
+                     group = .data[[group]])) +
+      geom_hline(yintercept = 50, colour = ink_muted, linewidth = 0.3, linetype = "dotted") +
+      geom_line(position = dominance_dodge, linewidth = 0.6) +
+      geom_errorbar(aes(ymin = 100 * conf.low, ymax = 100 * conf.high),
+                    position = dominance_dodge, width = 0, linewidth = 0.7, linetype = "solid") +
+      geom_point(position = dominance_dodge, size = 2.6, stroke = 0.9, fill = "white") +
+      geom_text(data = labels, aes(x = 1.5, y = Inf, label = label), inherit.aes = FALSE,
+                parse = TRUE, vjust = 1.1, size = 2.5, colour = ink_muted) +
+      facet_wrap(~arm, nrow = 1, labeller = labeller(arm = dominance_arm_titles)) +
+      scale_colour_manual(values = arm_colors, guide = "none") +
+      scale_shape_manual(values = shapes, name = legend) +
+      scale_linetype_manual(values = linetypes, name = legend) +
+      scale_y_continuous(labels = scales::label_percent(scale = 1),
+                         expand = expansion(mult = c(0.05, 0.32))) +
+      labs(x = "Facial dominance of the candidate",
+           y = "Predicted probability of selection (95% CI)")
+  }
+  plot_dominance_gender <- dominance_panel(
+    dominance_gender_means |> transmute(arm, candidate_gender, candidate_dominance,
+      estimate = emmean, conf.low = lower.CL, conf.high = upper.CL),
+    "candidate_gender", gender_shapes, c(Men = "solid", Women = "dashed"),
+    "Candidate gender",
+    annotate_interaction(dominance_gender_interactions, "xi"))
+  plot_same_gender <- dominance_panel(same_gender_means, "affinity",
+    c(`Same gender` = 15, `Other gender` = 0),
+    c(`Same gender` = "solid", `Other gender` = "dashed"),
+    "Candidate's gender vs. respondent's",
+    annotate_interaction(same_gender_interactions, "nu"))
+}
+
+## ----
+
 ## ---- analysis-decision-factors
 if (has_model_data) {
   # Post-choice follow-ups record STATED reasons. Real-election support is asked
@@ -2393,6 +2544,21 @@ profile_r <- function(condition) {
   r <- profile_correlations$r[profile_correlations$arm == condition]
   if (!length(r) || is.na(r)) "--" else tex_num(r, 2)
 }
+# Exploratory dominance contrasts by condition (unadjusted tests).
+dominance_gender_row <- function(condition) {
+  row <- dominance_gender_interactions |> filter(arm == condition)
+  stopifnot(nrow(row) == 1L)
+  row
+}
+same_gender_row <- function(condition) {
+  row <- same_gender_interactions |> filter(arm == condition)
+  stopifnot(nrow(row) == 1L)
+  row
+}
+affinity_wald_text <- function() {
+  paste0("$F(", affinity_wald$df1, ", ", affinity_wald$df2, ")=",
+         formatC(affinity_wald$stat, format = "f", digits = 2), "$, ", p_text(affinity_wald$p))
+}
 # Realized precision of the regression-adjusted estimator relative to the main
 # (preregistered) one, within a family of Table 2: median SE ratio, its range,
 # and how many adjusted standard errors are smaller. Below one = precision gain.
@@ -2516,6 +2682,19 @@ if (has_model_data) {
     file.path(output_dir, "gender_contrasts_by_condition.csv"))
   write_csv(bind_rows(candidate_trait_effects, congruence_effects),
     file.path(output_dir, "candidate_trait_associations.csv"))
+  write_csv(bind_rows(
+      dominance_gender_means |> transmute(arm, model = "Candidate gender x dominance",
+        group = as.character(candidate_gender), candidate_dominance,
+        estimate = emmean, std.error = SE, conf.low = lower.CL, conf.high = upper.CL),
+      same_gender_means |> transmute(arm, model = "Gender affinity x dominance",
+        group = as.character(affinity), candidate_dominance,
+        estimate, std.error, conf.low, conf.high)),
+    file.path(output_dir, "dominance_gender_predictions.csv"))
+  write_csv(bind_rows(
+      dominance_gender_interactions |> mutate(contrast = "Dominance premium, women minus men"),
+      same_gender_interactions |> select(-respondents) |>
+        mutate(contrast = "Dominance premium, same minus other gender")),
+    file.path(output_dir, "dominance_gender_contrasts.csv"))
   write_csv(reason_estimates |>
     select(Source, Reason, arm, estimate, std.error, conf.low, conf.high, n_tasks),
     file.path(output_dir, "decision_reasons.csv"))
@@ -2595,6 +2774,14 @@ if (render_in_paper) print(plot_candidate_traits)
 
 ## ---- figure-reasons
 if (render_in_paper) print(plot_reasons)
+## ----
+
+## ---- figure-dominance-gender
+if (render_in_paper) print(plot_dominance_gender)
+## ----
+
+## ---- figure-same-gender
+if (render_in_paper) print(plot_same_gender)
 ## ----
 
 ## ---- figure-profiles

@@ -312,26 +312,31 @@ cumulative total need not equal the paper's current-protocol sample. Figure A1's
 original pre-test panel remains deliberately fixed; its current-protocol panel
 and all substantive analyses update from the latest qualifying responses.
 
-The paper is organized around the preregistered estimands. Every estimand is
-estimated twice: by the main regression-adjusted models (paper equations 1-3:
+The paper is organized around the preregistered estimands. Every primary
+estimand is estimated twice: by the MAIN preregistered differences (paper
+equations 1-2: differences in condition means; the condition-by-candidate-gender
+LPM) and by COMPLEMENTARY regression-adjusted models (equations 3-5:
 Lin-interacted OLS with centred age, gender, tertiary education and political
-interest for the process outcomes; respondent and candidate fixed effects with
-ideological congruence for the gender interactions) and by the preregistered
-estimators (differences in means; the condition-by-gender LPM). The main text
+interest; respondent and candidate fixed effects with ideological congruence).
+Interpretation reads both: Table 2's "Rejected by" column says whether both, one
+or neither estimator rejects zero at Holm-adjusted p < 0.05. The main text
 reports Table 1 (descriptive statistics of every variable used, overall and by
-condition), Table 2 (every primary test under both estimators, Holm-adjusted
-p-values by family, and the standard-error ratio) and Figures 2-6: process
-outcomes (observed means; both estimators of each contrast), candidate-gender
-means and the Gamma/Psi estimands, candidate characteristics and ideological
-congruence by environment, real-election support and stated reasons, and
-profile-specific selection probabilities. Results prose in the Rnw is generated
-from the estimates with `\Sexpr{live(...)}` helpers defined in the
-`analysis-text` chunk, so the sentences update with each download. Appendix A
+condition), Table 2 (every primary test under both estimators) and Figures 2-8:
+process outcomes, candidate-gender means with the Gamma/Psi estimands,
+candidate characteristics and ideological congruence, real-election support and
+stated reasons, facial dominance by candidate gender (equation 8) and by gender
+affinity (equations 9-10, same- vs other-gender candidates, with a joint Wald
+test), and profile-specific selection probabilities. Every model and formula in
+the paper has a numbered equation. Results prose in the Rnw is generated from
+the estimates with `\Sexpr{live(...)}` helpers defined in the `analysis-text`
+chunk, so the sentences update with each download; never pass LaTeX braces
+inside an inline `\Sexpr{}` (it ends at the first closing brace). Appendix A
 holds the data-collection material (deadline calibration, Figure A1, recruitment
-flow, sample, implementation checks); Appendix B holds the full fitted
-regression tables and the respondent-gender figure. Uncertainty uses respondent
-clustering for task outcomes and respondent/candidate clustering for candidate
-outcomes. Daily monitoring is not a sequential significance-based stopping rule.
+flow, sample, implementation checks); Appendix B holds the fitted regression
+tables and the respondent-gender information figure. Uncertainty uses
+respondent clustering for task outcomes and respondent/candidate clustering for
+candidate outcomes. Daily monitoring is not a sequential significance-based
+stopping rule.
 
 Useful R objects after a run are `dat` (visited respondents in the original wide
 format), `analysis_people` (one row per eligible sequence starter), `tasks` (one

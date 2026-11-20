@@ -130,6 +130,7 @@
 
 
 
+
 \title{\textbf{Faces or Facts?}\\[2pt]
 \large Experimental Evidence on Time Pressure, Information Costs, and Gender Bias in Electoral Choice}
 \author{%
@@ -209,7 +210,7 @@ The resulting penalty is neither universal nor necessarily conscious. A meta-ana
 
 \subsection{Expectations}
 
-These arguments imply four preregistered expectations, stated formally in Section~\ref{sec:estimands}. Both constraints should reduce information acquisition (H1), and the deadline should accelerate the first selection (H2). If voters scrutinize women candidates more when learning is free, both constraints should attenuate that gendered difference (H3). Because additional scrutiny can either help women overcome stricter standards or expose them to them, constraints should change the relative selection of women and men candidates, in a direction we leave open (H4). Beyond these tests, the candidate pool allows an exploratory comparison of faces and facts. Facial dominance, which tracks the facial width-to-height ratio (fWHR; Carr\'e and McCormick 2008; Geniole et al. 2015) and whose electoral appeal varies with voters' ideology (Laustsen and Petersen 2016), is visible in every task. A candidate's ideology is visible only to respondents who open the description. If constraints shift weight from facts to faces, the selection premium for ideologically congruent candidates should shrink under a deadline or an access cost, and visible characteristics should gain influence.
+These arguments imply four preregistered expectations, stated formally in Section~\ref{sec:estimands}. Both constraints should reduce information acquisition (H1), and the deadline should accelerate the first selection (H2). If voters scrutinize women candidates more when learning is free, both constraints should attenuate that gendered difference (H3). Because additional scrutiny can either help women overcome stricter standards or expose them to them, constraints should change the relative selection of women and men candidates, in a direction we leave open (H4). Beyond these tests, the candidate pool allows an exploratory comparison of faces and facts. Facial dominance, which tracks the facial width-to-height ratio (fWHR; Carr\'e and McCormick 2008; Geniole et al. 2015) and whose electoral appeal varies with voters' ideology (Laustsen and Petersen 2016), is visible in every task. A candidate's ideology is visible only to respondents who open the description. If constraints shift weight from facts to faces, the selection premium for ideologically congruent candidates should shrink under a deadline or an access cost, and visible characteristics should gain influence. Because the appeal of a dominant face may differ between women and men candidates, and between voters who do and do not share the candidate's gender (Sanbonmatsu 2002), the crossed pool also allows a descriptive look at dominance by candidate gender and by gender affinity.
 
 \section{Research design}
 \label{sec:design}
@@ -415,6 +416,23 @@ Y_{itj}=\alpha+\sum_{z\in\{T,C\}}\beta_z\,D^z_i+\sum_{z\in\{B,T,C\}}\kappa_z\,D^
 \end{equation}
 where $\kappa_z$ is the selection premium for ideologically congruent profiles in condition $z$. Because profiles are real bundles, these are adjusted associations across observed profiles rather than causal effects of independently assigned attributes (Hainmueller, Hopkins, and Yamamoto 2014; Abramson, Ko\c{c}ak, and Magazinnik 2022). Comparing a within-condition contrast across conditions compares gaps between levels rather than the overall favorability of any level, and for multi-level classifications such comparisons depend on the reference category, so we read them as changes in relative selection (Leeper, Hobolt, and Tilley 2020). Neither model conditions on whether respondents opened political information. Both use two-way clustering by respondent and candidate and unadjusted tests that remain separate from the primary families.
 
+Two further models split the dominance association by gender. Within each condition $z$, separately,
+\begin{equation}
+Y_{itj}=\alpha_z+\beta_z\,W_j+\delta_z\,\mathit{Dom}_j+\xi_z\,W_j\,\mathit{Dom}_j+\mathbf{b}_j'\boldsymbol{\varphi}_z+\pi_z\,\mathit{Side}_{itj}+\lambda_{zt}+u_{itj},
+\label{eq:dominance}
+\end{equation}
+where $\mathit{Dom}_j$ indicates high facial dominance and $\mathbf{b}_j$ collects the displayed-ideology and age-group indicators. The coefficient $\xi_z$ is the dominance premium for women candidates minus that for men candidates. The second model asks whether dominance matters differently when the candidate shares the respondent's gender. It replaces the gender and dominance terms with a full interaction of respondent gender, candidate gender, and dominance:
+\begin{equation}
+Y_{itj}=\sum_{f,w,d\in\{0,1\}}\mu_z(f,w,d)\,\mathbf 1\{F_i=f,\,W_j=w,\,\mathit{Dom}_j=d\}+\mathbf{b}_j'\boldsymbol{\varphi}_z+\pi_z\,\mathit{Side}_{itj}+\lambda_{zt}+u_{itj},
+\label{eq:affinity}
+\end{equation}
+where $F_i$ indicates a woman respondent. Averaging the two own-gender cells and the two cross-gender cells with equal weight gives same- and other-gender predictions, $\bar\mu^{S}_z(d)=\tfrac12[\mu_z(0,0,d)+\mu_z(1,1,d)]$ and $\bar\mu^{O}_z(d)=\tfrac12[\mu_z(0,1,d)+\mu_z(1,0,d)]$, and the affinity contrast
+\begin{equation}
+\nu_z=\bigl[\bar\mu^{S}_z(1)-\bar\mu^{S}_z(0)\bigr]-\bigl[\bar\mu^{O}_z(1)-\bar\mu^{O}_z(0)\bigr],
+\label{eq:nu}
+\end{equation}
+the dominance premium for candidates of the respondent's own gender minus that for candidates of the other gender. This recoding reorganizes the same eight cells around in-group preference (Sanbonmatsu 2002) without predicting impossible combinations, and because each group averages one cell of each candidate gender, the overall difference between women and men candidates cancels. Predictions average over the displayed profiles. Respondent gender is not randomized, so the affinity contrasts describe subgroups rather than causal moderation. Before individual conditions are read, a joint Wald test from a pooled version of Equation~\eqref{eq:affinity}, with every term interacted with condition, asks whether any of the three-way terms differs from zero.
+
 Profile-specific selection probabilities are estimated by the share of a profile's appearances that end in its selection:
 \begin{equation}
 \hat\theta_c(z)=\frac{\sum_{i,t,s}\mathbf 1\{Z_i=z,\,C^s_{it}=c\}\,Y^s_{it}}{\sum_{i,t,s}\mathbf 1\{Z_i=z,\,C^s_{it}=c\}},\qquad
@@ -614,6 +632,49 @@ Respondents' own accounts offer a complementary view. Among tasks in which respo
 \label{fig:reasons}
 \begin{notes}
 Shares of tasks with respondent-clustered 95\% intervals, truncated at 0 and 100. Real-election support is asked after every registered selection (991 tasks). Reasons are asked only after a positive answer (737 tasks), and several may be chosen. Ideology and policy priorities are offered only when at least one description was opened, so their denominator is the 617 such tasks. Because each question follows post-treatment events, these shares are descriptive.
+\end{notes}
+\end{figure}
+
+\subsection{Dominant faces, candidate gender, and gender affinity}
+\label{sec:dominance}
+
+Figure~\ref{fig:dominance-gender} splits the dominance association by candidate gender, estimating Equation~\eqref{eq:dominance} separately in each condition. The dominance premium for women candidates minus that for men candidates ($\xi_z$) was 15.7 percentage points (95\% CI $-$0.6 to 31.9; $p=0.058$) under \armB, 0.5 points (95\% CI $-$17.1 to 18.0; $p=0.957$) under \armT, and $-$3.1 points (95\% CI $-$18.7 to 12.5; $p=0.682$) under \armC. A positive value means that a dominant face raises the selection of women candidates more, or lowers it less, than that of men.
+
+\begin{figure}[!htbp]
+\centering
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\linewidth]{analysis_outputs/figure-dominance-gender-1}
+
+}
+
+
+\end{knitrout}
+\caption{Predicted selection by candidate gender and facial dominance in each decision environment}
+\label{fig:dominance-gender}
+\begin{notes}
+Predicted probability that a displayed profile is selected, from Equation~\eqref{eq:dominance} estimated separately in each condition, averaging over the observed displayed ideology, age group, side, and task position; filled circles are profiles of men, hollow circles profiles of women. Each panel reports $\xi_z$, the women-minus-men difference in the dominance premium, with its 95\% interval and unadjusted $p$-value. Intervals use two-way clustering by respondent and candidate. The dominance classification does not apply one facial-width cut-off to both genders: median fWHR is 1.83 for high- and 1.49 for low-dominance women, and 1.98 and 1.40 for men, so $\xi_z$ compares dominance contrasts within each gender. Adjusted associations across real profiles, not causal effects of dominance or gender; exploratory.
+\end{notes}
+\end{figure}
+
+Figure~\ref{fig:same-gender} recodes the respondent's and the candidate's gender as gender affinity. The dominance premium for candidates of the respondent's own gender minus that for candidates of the other gender ($\nu_z$, Equation~\eqref{eq:nu}) was 2.0 percentage points (95\% CI $-$18.5 to 22.5; $p=0.841$) under \armB, 4.4 points (95\% CI $-$9.5 to 18.4; $p=0.516$) under \armT, and 7.9 points (95\% CI $-$8.5 to 24.3; $p=0.323$) under \armC. The joint test that respondent gender leaves the dominance-by-candidate-gender pattern unchanged in all three conditions gives $F(3, 65)=0.75$, $p=0.528$. Both sets of contrasts are exploratory and unadjusted for multiple comparisons. The affinity contrasts rest on 66 respondents who identified as women or men, spread across six condition-by-gender groups.
+
+\begin{figure}[!htbp]
+\centering
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=\linewidth]{analysis_outputs/figure-same-gender-1}
+
+}
+
+
+\end{knitrout}
+\caption{Predicted selection of same- and other-gender candidates by facial dominance}
+\label{fig:same-gender}
+\begin{notes}
+Predicted probability that a displayed profile is selected, from Equation~\eqref{eq:affinity} estimated separately in each condition. Filled squares are candidates who share the respondent's gender (men rating men and women rating women, equally weighted); hollow squares are candidates of the other gender, weighted the same way, so the overall difference between women and men candidates cancels. Each panel reports $\nu_z$ (Equation~\eqref{eq:nu}) with its 95\% interval and unadjusted $p$-value; intervals use two-way clustering by respondent and candidate. 66 respondents who identified as women or men; 1 respondent(s) reporting another gender identity or none are outside this comparison only. Respondent gender is not randomized, so these are descriptive subgroup comparisons.
 \end{notes}
 \end{figure}
 
