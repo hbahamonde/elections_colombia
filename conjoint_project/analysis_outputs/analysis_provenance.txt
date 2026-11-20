@@ -6,7 +6,7 @@ Cumulative eligible completes (dashboard definition): 100
 Other-protocol completes excluded from current analyses: 33
 Main-fieldwork eligible completes: 67
 Treatment models available: TRUE
-Offline export file timestamp: 2026-11-20 09:08:16 UTC
+Offline export file timestamp: 2026-11-20 10:15:25 UTC
 Export MD5: 1e14c832220908bc73a08c4866092e08
 Candidate catalogue MD5: af94a6199f528bc7a00f254f08b498de
 R version 4.6.1 (2026-06-24)

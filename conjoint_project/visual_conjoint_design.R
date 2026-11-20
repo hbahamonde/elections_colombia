@@ -1161,13 +1161,16 @@ if (has_main_data) {
 ## ---- analysis-estimates
 if (has_model_data) {
   # TWO ESTIMATORS OF THE SAME completion-conditioned contrasts (paper, Sec. 5).
-  # (a) PREREGISTERED: differences in condition means for the process family,
-  #     and a condition-by-candidate-gender LPM with side and task indicators
-  #     for the gender family. Kept exactly as registered and always reported.
-  # (b) MAIN: regression adjustment, equations (1)-(3) in the paper. It targets
-  #     the same contrasts and removes outcome variation explained by regressors
-  #     fixed before the environment is revealed. NEVER add clicks, revealed
-  #     text, hurry, arithmetic success or timing: they are outcomes of the arm.
+  # (a) MAIN, PREREGISTERED: differences in condition means for the process
+  #     family (eq. 1), and the condition-by-candidate-gender LPM with side and
+  #     task indicators for the gender family (eq. 2). Objects without a suffix.
+  # (b) COMPLEMENTARY: regression-adjusted models, eqs. (3)-(5). They target
+  #     the same contrasts and remove outcome variation explained by regressors
+  #     fixed before the environment is revealed. Objects end in _adj. NEVER add
+  #     clicks, revealed text, hurry, arithmetic success or timing to them:
+  #     those are outcomes of the assigned environment.
+  # The paper reads both: Table 2 classifies each test by whether both, one or
+  # neither estimator rejects zero at Holm-adjusted p < evidence_alpha.
   # Binary outcomes are linear probability models, so coefficients are
   # differences in probabilities. Uncertainty is clustered by respondent (the
   # level of assignment), plus candidate for candidate appearances; fixest uses
@@ -1175,7 +1178,8 @@ if (has_model_data) {
   family_process <- "Primary process family"
   family_gender <- "Primary gender-interaction family"
   family_baseline <- "Baseline descriptive family (gender not randomized)"
-  estimator_levels <- c("Regression-adjusted", "Preregistered")
+  estimator_levels <- c("Preregistered", "Regression-adjusted")
+  evidence_alpha <- 0.05
   process_outcomes <- tibble(
     variable = c("any_information", "n_descriptions", "capped_latency", "slow_selection"),
     outcome = c("Any information", "Descriptions revealed",
@@ -1197,12 +1201,12 @@ if (has_model_data) {
       select(outcome, contrast, estimate, std.error, conf.low, conf.high, p.value, p_holm)
   }
 
-  # ---- (a) Preregistered process estimator: difference in condition means.
+  # ---- (a) Main process estimator, eq. (1): difference in condition means.
   process_models_dim <- lapply(setNames(process_outcomes$variable, process_outcomes$outcome),
     function(y) feols(as.formula(paste(y, "~ arm")), data = tasks, vcov = ~respondent_id))
-  process_effects_dim <- tidy_process(process_models_dim)
+  process_effects <- tidy_process(process_models_dim)
 
-  # ---- (b) Main process estimator, equation (1): Lin (2013) adjustment.
+  # ---- (b) Complementary process estimator, eq. (3): Lin (2013) adjustment.
   # Pretreatment covariates from the baseline questionnaire, centred at the
   # analytical-sample mean and interacted with condition. That equals separate
   # regressions per condition compared at the COMMON covariate mean, so the arm
@@ -1233,7 +1237,7 @@ if (has_model_data) {
                                        paste(centered_terms, collapse = " + "), ")")),
                       data = model_tasks, vcov = ~respondent_id))
   stopifnot(all(vapply(process_models, nobs, integer(1)) == nrow(tasks)))
-  process_effects <- tidy_process(process_models)
+  process_effects_adj <- tidy_process(process_models)
 
   # A direct pressure check uses observed hurry answers in Time and Baseline.
   # This is conditional on answering the post-choice question, not an unconditional ITT.
@@ -1254,14 +1258,14 @@ if (has_model_data) {
     left_join(process_outcomes, by = "outcome")
   stopifnot(nrow(condition_means) == 3L * nrow(process_outcomes))
 
-  # ---- (a) Preregistered gender estimator. Side and task indicators follow the
+  # ---- (a) Main gender estimator, eq. (2). Side and task indicators follow the
   # proposal; two-way clustering allows repeated respondents AND candidates.
   # Candidate gender is bundled with other traits, so these are NOT gender AMCEs.
   model_information <- feols(information_opened ~ arm * woman + side + factor(task),
     data = candidate_tasks, vcov = ~respondent_id + candidate_id)
   model_choice <- feols(selected ~ arm * woman + side + factor(task),
     data = candidate_tasks, vcov = ~respondent_id + candidate_id)
-  gender_effects_dim <- bind_rows(
+  gender_effects <- bind_rows(
     tidy(model_information, conf.int = TRUE, conf.level = confidence_level) |>
       mutate(outcome = "Information acquisition"),
     tidy(model_choice, conf.int = TRUE, conf.level = confidence_level) |>
@@ -1282,7 +1286,7 @@ if (has_model_data) {
   gamma_summary <- function(means) as.data.frame(summary(contrast(means,
     method = list(`Women - men` = c(-1, 1))), infer = c(TRUE, TRUE),
     level = confidence_level))
-  gender_contrasts_dim <- bind_rows(
+  gender_contrasts <- bind_rows(
     gamma_summary(information_means) |> mutate(Outcome = "Information acquisition"),
     gamma_summary(choice_means) |> mutate(Outcome = "Registered selection")) |>
     transmute(Outcome, Condition = factor(arm, levels = levels(tasks$arm)),
@@ -1303,13 +1307,13 @@ if (has_model_data) {
     mutate(candidate_gender = factor(woman, levels = c(0, 1), labels = c("Men", "Women")),
            arm = factor(arm, levels = levels(tasks$arm)))
 
-  # ---- (b) Main gender estimators, equations (2) and (3).
+  # ---- (b) Complementary gender estimators, eqs. (4) and (5).
   # Respondent fixed effects absorb each person's propensity to open or select,
   # the assigned environment and EVERY respondent covariate. Candidate fixed
   # effects absorb everything fixed about a real profile: face, party, biography
   # AND gender. Psi is then identified by how the within-respondent women-minus-
   # men gap moves across randomized environments for the same real candidates.
-  # Gamma needs candidate gender, so equation (3) drops candidate effects.
+  # Gamma needs candidate gender, so equation (5) drops candidate effects.
   # Congruence compares the PRETREATMENT self-placement (left 1-4, centre 5-6,
   # right 7-10) with the displayed ideology; it is zero without a numeric
   # placement and may differ by condition. woman x centred respondent gender
@@ -1341,13 +1345,13 @@ if (has_model_data) {
       tidy(models[[o]], conf.int = TRUE, conf.level = confidence_level) |>
         mutate(!!outcome_name := o)))
   }
-  gender_effects <- tidy_models(psi_models) |>
+  gender_effects_adj <- tidy_models(psi_models) |>
     filter(term %in% c("arm::Time:woman", "arm::Cost:woman")) |>
     mutate(contrast = recode(term, `arm::Time:woman` = "Time - Baseline",
                              `arm::Cost:woman` = "Cost - Baseline"),
            p_holm = p.adjust(p.value, method = "holm")) |>
     select(outcome, contrast, estimate, std.error, conf.low, conf.high, p.value, p_holm)
-  gender_contrasts <- tidy_models(gamma_models, "Outcome") |>
+  gender_contrasts_adj <- tidy_models(gamma_models, "Outcome") |>
     filter(grepl("^arm::.+:woman$", term)) |>
     transmute(Outcome,
       Condition = factor(sub("^arm::(.+):woman$", "\\1", term), levels = levels(tasks$arm)),
@@ -1357,19 +1361,20 @@ if (has_model_data) {
                             NA_real_)) |>
     ungroup()
   # The pool crosses gender with ideology, so congruence is nearly orthogonal
-  # to candidate gender; the paper reports this correlation next to eq. (3).
+  # to candidate gender; the paper reports this correlation next to eq. (5).
   congruence_gender_cor <- cor(candidate_model_data$woman, candidate_model_data$congruent)
-  stopifnot(nrow(process_effects) == 8L, nrow(gender_effects) == 4L,
-            nrow(gender_contrasts) == 6L, nrow(process_effects_dim) == 8L,
-            nrow(gender_effects_dim) == 4L,
-            !anyDuplicated(process_effects[c("outcome", "contrast")]),
-            !anyDuplicated(gender_effects[c("outcome", "contrast")]))
+  stopifnot(nrow(process_effects_adj) == 8L, nrow(gender_effects_adj) == 4L,
+            nrow(gender_contrasts_adj) == 6L, nrow(process_effects) == 8L,
+            nrow(gender_effects) == 4L,
+            !anyDuplicated(process_effects_adj[c("outcome", "contrast")]),
+            !anyDuplicated(gender_effects_adj[c("outcome", "contrast")]))
 
   # TABLE 2: every preregistered primary test, keyed to its estimand and
-  # hypothesis, with the main (regression-adjusted) and the preregistered
-  # estimator side by side. Probabilities are in percentage points, counts in
-  # descriptions and latency in seconds. Holm corrections stay within family
-  # and estimator. The SE ratio is the realized precision gain (<1 = gain).
+  # hypothesis: the main preregistered differences, the complementary
+  # regression-adjusted estimate, and which of the two reject zero. Probabilities
+  # are in percentage points, counts in descriptions and latency in seconds.
+  # Holm corrections stay within family and estimator. SE ratio = adjusted over
+  # main standard error (<1 = precision gain from adjustment).
   d_label <- paste0("D^{", selection_window_seconds, "}")
   s_label <- paste0("S^{", selection_window_seconds, "}")
   no_selection_outcome <- process_outcomes$outcome[4L]
@@ -1402,24 +1407,41 @@ if (has_model_data) {
                   conf.low, conf.high, p.value = p, p_holm = holm_p,
                   Family = family_baseline))
   }
-  preregistered_tests <- stack_tests(process_effects_dim, gender_effects_dim,
-                                     gender_contrasts_dim) |>
-    select(outcome, contrast, dim_estimate = estimate, dim_se = std.error,
-           dim_low = conf.low, dim_high = conf.high, dim_p = p.value, dim_p_holm = p_holm)
+  adjusted_tests <- stack_tests(process_effects_adj, gender_effects_adj,
+                                gender_contrasts_adj) |>
+    select(outcome, contrast, adj_estimate = estimate, adj_se = std.error,
+           adj_low = conf.low, adj_high = conf.high, adj_p = p.value, adj_p_holm = p_holm)
+  # Joint reading of the two estimators (paper, Sec. 5.3): which of them reject
+  # zero at the Holm-adjusted level, and whether their signs agree.
+  classify_evidence <- function(main_estimate, main_p, adj_estimate, adj_p,
+                                alpha = evidence_alpha) {
+    main_rejects <- main_p < alpha
+    adj_rejects <- adj_p < alpha
+    case_when(main_rejects & adj_rejects & sign(main_estimate) == sign(adj_estimate) ~ "both",
+              main_rejects & adj_rejects ~ "conflicting",
+              main_rejects ~ "main only",
+              adj_rejects ~ "adjusted only",
+              TRUE ~ "neither")
+  }
   primary_tests <- stack_tests(process_effects, gender_effects, gender_contrasts) |>
     inner_join(test_key, by = c("outcome", "contrast")) |>
-    left_join(preregistered_tests, by = c("outcome", "contrast")) |>
-    mutate(se_ratio = std.error / dim_se) |>
+    left_join(adjusted_tests, by = c("outcome", "contrast")) |>
+    mutate(se_ratio = adj_se / std.error,
+           evidence = classify_evidence(estimate, p_holm, adj_estimate, adj_p_holm)) |>
     arrange(order)
-  stopifnot(nrow(primary_tests) == nrow(test_key), !anyNA(primary_tests$dim_se))
+  stopifnot(nrow(primary_tests) == nrow(test_key), !anyNA(primary_tests$adj_se),
+            !anyNA(primary_tests$evidence))
   primary_tests_print <- primary_tests |>
-    transmute(Estimand, Hypothesis, Expected, Unit,
+    transmute(Estimand,
+      Hypothesis = if_else(Hypothesis == "--", Expected, paste0(Hypothesis, ", ", Expected)),
+      Unit,
       Estimate = tex_num(scale * estimate, digits),
       CI = tex_ci(scale * conf.low, scale * conf.high, digits),
       p = tex_p(p.value), `Holm p` = tex_p(p_holm),
-      `Preregistered estimate` = tex_num(scale * dim_estimate, digits),
-      `Preregistered Holm p` = tex_p(dim_p_holm),
-      `SE ratio` = formatC(se_ratio, format = "f", digits = 2))
+      `Adjusted estimate` = tex_num(scale * adj_estimate, digits),
+      `Adjusted Holm p` = tex_p(adj_p_holm),
+      `SE ratio` = formatC(se_ratio, format = "f", digits = 2),
+      `Rejected by` = evidence)
 }
 
 ## ----
@@ -1474,45 +1496,53 @@ if (has_model_data) {
     m3 = c("Yes", as.character(n_distinct(model_tasks$respondent_id))),
     m4 = c("Yes", as.character(n_distinct(model_tasks$respondent_id)))))
 
-  candidate_models <- list(psi_models[[1]], psi_models[[2]],
+  candidate_models <- list(model_information, model_choice,
+                           psi_models[[1]], psi_models[[2]],
                            gamma_models[[1]], gamma_models[[2]])
-  gender_rows <- function(label, psi_term, gamma_term, group) list(label = label,
-    terms = c(psi_term, psi_term, gamma_term, gamma_term), group = group)
+  # Terms per column: preregistered LPM (2), then eqs. (4) and (5), each M and Y.
+  row_terms <- function(lpm, psi, gamma) rep(c(lpm, psi, gamma), each = 2L)
+  group_condition <- "Condition (difference from \\textup{\\armB})"
+  group_psi <- "Change in the women-minus-men gap, $\\Psi(z)$"
+  group_gamma <- "Women-minus-men gap, $\\Gamma(z)$"
+  group_controls <- "Other regressors"
   candidate_table_spec <- list(
-    gender_rows("Woman candidate $\\times$ \\armT, $\\Psi(T)$", "arm::Time:woman", NA,
-                "Change in the women-minus-men gap, equation~\\eqref{eq:psi}"),
-    gender_rows("Woman candidate $\\times$ \\armC, $\\Psi(C)$", "arm::Cost:woman", NA,
-                "Change in the women-minus-men gap, equation~\\eqref{eq:psi}"),
-    gender_rows("Woman candidate in \\armB, $\\Gamma(B)$", NA, "arm::Baseline:woman",
-                "Women-minus-men gap by condition, equation~\\eqref{eq:gamma}"),
-    gender_rows("Woman candidate in \\armT, $\\Gamma(T)$", NA, "arm::Time:woman",
-                "Women-minus-men gap by condition, equation~\\eqref{eq:gamma}"),
-    gender_rows("Woman candidate in \\armC, $\\Gamma(C)$", NA, "arm::Cost:woman",
-                "Women-minus-men gap by condition, equation~\\eqref{eq:gamma}"),
-    list(label = "Congruent in \\armB", terms = same_term("arm::Baseline:congruent", 4),
-         group = "Pretreatment controls"),
-    list(label = "Congruent in \\armT", terms = same_term("arm::Time:congruent", 4),
-         group = "Pretreatment controls"),
-    list(label = "Congruent in \\armC", terms = same_term("arm::Cost:congruent", 4),
-         group = "Pretreatment controls"),
+    list(label = "\\armT", terms = row_terms("armTime", NA, NA), group = group_condition),
+    list(label = "\\armC", terms = row_terms("armCost", NA, NA), group = group_condition),
+    list(label = "Woman candidate $\\times$ \\armT",
+         terms = row_terms("armTime:woman", "arm::Time:woman", NA), group = group_psi),
+    list(label = "Woman candidate $\\times$ \\armC",
+         terms = row_terms("armCost:woman", "arm::Cost:woman", NA), group = group_psi),
+    list(label = "Woman candidate (\\armB)",
+         terms = row_terms("woman", NA, "arm::Baseline:woman"), group = group_gamma),
+    list(label = "Woman candidate in \\armT",
+         terms = row_terms(NA, NA, "arm::Time:woman"), group = group_gamma),
+    list(label = "Woman candidate in \\armC",
+         terms = row_terms(NA, NA, "arm::Cost:woman"), group = group_gamma),
+    list(label = "Congruent in \\armB",
+         terms = row_terms(NA, "arm::Baseline:congruent", "arm::Baseline:congruent"),
+         group = group_controls),
+    list(label = "Congruent in \\armT",
+         terms = row_terms(NA, "arm::Time:congruent", "arm::Time:congruent"),
+         group = group_controls),
+    list(label = "Congruent in \\armC",
+         terms = row_terms(NA, "arm::Cost:congruent", "arm::Cost:congruent"),
+         group = group_controls),
     list(label = "Woman candidate $\\times$ woman respondent",
-         terms = same_term("woman:resp_woman_c", 4), group = "Pretreatment controls"),
-    list(label = "Right-hand position", terms = same_term("sideright", 4),
-         group = "Pretreatment controls"))
+         terms = row_terms(NA, "woman:resp_woman_c", "woman:resp_woman_c"),
+         group = group_controls),
+    list(label = "Right-hand position", terms = row_terms("sideright", "sideright", "sideright"),
+         group = group_controls))
   candidate_model_table <- coefficient_rows(candidate_models, candidate_table_spec,
-                                            scales = rep(100, 4))
+                                            scales = rep(100, length(candidate_models)))
+  candidate_footer_column <- function(respondent_fe, candidate_fe) c(respondent_fe,
+    candidate_fe, "Yes", as.character(n_distinct(candidate_model_data$respondent_id)), as.character(n_distinct(candidate_model_data$candidate_id)))
   candidate_model_footer <- model_footer(candidate_models, tibble(
     Term = c("Respondent fixed effects", "Candidate fixed effects",
              "Task-position fixed effects", "Respondents (clusters)",
              "Candidates (clusters)"),
-    m1 = c("Yes", "Yes", "Yes", as.character(n_distinct(candidate_model_data$respondent_id)),
-           as.character(n_distinct(candidate_model_data$candidate_id))),
-    m2 = c("Yes", "Yes", "Yes", as.character(n_distinct(candidate_model_data$respondent_id)),
-           as.character(n_distinct(candidate_model_data$candidate_id))),
-    m3 = c("Yes", "No", "Yes", as.character(n_distinct(candidate_model_data$respondent_id)),
-           as.character(n_distinct(candidate_model_data$candidate_id))),
-    m4 = c("Yes", "No", "Yes", as.character(n_distinct(candidate_model_data$respondent_id)),
-           as.character(n_distinct(candidate_model_data$candidate_id)))))
+    m1 = candidate_footer_column("No", "No"), m2 = candidate_footer_column("No", "No"),
+    m3 = candidate_footer_column("Yes", "Yes"), m4 = candidate_footer_column("Yes", "Yes"),
+    m5 = candidate_footer_column("Yes", "No"), m6 = candidate_footer_column("Yes", "No")))
 }
 
 ## ----
@@ -1877,12 +1907,13 @@ if (has_model_data) {
 ## ---- analysis-plots
 if (has_model_data) {
   # FIGURE 2 -- the primary process family (H1, H2). Panel A shows the observed
-  # condition means; panel B each contrast tau_zB from the main regression-
-  # adjusted estimator (filled circle) next to the preregistered difference in
-  # means (hollow diamond). Columns share an outcome, so A and B read together.
+  # condition means; panel B each contrast tau_zB from the main preregistered
+  # difference in means (filled circle, eq. 1) next to the complementary
+  # regression-adjusted estimate (hollow diamond, eq. 3). Columns share an
+  # outcome, so A and B read together.
   # Proportions are in percent (percentage points for contrasts). Linear
   # intervals for proportions are truncated at the 0-100 bounds for display.
-  estimator_shapes <- c(`Regression-adjusted` = 16, Preregistered = 23)
+  estimator_shapes <- c(Preregistered = 16, `Regression-adjusted` = 23)
   panel_levels <- process_outcomes$panel
   proportion_panels <- process_outcomes$panel[process_outcomes$scale == 100]
   means_plot_data <- condition_means |>
@@ -1901,8 +1932,8 @@ if (has_model_data) {
     labs(x = NULL, y = "Observed mean (95% CI)", tag = "A")
 
   contrast_plot_data <- bind_rows(
-    process_effects |> mutate(Estimator = "Regression-adjusted"),
-    process_effects_dim |> mutate(Estimator = "Preregistered")) |>
+    process_effects_adj |> mutate(Estimator = "Regression-adjusted"),
+    process_effects |> mutate(Estimator = "Preregistered")) |>
     select(outcome, contrast, estimate, conf.low, conf.high, Estimator) |>
     left_join(process_outcomes |> select(outcome, panel, scale), by = "outcome") |>
     mutate(across(c(estimate, conf.low, conf.high), ~ .x * scale),
@@ -1920,16 +1951,17 @@ if (has_model_data) {
     facet_wrap(~panel, nrow = 1, scales = "free_y", labeller = label_wrap_gen(20)) +
     scale_color_manual(values = arm_colors, guide = "none") +
     scale_shape_manual(values = estimator_shapes, name = NULL,
-      labels = c(`Regression-adjusted` = "Regression-adjusted, eq. (1)",
-                 Preregistered = "Preregistered difference in means")) +
+      labels = c(Preregistered = "Difference in means (main)",
+                 `Regression-adjusted` = "Regression-adjusted")) +
     scale_x_discrete(labels = arm_labels) +
     labs(x = NULL, y = "Difference from Baseline", tag = "B")
   plot_process <- plot_process_means / plot_process_contrasts
 
   # FIGURE 3 -- gendered scrutiny and selection (H3, H4). Panel A: observed
   # candidate-level means mu_g(z) (shape = candidate gender). Panel B: the
-  # tested estimands Gamma(B), Psi(T) and Psi(C), main estimator (filled circle,
-  # eqs. 2-3) next to the preregistered LPM (hollow diamond). Colour = arm:
+  # tested estimands Gamma(B), Psi(T) and Psi(C): main preregistered LPM (filled
+  # circle, eq. 2) next to the regression-adjusted models (hollow diamond,
+  # eqs. 4-5). Colour = arm:
   # Gamma(B) is a Baseline quantity, Psi(z) the change under arm z.
   gender_outcome_labels <- c(`Information acquisition` = "Description opened (%)",
                              `Registered selection` = "Candidate selected (%)")
@@ -1955,10 +1987,10 @@ if (has_model_data) {
               estimand = paste0("Psi(", substr(arm, 1, 1), ")"), estimate,
               conf.low, conf.high, Estimator = estimator)
   gender_estimand_data <- bind_rows(
-    baseline_gap_rows(gender_contrasts, "Regression-adjusted"),
-    baseline_gap_rows(gender_contrasts_dim, "Preregistered"),
-    psi_rows(gender_effects, "Regression-adjusted"),
-    psi_rows(gender_effects_dim, "Preregistered")) |>
+    baseline_gap_rows(gender_contrasts_adj, "Regression-adjusted"),
+    baseline_gap_rows(gender_contrasts, "Preregistered"),
+    psi_rows(gender_effects_adj, "Regression-adjusted"),
+    psi_rows(gender_effects, "Preregistered")) |>
     mutate(estimand = factor(estimand, levels = gender_estimand_levels),
            arm = factor(arm, levels = levels(tasks$arm)),
            Estimator = factor(Estimator, levels = estimator_levels))
@@ -1976,8 +2008,8 @@ if (has_model_data) {
                labeller = labeller(Outcome = gender_estimand_labels)) +
     scale_color_manual(values = arm_colors, guide = "none") +
     scale_shape_manual(values = estimator_shapes, name = NULL,
-      labels = c(`Regression-adjusted` = "Regression-adjusted, eqs. (2)-(3)",
-                 Preregistered = "Preregistered LPM")) +
+      labels = c(Preregistered = "Preregistered differences (main)",
+                 `Regression-adjusted` = "Regression-adjusted")) +
     scale_x_discrete(labels = function(x) parse(text = x)) +
     labs(x = NULL, y = "Percentage points (95% CI)", tag = "B")
   plot_gender <- (plot_gender_means | plot_gender_estimands) +
@@ -2361,9 +2393,9 @@ profile_r <- function(condition) {
   r <- profile_correlations$r[profile_correlations$arm == condition]
   if (!length(r) || is.na(r)) "--" else tex_num(r, 2)
 }
-# Realized precision of the main estimator relative to the preregistered one,
-# within a family of Table 2: median SE ratio, its range, and how many of the
-# family's standard errors are smaller. Ratios below one are efficiency gains.
+# Realized precision of the regression-adjusted estimator relative to the main
+# (preregistered) one, within a family of Table 2: median SE ratio, its range,
+# and how many adjusted standard errors are smaller. Below one = precision gain.
 se_ratio_text <- function(family) {
   r <- primary_tests$se_ratio[primary_tests$Family == family]
   stopifnot(length(r) > 0L, !anyNA(r))
@@ -2372,12 +2404,70 @@ se_ratio_text <- function(family) {
          formatC(max(r), format = "f", digits = 2), "; smaller in ",
          sum(r < 1), " of ", length(r), ")")
 }
-# The preregistered estimate of a Table 2 estimand, as a short phrase.
-preregistered_text <- function(outcome_label, contrast_label) {
+# The complementary regression-adjusted estimate of a Table 2 estimand, as a
+# short phrase: estimate, unit and Holm-adjusted p (its interval is plotted).
+adjusted_text <- function(outcome_label, contrast_label, unit = "") {
   row <- primary_tests |> filter(outcome == outcome_label, contrast == contrast_label)
   stopifnot(nrow(row) == 1L)
-  paste0(tex_num(row$scale * row$dim_estimate, row$digits), " (Holm-adjusted ",
-         p_text(row$dim_p_holm), ")")
+  paste0(tex_num(row$scale * row$adj_estimate, row$digits), unit, " (Holm-adjusted ",
+         p_text(row$adj_p_holm), ")")
+}
+# Joint reading of both estimators for one outcome's Time and Cost contrasts,
+# from the 'evidence' classes of Table 2. Returns a clause such as "for X,
+# neither estimator rejects zero under either constraint".
+evidence_clause <- function(class, both_arms = FALSE) {
+  if (both_arms) switch(class,
+    both = "both estimators reject zero under both constraints",
+    neither = "neither estimator rejects zero under either constraint",
+    `main only` = "only the preregistered differences reject zero, under both constraints",
+    `adjusted only` = "only the regression-adjusted estimates reject zero, under both constraints",
+    conflicting = "the two estimators reject zero with opposite signs under both constraints")
+  else switch(class,
+    both = "both estimators reject zero",
+    neither = "neither estimator rejects zero",
+    `main only` = "only the preregistered difference rejects zero",
+    `adjusted only` = "only the regression-adjusted estimate rejects zero",
+    conflicting = "the two estimators reject zero with opposite signs")
+}
+# Symbols live here, not in the Rnw: knitr's inline \Sexpr{} ends at the first
+# closing brace, so LaTeX braces cannot be passed from the manuscript.
+agreement_symbols <- c(
+  `Any information` = "$\\tau^{A}_{zB}$",
+  `Descriptions revealed` = "$\\tau^{K}_{zB}$",
+  `Capped first-selection time (s)` = paste0("$\\tau^{D^{", selection_window_seconds, "}}_{zB}$"),
+  `Information acquisition` = "$\\Psi_M(z)$",
+  `Registered selection` = "$\\Psi_Y(z)$")
+agreement_symbols[[paste0("No selection within ", selection_window_seconds, " seconds")]] <-
+  paste0("$\\tau^{S^{", selection_window_seconds, "}}_{zB}$")
+agreement_text <- function(outcome_label, symbol = agreement_symbols[[outcome_label]]) {
+  classes <- vapply(c("Time", "Cost"), function(z) {
+    row <- primary_tests |> filter(outcome == outcome_label, contrast == paste(z, "- Baseline"))
+    stopifnot(nrow(row) == 1L)
+    row$evidence
+  }, character(1))
+  if (classes[["Time"]] == classes[["Cost"]]) {
+    paste0("for ", symbol, ", ", evidence_clause(classes[["Time"]], both_arms = TRUE))
+  } else {
+    paste0("for ", symbol, ", ", evidence_clause(classes[["Time"]]), " under \\armT\\ and ",
+           evidence_clause(classes[["Cost"]]), " under \\armC")
+  }
+}
+# One sentence summarising Table 2's last column across all primary tests.
+evidence_summary <- function() {
+  n <- nrow(primary_tests)
+  listed <- function(class) {
+    rows <- primary_tests[primary_tests$evidence == class, ]
+    if (!nrow(rows)) return("none")
+    paste0(nrow(rows), " (", paste(rows$Estimand, collapse = ", "), ")")
+  }
+  counted <- function(class) sum(primary_tests$evidence == class)
+  paste0("Of the ", n, " primary tests, ", listed("both"),
+    " reject zero under both estimators, ", listed("main only"),
+    " only under the preregistered differences, ", listed("adjusted only"),
+    " only under the regression-adjusted models, and ", counted("neither"),
+    " under neither",
+    if (counted("conflicting")) paste0("; ", counted("conflicting"),
+      " reject zero with opposite signs") else "")
 }
 
 ## ----
@@ -2404,25 +2494,25 @@ if (has_main_data) {
 }
 if (has_model_data) {
   write_csv(flow_table, file.path(output_dir, "recruitment_flow.csv"))
-  # Main (regression-adjusted) and preregistered estimates of every primary test.
+  # Main (preregistered) and regression-adjusted estimates of every primary test.
   write_csv(primary_tests |>
     select(Family, outcome, contrast, estimate, std.error, conf.low, conf.high,
-           p.value, p_holm, preregistered_estimate = dim_estimate,
-           preregistered_std.error = dim_se, preregistered_conf.low = dim_low,
-           preregistered_conf.high = dim_high, preregistered_p.value = dim_p,
-           preregistered_p_holm = dim_p_holm, se_ratio),
+           p.value, p_holm, adjusted_estimate = adj_estimate,
+           adjusted_std.error = adj_se, adjusted_conf.low = adj_low,
+           adjusted_conf.high = adj_high, adjusted_p.value = adj_p,
+           adjusted_p_holm = adj_p_holm, se_ratio, evidence),
     file.path(output_dir, "primary_tests.csv"))
   write_csv(variable_summary |> select(-digits), file.path(output_dir, "variable_summary.csv"))
   write_csv(condition_means |> select(outcome, arm, estimate, std.error, conf.low, conf.high),
     file.path(output_dir, "condition_means.csv"))
-  write_csv(bind_rows(process_effects |> mutate(estimator = "Regression-adjusted"),
-                      process_effects_dim |> mutate(estimator = "Preregistered")),
+  write_csv(bind_rows(process_effects_adj |> mutate(estimator = "Regression-adjusted"),
+                      process_effects |> mutate(estimator = "Preregistered")),
     file.path(output_dir, "primary_process_effects.csv"))
-  write_csv(bind_rows(gender_effects |> mutate(estimator = "Regression-adjusted"),
-                      gender_effects_dim |> mutate(estimator = "Preregistered")),
+  write_csv(bind_rows(gender_effects_adj |> mutate(estimator = "Regression-adjusted"),
+                      gender_effects |> mutate(estimator = "Preregistered")),
     file.path(output_dir, "primary_gender_effects.csv"))
-  write_csv(bind_rows(gender_contrasts |> mutate(estimator = "Regression-adjusted"),
-                      gender_contrasts_dim |> mutate(estimator = "Preregistered")),
+  write_csv(bind_rows(gender_contrasts_adj |> mutate(estimator = "Regression-adjusted"),
+                      gender_contrasts |> mutate(estimator = "Preregistered")),
     file.path(output_dir, "gender_contrasts_by_condition.csv"))
   write_csv(bind_rows(candidate_trait_effects, congruence_effects),
     file.path(output_dir, "candidate_trait_associations.csv"))
@@ -2481,12 +2571,12 @@ if (render_in_paper) {
 
 ## ---- table-primary-tests
 if (render_in_paper) {
-  tex_tabular(primary_tests_print, align = "@{}llllrrrrrrr@{}",
-    header = c("Estimand", "Hyp.", "Expected", "Unit", "Estimate", "95\\% CI",
-               "$p$", "Holm $p$", "Estimate", "Holm $p$", "SE ratio"),
-    header_top = paste0(" & & & & \\multicolumn{4}{c}{Regression-adjusted (main)} & ",
-      "\\multicolumn{2}{c}{Preregistered} & \\\\ ",
-      "\\cmidrule(lr){5-8}\\cmidrule(lr){9-10}"),
+  tex_tabular(primary_tests_print, align = "@{}lllrrrrrrrl@{}",
+    header = c("Estimand", "Hypothesis", "Unit", "Estimate", "95\\% CI",
+               "$p$", "Holm $p$", "Estimate", "Holm $p$", "SE ratio", "Rejected by"),
+    header_top = paste0(" & & & \\multicolumn{4}{c}{Preregistered differences (main)} & ",
+      "\\multicolumn{3}{c}{Regression-adjusted} & \\\\ ",
+      "\\cmidrule(lr){4-7}\\cmidrule(lr){8-10}"),
     groups = primary_tests$Family)
 }
 ## ----
@@ -2557,11 +2647,12 @@ if (render_in_paper) {
 
 ## ---- table-candidate-models
 if (render_in_paper) {
-  tex_tabular(candidate_model_table |> select(-group), align = "@{}lrrrr@{}",
-    header = c("", "$M$", "$Y$", "$M$", "$Y$"),
-    header_top = paste0(" & \\multicolumn{2}{c}{Equation~\\eqref{eq:psi}} & ",
-      "\\multicolumn{2}{c}{Equation~\\eqref{eq:gamma}} \\\\ ",
-      "\\cmidrule(lr){2-3}\\cmidrule(l){4-5}"),
+  tex_tabular(candidate_model_table |> select(-group), align = "@{}lrrrrrr@{}",
+    header = c("", rep(c("$M$", "$Y$"), 3)),
+    header_top = paste0(" & \\multicolumn{2}{c}{Eq.~\\eqref{eq:lpm}, main} & ",
+      "\\multicolumn{2}{c}{Eq.~\\eqref{eq:psi}} & ",
+      "\\multicolumn{2}{c}{Eq.~\\eqref{eq:gamma}} \\\\ ",
+      "\\cmidrule(lr){2-3}\\cmidrule(lr){4-5}\\cmidrule(l){6-7}"),
     groups = candidate_model_table$group, footer = candidate_model_footer)
 }
 ## ----
