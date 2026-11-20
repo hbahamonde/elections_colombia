@@ -348,15 +348,50 @@ For respondents meeting the response-completion criteria, all descriptions revea
 \section{Estimation strategy}
 \label{sec:estimation}
 
-All substantive analyses are restricted to eligible completed responses as defined above. Each retained respondent contributes all fifteen analytical tasks, including up to two tasks without a registered candidate selection. Outcomes $A$, $K$, $D^{9}$, and $S^{9}$ are estimated using linear models with indicators for \armT\ and \armC, giving unadjusted contrasts relative to \armB\ within this sample. Let $H_i=1$ indicate that respondent $i$ meets the observed completion criteria. For a task-level outcome $R$, the reported condition contrast is
+All substantive analyses are restricted to eligible completed responses as defined above. Each retained respondent contributes all fifteen analytical tasks, including up to two tasks without a registered candidate selection. Let $H_i=1$ indicate that respondent $i$ meets the observed completion criteria. For a task-level outcome $R$, the estimable condition contrast is
 \[
 \delta^R_{zB}=\E[R_{it}\mid Z_i=z,H_i=1]-\E[R_{it}\mid Z_i=B,H_i=1].
 \]
-Because the decision environment may affect reaching the final screen, recording at least thirteen choices, or detected browser navigation, conditioning on $H_i=1$ can select different respondents across conditions. Consequently, $\delta^R_{zB}$ need not equal the full-population intention-to-treat effect $\tau^R_{zB}$, even under randomized assignment. The reported contrasts are therefore interpreted as completion-conditioned comparisons rather than automatically as causal effects for all eligible randomized respondents. Screening, final-screen arrival, navigation-related exclusions, and other incomplete responses are reported separately to make this selection transparent. Standard errors are clustered by respondent.
+Because the decision environment may affect reaching the final screen, recording at least thirteen choices, or detected browser navigation, conditioning on $H_i=1$ can select different respondents across conditions. Consequently, $\delta^R_{zB}$ need not equal the full-population intention-to-treat effect $\tau^R_{zB}$, even under randomized assignment. The reported contrasts are therefore interpreted as completion-conditioned comparisons rather than automatically as causal effects for all eligible randomized respondents. Screening, final-screen arrival, navigation-related exclusions, and other incomplete responses are reported separately to make this selection transparent. The candidate-level contrasts $\Gamma_R(z)$ and $\Psi_R(z)$ are estimated on the same completion-conditioned footing.
 
-Candidate-level analyses use two observations per analytical task among completed responses, one for each displayed candidate, including retained tasks that terminate without a selection. Linear probability models for $M^s$ and the derived registered-selection outcome $Y^s$ include treatment indicators, candidate gender, treatment-by-gender interactions, randomized side, and task-order indicators. Their interaction coefficients are completion-conditioned empirical counterparts of $\Psi_M(z)$ and $\Psi_Y(z)$, and linear combinations of the same coefficients give $\Gamma_M(z)$ and $\Gamma_Y(z)$. Primary uncertainty for these models uses two-way clustering by respondent and candidate. Profile-specific selection probabilities $\theta_c(z)$ are estimated by the share of a profile's appearances in which it was selected; side and rival are randomized, so these shares are side-neutral, but they condition on completed responses and are not attribute-level average marginal component effects.
+Every estimand is estimated in two ways. The preregistered estimators are the difference in condition means for the process outcomes and, for the candidate-level outcomes, a linear probability model with condition indicators, candidate gender, their interaction, randomized side, and task-position indicators. The main estimators below add information that was fixed before the assigned condition was revealed and therefore cannot respond to it. Under random assignment, adjusting for such information leaves the target contrast unchanged and removes outcome variation that would otherwise appear as sampling noise (Freedman 2008; Lin 2013). Binary outcomes enter as linear probability models, so each coefficient is a difference in probabilities on the scale of the estimands (Angrist and Pischke 2009).
 
-Within the primary process and gender-interaction families, two-sided $p$-values are adjusted separately by Holm's sequential procedure. The two baseline gender contrasts constitute a third, descriptive multiplicity family. Unadjusted estimates with 95\% confidence intervals are also reported. Covariate-adjusted predictions complement these comparisons without replacing the primary tests. Separate mean-bias-reduced logistic working models (Kosmidis and Firth 2021) describe binary outcomes, a fractional logit describes the share of descriptions acquired, and ordinary least squares describes capped latency. Every specification adjusts for respondent age, gender, tertiary education, baseline political interest, and task position, and fitted outcomes are averaged over the observed covariate distribution rather than evaluated for an artificial average respondent (Arel-Bundock, Greifer, and Heiss 2024). No model controls for realized information acquisition, response time, reported hurry, or arithmetic success, because these are consequences of the assigned environment.
+\subsection{Process outcomes}
+
+For outcome $R\in\{A,K,D^{9},S^{9}\}$ of respondent $i$ in task $t$, we estimate by ordinary least squares
+\begin{equation}
+R_{it}=\alpha+\sum_{z\in\{T,C\}}\delta^R_{zB}\,D^z_i+\tilde{\mathbf{x}}_i'\boldsymbol{\beta}+\sum_{z\in\{T,C\}}D^z_i\,\tilde{\mathbf{x}}_i'\boldsymbol{\gamma}_z+\varepsilon_{it},
+\label{eq:process}
+\end{equation}
+where $D^z_i=\mathbf 1\{Z_i=z\}$ and $\tilde{\mathbf{x}}_i=\mathbf{x}_i-\bar{\mathbf{x}}$ collects four pretreatment covariates, centered at their means in the analytical sample: age in decades, an indicator for women, an indicator for tertiary education, and political interest on the 1--7 scale.
+
+Equation~\eqref{eq:process} is the fully interacted regression estimator of Lin (2013). Interacting the centered covariates with each condition is equivalent to fitting a separate regression in each condition and comparing the fitted means at the common covariate average, so the coefficients on $D^z_i$ estimate the same contrasts as the difference in means. Under random assignment, this estimator is consistent whether or not the conditional mean is linear, and it is asymptotically at least as precise as the difference in means when effects are heterogeneous, allocation is unequal, or there are more than two conditions (Lin 2013; Negi and Wooldridge 2021; Ye et al. 2023). Additive adjustment without the interactions lacks this guarantee under unequal allocation (Freedman 2008), which applies during fieldwork. The covariates come from the baseline questionnaire, which precedes the assigned instructions. The model excludes information acquisition, response times, reported hurry, and arithmetic success: these are consequences of assignment, and conditioning on them would bias the contrasts (Montgomery, Nyhan, and Torres 2018). Political interest and education index the political sophistication that shapes information search (Lau and Redlawsk 2006), and age and gender are standard predictors of response behavior. The list is deliberately short, because each covariate adds three parameters to Equation~\eqref{eq:process}.
+
+Assignment varies only across respondents, and every respondent contributes all fifteen tasks. Equation~\eqref{eq:process} is therefore equivalent to a respondent-level regression of within-respondent outcome means (Su and Ding 2021). For the same reason, task-position indicators would be orthogonal to every regressor and would leave the estimates unchanged, so they are omitted: precision gains for this family can come only from respondent characteristics. Standard errors are clustered by respondent, the level of assignment (Abadie et al. 2023), with Student-$t$ critical values on the number of respondents minus one degrees of freedom.
+
+\subsection{Gender-indexed outcomes}
+
+For the candidate-level outcomes $R\in\{M,Y\}$, each task contributes one observation per displayed candidate. With $j$ indexing candidates and $W_j=G(j)$ indicating a woman, the gender-interaction estimands are estimated from
+\begin{equation}
+R_{itj}=\alpha_i+\eta_j+\sum_{z\in\{T,C\}}\Psi_R(z)\,D^z_iW_j+\sum_{z\in\{B,T,C\}}\kappa_z\,D^z_i\,\mathit{Cong}_{ij}+\omega\,W_j\tilde F_i+\pi\,\mathit{Right}_{itj}+\lambda_t+u_{itj},
+\label{eq:psi}
+\end{equation}
+where $\alpha_i$ and $\eta_j$ are respondent and candidate fixed effects and $D^B_i=\mathbf 1\{Z_i=B\}$. The indicator $\mathit{Cong}_{ij}$ equals one when the candidate's displayed ideology matches the respondent's pretreatment self-placement (left 1--4, center 5--6, right 7--10) and zero otherwise, including for respondents without a numeric placement. $\tilde F_i$ is the centered indicator for women respondents, $\mathit{Right}_{itj}$ marks the randomized right-hand position, and $\lambda_t$ are task-position fixed effects.
+
+The fixed effects follow the structure of the design. Respondent effects absorb each respondent's general propensity to open descriptions or register selections, the assigned condition, and every respondent characteristic. Candidate effects absorb everything that is fixed about a real profile, including its photograph, party, biography, and gender. $\Psi_R(z)$ is therefore identified from how the within-respondent difference between women and men changes across randomly assigned environments for the same real candidates, so it does not depend on which profiles happened to be drawn more often in one condition. Conditions are randomized across respondents and profiles are drawn independently of the condition, so the fixed effects and pretreatment terms are unrelated to assignment and leave the contrast unchanged. Ideological congruence is the strongest observed predictor of selection (Section~\ref{sec:faces-facts}) and may matter differently in each environment. The respondent-by-candidate gender term absorbs same-gender affinity (Sanbonmatsu 2002). Uncertainty uses two-way clustering by respondent and candidate (Cameron, Gelbach, and Miller 2011), with critical values on the smaller cluster count minus one degrees of freedom.
+
+Because candidate gender is constant within a profile, candidate fixed effects also absorb $\Gamma_R(z)$. The gender contrasts within each condition therefore come from the same specification without $\eta_j$, with candidate gender interacted with every condition:
+\begin{equation}
+R_{itj}=\alpha_i+\sum_{z\in\{B,T,C\}}\Gamma_R(z)\,D^z_iW_j+\sum_{z\in\{B,T,C\}}\kappa_z\,D^z_i\,\mathit{Cong}_{ij}+\omega\,W_j\tilde F_i+\pi\,\mathit{Right}_{itj}+\lambda_t+u_{itj}.
+\label{eq:gamma}
+\end{equation}
+$\Gamma_R(B)$ is then the within-respondent women-minus-men difference under \armB. Side and task position are randomized independently of candidate gender. Congruence depends on displayed ideology, but the pool crosses gender with ideology, so the two are nearly orthogonal across appearances (correlation 0.03), and the term absorbs outcome variance rather than redefining the comparison.
+
+\subsection{Inference and reporting}
+
+The regression-adjusted specifications were introduced during fieldwork, after the preregistration, to improve precision. Table~\ref{tab:primary} therefore reports both estimators for every primary test, together with the ratio of their standard errors, and Appendix Tables~\ref{tab:process-models} and~\ref{tab:candidate-models} report the full fitted equations. Within the primary process and gender-interaction families, two-sided $p$-values are adjusted by Holm's sequential procedure, separately for each estimator. The two baseline gender contrasts constitute a third, descriptive multiplicity family. Profile-specific selection probabilities $\theta_c(z)$ are estimated by the share of a profile's appearances in which it was selected. Side and rival are randomized, so these shares are side-neutral, but they condition on completed responses and are not attribute-level average marginal component effects.
+
+\subsection{Exploratory analyses}
 
 Exploratory analyses describe which candidate characteristics are associated with registered selection in each decision environment. A joint linear probability model includes candidate gender, displayed ideology, dominance classification, and age group, their interactions with the assigned condition, randomized side, and task-order indicators; within-condition contrasts compare women with men, left- and right-identified with centrist profiles, high with low dominance, and older with younger profiles. A separate model replaces these classifications with ideological congruence, coding respondents' self-placement as left (1--4), center (5--6), or right (7--10) and comparing profiles whose displayed ideology matches that group with those that do not. Because profiles are real bundles, these are adjusted associations across observed profiles rather than causal effects of independently assigned attributes (Hainmueller, Hopkins, and Yamamoto 2014; Abramson, Ko\c{c}ak, and Magazinnik 2022). Comparing a within-condition contrast across conditions compares gaps between levels rather than the overall favorability of any level, and for multi-level classifications such comparisons depend on the reference category, so we read them as changes in relative selection (Leeper, Hobolt, and Tilley 2020). These models do not condition on whether respondents opened political information, and their two-way clustered intervals and unadjusted tests remain separate from the primary families. Stated decision factors are summarized as shares of eligible tasks by condition; because they are asked only after a registered selection and a positive real-election answer, they describe reasons among those responses rather than effects of the environment.
 
@@ -365,48 +400,99 @@ Exploratory analyses describe which candidate characteristics are associated wit
 \section{Interim results}
 \label{sec:results}
 
-\noindent\textit{Status of fieldwork.} This section is regenerated from the most recent export (20 November 2026). It uses 67 eligible completed responses---27 in \armB, 22 in \armT, and 18 in \armC---or 15 percent of the planned 462. They contribute 1,005 analytical tasks and 2,010 candidate appearances. These are interim monitoring estimates: they do not define a significance-based stopping rule, and the preregistered analysis of the complete sample will supersede them. Table~\ref{tab:primary} reports every preregistered primary test, and Figures~\ref{fig:process}--\ref{fig:profiles} display the corresponding estimands. Recruitment, sample composition, and implementation checks are in Appendix~\ref{app:collection}.
+\noindent\textit{Status of fieldwork.} This section is regenerated from the most recent export (20 November 2026). It uses 67 eligible completed responses---27 in \armB, 22 in \armT, and 18 in \armC---or 15 percent of the planned 462. They contribute 1,005 analytical tasks and 2,010 candidate appearances. These are interim monitoring estimates: they do not define a significance-based stopping rule, and the preregistered analysis of the complete sample will supersede them. Recruitment, sample composition, and implementation checks are in Appendix~\ref{app:collection}.
+
+Table~\ref{tab:variables} describes every variable used in the analysis at the level at which it is measured, overall and by condition. Panel C doubles as a randomization check on the displayed profiles, and panel A shows how far the conditions differ by chance in the pretreatment covariates that enter Equation~\eqref{eq:process}. Table~\ref{tab:primary} reports every preregistered primary test with both estimators, and Figures~\ref{fig:process}--\ref{fig:profiles} display the corresponding estimands. Where the two estimators differ, the difference reflects the chance imbalances in panel A of Table~\ref{tab:variables}, which the adjustment removes. The ratio of regression-adjusted to preregistered standard errors has a median of 0.94 (range 0.78--1.06; smaller in 7 of 8) in the process family and 0.99 (range 0.75--1.06; smaller in 2 of 4) in the gender-interaction family; ratios below one are precision gains. Gains are bounded by the design: the process conditions vary only across respondents, so only respondent characteristics can absorb noise, and the preregistered gender estimator already compares women and men within respondents.
 
 \begin{table}[!htbp]
-\centering\small
-\caption{Preregistered primary tests among completed responses}
-\label{tab:primary}
-\begin{tabular}{@{}lllllrrr@{}}
+\centering\footnotesize
+\setlength{\tabcolsep}{4pt}
+\caption{Descriptive statistics of the variables used in the analysis}
+\label{tab:variables}
+\begin{tabular}{@{}lrrrrrrrr@{}}
 \toprule
-Estimand & Hyp. & Expected & Unit & Estimate & 95\% CI & $p$ & Holm $p$ \\
+ & \multicolumn{5}{c}{All conditions} & \multicolumn{3}{c}{Mean by condition} \\ \cmidrule(lr){2-6}\cmidrule(l){7-9}
+Variable & N & Mean & SD & Min & Max & Baseline & Time & Cost \\
 \midrule
-\multicolumn{8}{@{}l}{\textit{Primary process family}} \\
-$\tau^{A}_{TB}$ & H1 & $<0$ & pp & $-$6.9 & [$-$23.9, 10.0] & 0.417 & 0.835 \\
-$\tau^{A}_{CB}$ & H1 & $<0$ & pp & $-$18.6 & [$-$42.3, 5.0] & 0.120 & 0.602 \\
-$\tau^{K}_{TB}$ & H1 & $<0$ & count & $-$0.14 & [$-$0.49, 0.21] & 0.442 & 0.835 \\
-$\tau^{K}_{CB}$ & H1 & $<0$ & count & $-$0.35 & [$-$0.82, 0.11] & 0.131 & 0.602 \\
-$\tau^{D^{9}}_{TB}$ & H2 & $<0$ & s & $-$1.76 & [$-$2.80, $-$0.73] & 0.001 & 0.008 \\
-$\tau^{D^{9}}_{CB}$ & H2 & $\neq 0$ & s & 1.04 & [$-$0.28, 2.36] & 0.121 & 0.602 \\
-$\tau^{S^{9}}_{TB}$ & H2 & $\neq 0$ & pp & $-$39.2 & [$-$54.4, $-$24.0] & $<$0.001 & $<$0.001 \\
-$\tau^{S^{9}}_{CB}$ & H2 & $\neq 0$ & pp & 28.4 & [4.3, 52.5] & 0.022 & 0.131 \\
+\multicolumn{9}{@{}l}{\textit{A. Respondents (pretreatment questionnaire)}} \\
+Age (years) &    67 & 41.7 & 13.7 & 18 & 65 & 45.8 & 36.2 & 42.2 \\
+Woman &    67 & 0.43 & 0.50 & 0 & 1 & 0.41 & 0.36 & 0.56 \\
+Tertiary education &    67 & 0.79 & 0.41 & 0 & 1 & 0.70 & 0.91 & 0.78 \\
+Political interest (1--7) &    67 & 5.27 & 1.67 & 1 & 7 & 4.96 & 5.45 & 5.50 \\
+Left--right self-placement (1--10) &    61 & 4.41 & 2.95 & 1 & 10 & 5.00 & 3.47 & 4.59 \\
+No numeric self-placement &    67 & 0.09 & 0.29 & 0 & 1 & 0.07 & 0.14 & 0.06 \\
 \addlinespace[2pt]
-\multicolumn{8}{@{}l}{\textit{Primary gender-interaction family}} \\
-$\Psi_M(T)$ & H3 & $<0$ & pp & $-$4.6 & [$-$10.0, 0.7] & 0.088 & 0.264 \\
-$\Psi_M(C)$ & H3 & $<0$ & pp & $-$1.8 & [$-$6.4, 2.8] & 0.436 & 0.436 \\
-$\Psi_Y(T)$ & H4 & $\neq 0$ & pp & 13.9 & [0.5, 27.3] & 0.042 & 0.166 \\
-$\Psi_Y(C)$ & H4 & $\neq 0$ & pp & 11.5 & [$-$4.2, 27.1] & 0.148 & 0.296 \\
+\multicolumn{9}{@{}l}{\textit{B. Analytical tasks}} \\
+Any description opened, $A$ & 1,005 & 0.84 & 0.37 & 0 & 1 & 0.91 & 0.84 & 0.72 \\
+Descriptions opened, $K$ & 1,005 & 1.61 & 0.75 & 0 & 2 & 1.75 & 1.62 & 1.40 \\
+Both descriptions opened, $X$ & 1,005 & 0.78 & 0.42 & 0 & 1 & 0.84 & 0.78 & 0.67 \\
+Time to first selection, capped, $D^{9}$ (s) & 1,005 & 6.24 & 2.69 & 0.46 & 9 & 6.54 & 4.77 & 7.58 \\
+No selection within 9 s, $S^{9}$ & 1,005 & 0.38 & 0.49 & 0 & 1 & 0.43 & 0.04 & 0.72 \\
+Ended without a selection, $Q$ & 1,005 & 0.01 & 0.12 & 0 & 1 & 0.00 & 0.04 & 0.00 \\
+Task duration (s) & 1,005 & 15.29 & 20.72 & 0.88 & 301.90 & 14.78 & 5.91 & 27.54 \\
+Would vote for the choice in a real election &   991 & 0.74 & 0.44 & 0 & 1 & 0.79 & 0.70 & 0.74 \\
+Reported hurry (1--7) &   721 & 3.28 & 1.96 & 1 & 7 & 2.46 & 4.33 & -- \\
+Reported effort (1--7) &   195 & 3.08 & 1.59 & 1 & 7 & -- & -- & 3.08 \\
 \addlinespace[2pt]
-\multicolumn{8}{@{}l}{\textit{Baseline descriptive family (gender not randomized)}} \\
-$\Gamma_M(B)$ & H3 & $>0$ & pp & 1.6 & [$-$0.7, 4.0] & 0.178 & 0.356 \\
-$\Gamma_Y(B)$ & -- & $\neq 0$ & pp & $-$4.7 & [$-$13.5, 4.1] & 0.294 & 0.356 \\
+\multicolumn{9}{@{}l}{\textit{C. Candidate appearances}} \\
+Description opened, $M$ & 2,010 & 0.81 & 0.40 & 0 & 1 & 0.88 & 0.81 & 0.70 \\
+Registered selection, $Y$ & 2,010 & 0.49 & 0.50 & 0 & 1 & 0.50 & 0.48 & 0.50 \\
+Woman candidate, $W$ & 2,010 & 0.50 & 0.50 & 0 & 1 & 0.49 & 0.51 & 0.49 \\
+Displayed ideology: left & 2,010 & 0.34 & 0.48 & 0 & 1 & 0.36 & 0.35 & 0.32 \\
+Displayed ideology: right & 2,010 & 0.32 & 0.47 & 0 & 1 & 0.32 & 0.30 & 0.34 \\
+High facial dominance & 2,010 & 0.51 & 0.50 & 0 & 1 & 0.51 & 0.50 & 0.53 \\
+Older age group & 2,010 & 0.52 & 0.50 & 0 & 1 & 0.51 & 0.53 & 0.51 \\
+Ideologically congruent, $G$ & 2,010 & 0.32 & 0.47 & 0 & 1 & 0.33 & 0.31 & 0.31 \\
 \bottomrule
 \end{tabular}
 
 \begin{notes}
-Completion-conditioned counterparts of the estimands in Section~\ref{sec:estimands}. Process contrasts come from unadjusted linear models of 1,005 analytical tasks with respondent-clustered errors. Gender estimands come from linear probability models of 2,010 candidate appearances with condition, candidate gender, their interaction, randomized side, and task position, and two-way clustering by respondent and candidate. Units: pp, percentage points; count, descriptions opened (0--2); s, seconds. Tests are two-sided; Holm corrections apply within each family. $\Gamma$ compares complete profiles grouped by gender and is not a causal effect of gender. Completion may respond to treatment, so these contrasts need not equal the intention-to-treat targets.
+Panel A: one row per eligible completed respondent. Panel B: one row per analytical task. Panel C: one row per displayed candidate in an analytical task. Binary variables are shares. Real-election support is asked after every registered selection; reported hurry only in \armB\ and \armT, and reported effort only in \armC\ after information was opened, so their means describe observed answers. $Q$ can equal one only under \armT. Congruence compares the respondent's self-placement (left 1--4, center 5--6, right 7--10) with the candidate's displayed ideology and is zero for respondents without a numeric placement. The four covariates in Equation~\eqref{eq:process} are age, gender, tertiary education, and political interest.
+\end{notes}
+\end{table}
+
+\begin{table}[!htbp]
+\centering\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\caption{Preregistered primary tests among completed responses}
+\label{tab:primary}
+\begin{tabular}{@{}llllrrrrrrr@{}}
+\toprule
+ & & & & \multicolumn{4}{c}{Regression-adjusted (main)} & \multicolumn{2}{c}{Preregistered} & \\ \cmidrule(lr){5-8}\cmidrule(lr){9-10}
+Estimand & Hyp. & Expected & Unit & Estimate & 95\% CI & $p$ & Holm $p$ & Estimate & Holm $p$ & SE ratio \\
+\midrule
+\multicolumn{11}{@{}l}{\textit{Primary process family}} \\
+$\tau^{A}_{TB}$ & H1 & $<0$ & pp & $-$17.1 & [$-$35.1, 0.8] & 0.060 & 0.181 & $-$6.9 & 0.835 & 1.06 \\
+$\tau^{A}_{CB}$ & H1 & $<0$ & pp & $-$27.1 & [$-$49.2, $-$5.0] & 0.017 & 0.098 & $-$18.6 & 0.602 & 0.93 \\
+$\tau^{K}_{TB}$ & H1 & $<0$ & count & $-$0.39 & [$-$0.73, $-$0.04] & 0.028 & 0.112 & $-$0.14 & 0.835 & 0.99 \\
+$\tau^{K}_{CB}$ & H1 & $<0$ & count & $-$0.54 & [$-$0.97, $-$0.10] & 0.016 & 0.098 & $-$0.35 & 0.602 & 0.94 \\
+$\tau^{D^{9}}_{TB}$ & H2 & $<0$ & s & $-$2.00 & [$-$2.80, $-$1.20] & $<$0.001 & $<$0.001 & $-$1.76 & 0.008 & 0.78 \\
+$\tau^{D^{9}}_{CB}$ & H2 & $\neq 0$ & s & 0.54 & [$-$0.70, 1.79] & 0.387 & 0.387 & 1.04 & 0.602 & 0.94 \\
+$\tau^{S^{9}}_{TB}$ & H2 & $\neq 0$ & pp & $-$43.5 & [$-$55.5, $-$31.4] & $<$0.001 & $<$0.001 & $-$39.2 & $<$0.001 & 0.79 \\
+$\tau^{S^{9}}_{CB}$ & H2 & $\neq 0$ & pp & 20.4 & [$-$2.0, 42.9] & 0.074 & 0.181 & 28.4 & 0.131 & 0.93 \\
+\addlinespace[2pt]
+\multicolumn{11}{@{}l}{\textit{Primary gender-interaction family}} \\
+$\Psi_M(T)$ & H3 & $<0$ & pp & 0.0 & [$-$5.7, 5.6] & 0.995 & 1.000 & $-$4.6 & 0.264 & 1.06 \\
+$\Psi_M(C)$ & H3 & $<0$ & pp & $-$0.1 & [$-$3.6, 3.3] & 0.932 & 1.000 & $-$1.8 & 0.436 & 0.75 \\
+$\Psi_Y(T)$ & H4 & $\neq 0$ & pp & 12.5 & [$-$1.0, 26.0] & 0.070 & 0.279 & 13.9 & 0.166 & 1.01 \\
+$\Psi_Y(C)$ & H4 & $\neq 0$ & pp & 9.0 & [$-$6.0, 24.1] & 0.235 & 0.706 & 11.5 & 0.296 & 0.96 \\
+\addlinespace[2pt]
+\multicolumn{11}{@{}l}{\textit{Baseline descriptive family (gender not randomized)}} \\
+$\Gamma_M(B)$ & H3 & $>0$ & pp & 0.8 & [$-$2.0, 3.6] & 0.554 & 0.554 & 1.6 & 0.356 & 1.19 \\
+$\Gamma_Y(B)$ & -- & $\neq 0$ & pp & $-$5.0 & [$-$13.7, 3.8] & 0.260 & 0.520 & $-$4.7 & 0.356 & 0.99 \\
+\bottomrule
+\end{tabular}
+
+\begin{notes}
+Completion-conditioned counterparts of the estimands in Section~\ref{sec:estimands}. Regression-adjusted (main) estimates: process contrasts from Equation~\eqref{eq:process} with respondent-clustered errors (1,005 analytical tasks); $\Psi$ from Equation~\eqref{eq:psi} and $\Gamma$ from Equation~\eqref{eq:gamma}, with two-way clustering by respondent and candidate (2,010 candidate appearances). Preregistered estimates: differences in condition means, and linear probability models with condition, candidate gender, their interaction, side, and task position. SE ratio: regression-adjusted over preregistered standard error. Units: pp, percentage points; count, descriptions opened (0--2); s, seconds. Tests are two-sided; Holm corrections apply within each family and estimator. $\Gamma$ compares complete profiles grouped by gender and is not a causal effect of gender. Completion may respond to treatment, so these contrasts need not equal the intention-to-treat targets.
 \end{notes}
 \end{table}
 
 \subsection{Information acquisition and decision speed}
 
-Figure~\ref{fig:process} reports the primary process outcomes. Under \armB, respondents opened at least one description in 90.9 percent of tasks and opened 1.75 of the two descriptions on average. Relative to \armB, the estimated change in the probability of opening any description ($\tau^A_{zB}$) was $-$6.9 percentage points (95\% CI $-$23.9 to 10.0; Holm-adjusted $p=0.835$) under \armT\ and $-$18.6 percentage points (95\% CI $-$42.3 to 5.0; Holm-adjusted $p=0.602$) under \armC. The estimated change in the number of descriptions opened ($\tau^K_{zB}$) was $-$0.14 (95\% CI $-$0.49 to 0.21; Holm-adjusted $p=0.835$) under \armT\ and $-$0.35 (95\% CI $-$0.82 to 0.11; Holm-adjusted $p=0.602$) under \armC.
+Figure~\ref{fig:process} reports the primary process outcomes. Under \armB, respondents opened at least one description in 90.9 percent of tasks and opened 1.75 of the two descriptions on average. Relative to \armB, the regression-adjusted change in the probability of opening any description ($\tau^A_{zB}$) was $-$17.1 percentage points (95\% CI $-$35.1 to 0.8; Holm-adjusted $p=0.181$) under \armT\ and $-$27.1 percentage points (95\% CI $-$49.2 to $-$5.0; Holm-adjusted $p=0.098$) under \armC. The corresponding change in the number of descriptions opened ($\tau^K_{zB}$) was $-$0.39 (95\% CI $-$0.73 to $-$0.04; Holm-adjusted $p=0.112$) under \armT\ and $-$0.54 (95\% CI $-$0.97 to $-$0.10; Holm-adjusted $p=0.098$) under \armC.
 
-The theory expects the two constraints to act differently on timing: a deadline should speed the first selection, whereas an access cost should slow it, because information must be earned before it is used. Relative to \armB, the estimated change in capped time to first selection ($\tau^{D^{9}}_{zB}$) was $-$1.76 seconds (95\% CI $-$2.80 to $-$0.73; Holm-adjusted $p=0.008$) under \armT\ and 1.04 seconds (95\% CI $-$0.28 to 2.36; Holm-adjusted $p=0.602$) under \armC. The share of tasks without a selection within nine seconds ($\tau^{S^{9}}_{zB}$) changed by $-$39.2 percentage points (95\% CI $-$54.4 to $-$24.0; Holm-adjusted $p<0.001$) under \armT\ and 28.4 percentage points (95\% CI 4.3 to 52.5; Holm-adjusted $p=0.131$) under \armC. Figure~\ref{fig:process}B places each preregistered contrast next to its covariate-adjusted counterpart.
+The theory expects the two constraints to act differently on timing: a deadline should speed the first selection, whereas an access cost should slow it, because information must be earned before it is used. Relative to \armB, the regression-adjusted change in capped time to first selection ($\tau^{D^{9}}_{zB}$) was $-$2.00 seconds (95\% CI $-$2.80 to $-$1.20; Holm-adjusted $p<0.001$) under \armT\ and 0.54 seconds (95\% CI $-$0.70 to 1.79; Holm-adjusted $p=0.387$) under \armC. The share of tasks without a selection within nine seconds ($\tau^{S^{9}}_{zB}$) changed by $-$43.5 percentage points (95\% CI $-$55.5 to $-$31.4; Holm-adjusted $p<0.001$) under \armT\ and 20.4 percentage points (95\% CI $-$2.0 to 42.9; Holm-adjusted $p=0.181$) under \armC. Figure~\ref{fig:process}B shows each contrast under both estimators; the preregistered differences in means were $-$1.76 (Holm-adjusted $p=0.008$) seconds for $\tau^{D^{9}}_{TB}$ and $-$18.6 (Holm-adjusted $p=0.602$) percentage points for $\tau^{A}_{CB}$, for example.
 
 \begin{figure}[!htbp]
 \centering
@@ -422,15 +508,15 @@ The theory expects the two constraints to act differently on timing: a deadline 
 \caption{Information acquisition and decision speed by decision environment}
 \label{fig:process}
 \begin{notes}
-Panel A: condition means with respondent-clustered 95\% confidence intervals. Panel B: differences from \armB\ ($\tau_{TB}$, $\tau_{CB}$); filled points are the preregistered unadjusted contrasts, hollow points covariate-adjusted contrasts (age, gender, tertiary education, political interest, task position; mean-bias-reduced logit, fractional logit, or OLS, averaged over observed respondents). Proportions are in percent and their differences in percentage points; intervals for proportions are truncated at 0 and 100 for display. Time to first selection is capped at 9 seconds in every condition, and the no-selection outcome uses the same window, so it is not a terminal timeout. \armT: 9-second deadline. \armC: arithmetic problem required to open each description. 1,005 analytical tasks from 67 eligible completed responses.
+Panel A: observed condition means with respondent-clustered 95\% confidence intervals. Panel B: differences from \armB\ ($\tau_{TB}$, $\tau_{CB}$); filled circles are the regression-adjusted estimates from Equation~\eqref{eq:process} (centered age, gender, tertiary education, and political interest, interacted with condition), hollow diamonds the preregistered differences in means. Proportions are in percent and their differences in percentage points; intervals for proportions are truncated at 0 and 100 for display. Time to first selection is capped at 9 seconds in every condition, and the no-selection outcome uses the same window, so it is not a terminal timeout. \armT: 9-second deadline. \armC: arithmetic problem required to open each description. 1,005 analytical tasks from 67 eligible completed responses.
 \end{notes}
 \end{figure}
 
 \subsection{Gendered scrutiny and selection}
 
-Figure~\ref{fig:gender} turns to the candidate-level estimands. Under \armB, the women-minus-men difference in the probability of opening a candidate's description was $\Gamma_M(B)=$ 1.6 percentage points (95\% CI $-$0.7 to 4.0; Holm-adjusted $p=0.356$); H3 anticipates a positive gap. The preregistered change in this gap was $\Psi_M(T)=$ $-$4.6 points (95\% CI $-$10.0 to 0.7; Holm-adjusted $p=0.264$) under \armT\ and $\Psi_M(C)=$ $-$1.8 points (95\% CI $-$6.4 to 2.8; Holm-adjusted $p=0.436$) under \armC.
+Figure~\ref{fig:gender} turns to the candidate-level estimands. Under \armB, the within-respondent women-minus-men difference in the probability of opening a candidate's description was $\Gamma_M(B)=$ 0.8 percentage points (95\% CI $-$2.0 to 3.6; Holm-adjusted $p=0.554$); H3 anticipates a positive gap. Holding the compared candidates fixed, the regression-adjusted change in this gap was $\Psi_M(T)=$ 0.0 points (95\% CI $-$5.7 to 5.6; Holm-adjusted $p=1.000$) under \armT\ and $\Psi_M(C)=$ $-$0.1 points (95\% CI $-$3.6 to 3.3; Holm-adjusted $p=1.000$) under \armC.
 
-For selection, the baseline gap was $\Gamma_Y(B)=$ $-$4.7 percentage points (95\% CI $-$13.5 to 4.1; Holm-adjusted $p=0.356$). Relative to that gap, the women-minus-men difference in selection changed by $\Psi_Y(T)=$ 13.9 points (95\% CI 0.5 to 27.3; Holm-adjusted $p=0.166$) under \armT\ and $\Psi_Y(C)=$ 11.5 points (95\% CI $-$4.2 to 27.1; Holm-adjusted $p=0.296$) under \armC. Within the constrained environments, the selection gap was 9.3 points (95\% CI $-$1.8 to 20.3; $p=0.098$) under \armT\ and 6.8 points (95\% CI $-$6.6 to 20.2; $p=0.313$) under \armC. These contrasts compare naturally occurring profiles of women and men; they show how the constraints redistribute selection between the two groups of real candidates, not the effect of changing a candidate's gender.
+For selection, the baseline gap was $\Gamma_Y(B)=$ $-$5.0 percentage points (95\% CI $-$13.7 to 3.8; Holm-adjusted $p=0.520$). Relative to that gap, the women-minus-men difference in selection changed by $\Psi_Y(T)=$ 12.5 points (95\% CI $-$1.0 to 26.0; Holm-adjusted $p=0.279$) under \armT\ and $\Psi_Y(C)=$ 9.0 points (95\% CI $-$6.0 to 24.1; Holm-adjusted $p=0.706$) under \armC. Within the constrained environments, the selection gap was 8.4 points (95\% CI $-$1.1 to 17.9; $p=0.083$) under \armT\ and 5.4 points (95\% CI $-$8.0 to 18.8; $p=0.424$) under \armC. These contrasts compare naturally occurring profiles of women and men; they show how the constraints redistribute selection between the two groups of real candidates, not the effect of changing a candidate's gender.
 
 \begin{figure}[!htbp]
 \centering
@@ -446,11 +532,12 @@ For selection, the baseline gap was $\Gamma_Y(B)=$ $-$4.7 percentage points (95\
 \caption{Information acquisition and selection by candidate gender and decision environment}
 \label{fig:gender}
 \begin{notes}
-Panel A: candidate-level means $\mu^R_g(z)$ for opening a candidate's description ($R=M$) and selecting the candidate ($R=Y$); filled circles are profiles of men, hollow circles profiles of women. Panel B: the women-minus-men gap $\Gamma_R(z)$ in each condition; the label above each constrained condition is $\Psi_R(z)=\Gamma_R(z)-\Gamma_R(B)$ in percentage points, tested in Table~\ref{tab:primary}. Estimates come from the preregistered linear probability models with randomized side and task position, using 2,010 candidate appearances from 67 eligible completed responses; 95\% intervals use two-way clustering by respondent and candidate. A retained task without a selection contributes zero selections for both profiles. Candidate gender is bundled with other characteristics of the real profiles. Appendix Figure~\ref{fig:adjusted-candidate-probabilities} reports covariate-adjusted counterparts.
+Panel A: observed candidate-level means $\mu^R_g(z)$ for opening a candidate's description ($R=M$) and selecting the candidate ($R=Y$); filled circles are profiles of men, hollow circles profiles of women. Panel B: the tested estimands in percentage points, the baseline women-minus-men gap $\Gamma_R(B)$ and its change under each constraint, $\Psi_R(z)=\Gamma_R(z)-\Gamma_R(B)$. Filled circles are the regression-adjusted estimates from Equations~\eqref{eq:psi} and~\eqref{eq:gamma} (respondent fixed effects, plus candidate fixed effects for $\Psi$); hollow diamonds the preregistered linear probability model with randomized side and task position. 2,010 candidate appearances from 67 eligible completed responses; 95\% intervals use two-way clustering by respondent and candidate. A retained task without a selection contributes zero selections for both profiles. Candidate gender is bundled with other characteristics of the real profiles.
 \end{notes}
 \end{figure}
 
 \subsection{Faces or facts?}
+\label{sec:faces-facts}
 
 Figure~\ref{fig:traits} asks which characteristics of the displayed profiles are associated with selection in each environment. The ideology of a candidate is a fact that respondents see only after opening a description, whereas gender, age, and facial dominance are visible in the photograph. The selection premium for ideologically congruent candidates---the difference in selection probability between profiles whose displayed ideology matched the respondent's self-placement and those that did not---was 30.0 percentage points (95\% CI 18.1 to 41.9; $p<0.001$) under \armB, 28.1 points (95\% CI 17.6 to 38.7; $p<0.001$) under \armT, and 23.2 points (95\% CI 11.3 to 35.2; $p<0.001$) under \armC. The corresponding association for high- versus low-dominance faces was 0.7 points (95\% CI $-$6.5 to 7.8; $p=0.855$) under \armB, 6.4 points (95\% CI $-$1.6 to 14.4; $p=0.115$) under \armT, and $-$5.0 points (95\% CI $-$12.3 to 2.3; $p=0.179$) under \armC.
 
@@ -534,6 +621,8 @@ Several limits qualify the interpretation. First, the reported comparisons are r
   \setlength{\parsep}{0pt}%
   \setlength{\topsep}{1pt}%
 }
+\item Abadie, A., Athey, S., Imbens, G. W., \& Wooldridge, J. M. (2023). When should you adjust standard errors for clustering? \emph{Quarterly Journal of Economics, 138}(1), 1--35. \url{https://doi.org/10.1093/qje/qjac038}
+
 \item Abramson, S. F., Ko\c{c}ak, K., \& Magazinnik, A. (2022). What do we learn about voter preferences from conjoint experiments? \emph{American Journal of Political Science, 66}(4), 1008--1020. \url{https://doi.org/10.1111/ajps.12714}
 
 \item Agley, J., Mumaw, C., \& Johnson, B. (2024). Rationale and study checklist for ethical rejection of participants on crowdsourcing research platforms. \emph{Ethics \& Human Research, 46}(4), 38--46. \url{https://doi.org/10.1002/eahr.500217}
@@ -546,9 +635,9 @@ Several limits qualify the interpretation. First, the reported comparisons are r
 
 \item Andersen, D. J., \& Ditonto, T. (2020). The importance of candidate sex and partisan preference over time: A multiday study of voter decision making. \emph{The Journal of Politics, 82}(4), 1337--1353. \url{https://doi.org/10.1086/708340}
 
-\item Antonakis, J., \& Dalgas, O. (2009). Predicting elections: Child's play! \emph{Science, 323}(5918), 1183. \url{https://doi.org/10.1126/science.1167748}
+\item Angrist, J. D., \& Pischke, J.-S. (2009). \emph{Mostly Harmless Econometrics: An Empiricist's Companion}. Princeton University Press.
 
-\item Arel-Bundock, V., Greifer, N., \& Heiss, A. (2024). How to interpret statistical models using marginaleffects for R and Python. \emph{Journal of Statistical Software, 111}(9), 1--32. \url{https://doi.org/10.18637/jss.v111.i09}
+\item Antonakis, J., \& Dalgas, O. (2009). Predicting elections: Child's play! \emph{Science, 323}(5918), 1183. \url{https://doi.org/10.1126/science.1167748}
 
 \item Atkinson, M. D., Enos, R. D., \& Hill, S. J. (2009). Candidate faces and election outcomes: Is the face--vote correlation caused by candidate selection? \emph{Quarterly Journal of Political Science, 4}(3), 229--249. \url{https://doi.org/10.1561/100.00008062}
 
@@ -574,6 +663,8 @@ Several limits qualify the interpretation. First, the reported comparisons are r
 
 \item Caballero Germain, G., Carbonell Bellolio, F., L\'opez Masle, J., \& Villarroel Oyarz\'un, T. (2021). Medici\'on remota de la velocidad lectora en estudiantes de derecho: Una contribuci\'on a la racionalizaci\'on de la carga acad\'emica. \emph{Revista Pedagog\'ia Universitaria y Did\'actica del Derecho, 8}(2), 193--212. \url{https://doi.org/10.5354/0719-5885.2021.64735}
 
+\item Cameron, A. C., Gelbach, J. B., \& Miller, D. L. (2011). Robust inference with multiway clustering. \emph{Journal of Business \& Economic Statistics, 29}(2), 238--249. \url{https://doi.org/10.1198/jbes.2010.07136}
+
 \item Card, S. K., Moran, T. P., \& Newell, A. (1980). The keystroke-level model for user performance time with interactive systems. \emph{Communications of the ACM, 23}(7), 396--410. \url{https://doi.org/10.1145/358886.358895}
 
 \item Carr\'e, J. M., \& McCormick, C. M. (2008). In your face: Facial metrics predict aggressive behaviour in the laboratory and in varsity and professional hockey players. \emph{Proceedings of the Royal Society B, 275}(1651), 2651--2656. \url{https://doi.org/10.1098/rspb.2008.0873}
@@ -587,6 +678,8 @@ Several limits qualify the interpretation. First, the reported comparisons are r
 \item Ditonto, T., \& Mattes, K. (2018). Differences in appearance-based trait inferences for male and female political candidates. \emph{Journal of Women, Politics \& Policy, 39}(4), 430--450. \url{https://doi.org/10.1080/1554477X.2018.1506206}
 
 \item Downs, A. (1957). \emph{An Economic Theory of Democracy}. Harper \& Row.
+
+\item Freedman, D. A. (2008). On regression adjustments to experimental data. \emph{Advances in Applied Mathematics, 40}(2), 180--193.
 
 \item Geniole, S. N., Denson, T. F., Dixson, B. J., Carr\'e, J. M., \& McCormick, C. M. (2015). Evidence from meta-analyses of the facial width-to-height ratio as an evolved cue of threat. \emph{PLoS ONE, 10}(7), e0132726. \url{https://doi.org/10.1371/journal.pone.0132726}
 
@@ -606,8 +699,6 @@ Several limits qualify the interpretation. First, the reported comparisons are r
 
 \item Kocher, M. G., Schindler, D., Trautmann, S. T., \& Xu, Y. (2019). Risk, time pressure, and selection effects. \emph{Experimental Economics, 22}(1), 216--246. \url{https://doi.org/10.1007/s10683-018-9576-1}
 
-\item Kosmidis, I., \& Firth, D. (2021). Jeffreys-prior penalty, finiteness and shrinkage in binomial-response generalized linear models. \emph{Biometrika, 108}(1), 71--82. \url{https://doi.org/10.1093/biomet/asaa052}
-
 \item Lau, R. R., \& Redlawsk, D. P. (2001). Advantages and disadvantages of cognitive heuristics in political decision making. \emph{American Journal of Political Science, 45}(4), 951--971. \url{https://doi.org/10.2307/2669334}
 
 \item Lau, R. R., \& Redlawsk, D. P. (2006). \emph{How Voters Decide: Information Processing during Election Campaigns}. Cambridge University Press.
@@ -622,6 +713,8 @@ Several limits qualify the interpretation. First, the reported comparisons are r
 
 \item Ley 1475 de 2011. Por la cual se adoptan reglas de organizaci\'on y funcionamiento de los partidos y movimientos pol\'iticos, de los procesos electorales y se dictan otras disposiciones. Congreso de la Rep\'ublica de Colombia, 14 July 2011.
 
+\item Lin, W. (2013). Agnostic notes on regression adjustments to experimental data: Reexamining Freedman's critique. \emph{Annals of Applied Statistics, 7}(1), 295--318. \url{https://doi.org/10.1214/12-AOAS583}
+
 \item Lodge, M., McGraw, K. M., \& Stroh, P. (1989). An impression-driven model of candidate evaluation. \emph{American Political Science Review, 83}(2), 399--419. \url{https://doi.org/10.2307/1962397}
 
 \item MacKenzie, I. S. (1992). Fitts' law as a research and design tool in human-computer interaction. \emph{Human--Computer Interaction, 7}(1), 91--139. \url{https://doi.org/10.1207/s15327051hci0701_3}
@@ -629,6 +722,10 @@ Several limits qualify the interpretation. First, the reported comparisons are r
 \item Mar\'in, A., Bahamonde, H., \& Canales, A. (2026). \emph{Faces or Facts? Experimental Evidence on Time Pressure, Information Costs, and Gender Bias in Electoral Choice}. AEA RCT Registry, AEARCTR-0017574. \url{https://doi.org/10.1257/rct.17574-1.3}
 
 \item Mattes, K., Spezio, M., Kim, H., Todorov, A., Adolphs, R., \& Alvarez, R. M. (2010). Predicting election outcomes from positive and negative trait assessments of candidate images. \emph{Political Psychology, 31}(1), 41--58.
+
+\item Montgomery, J. M., Nyhan, B., \& Torres, M. (2018). How conditioning on posttreatment variables can ruin your experiment and what to do about it. \emph{American Journal of Political Science, 62}(3), 760--775. \url{https://doi.org/10.1111/ajps.12357}
+
+\item Negi, A., \& Wooldridge, J. M. (2021). Revisiting regression adjustment in experiments with heterogeneous treatment effects. \emph{Econometric Reviews, 40}(5), 504--534. \url{https://doi.org/10.1080/07474938.2020.1824732}
 
 \item Olivola, C. Y., Tingley, D., \& Todorov, A. (2018). Republican voters prefer candidates who have conservative-looking faces: New evidence from exit polls. \emph{Political Psychology, 39}(5), 1157--1171. \url{https://doi.org/10.1111/pops.12489}
 
@@ -650,15 +747,21 @@ Several limits qualify the interpretation. First, the reported comparisons are r
 
 \item Rosar, U., Klein, M., \& Beckers, T. (2008). The frog pond beauty contest: Physical attractiveness and electoral success of the constituency candidates at the North Rhine-Westphalia state election of 2005. \emph{European Journal of Political Research, 47}(1), 64--79.
 
+\item Sanbonmatsu, K. (2002). Gender stereotypes and vote choice. \emph{American Journal of Political Science, 46}(1), 20--34.
+
 \item Sauro, J. (2009). Estimating productivity: Composite operators for keystroke level modeling. In J. A. Jacko (Ed.), \emph{Human-Computer Interaction. New Trends} (Lecture Notes in Computer Science, Vol. 5610, pp. 352--361). Springer. \url{https://doi.org/10.1007/978-3-642-02574-7_40}
 
 \item Schwarz, S., \& Coppock, A. (2022). What have we learned about gender from candidate choice experiments? A meta-analysis of sixty-seven factorial survey experiments. \emph{The Journal of Politics, 84}(2), 655--668. \url{https://doi.org/10.1086/716290}
 
 \item Spiliopoulos, L., \& Ortmann, A. (2018). The BCD of response time analysis in experimental economics. \emph{Experimental Economics, 21}(2), 383--433. \url{https://doi.org/10.1007/s10683-017-9528-1}
 
+\item Su, F., \& Ding, P. (2021). Model-assisted analyses of cluster-randomized experiments. \emph{Journal of the Royal Statistical Society: Series B, 83}(5), 994--1015. \url{https://doi.org/10.1111/rssb.12468}
+
 \item Teele, D. L., Kalla, J., \& Rosenbluth, F. (2018). The ties that double bind: Social roles and women's underrepresentation in politics. \emph{American Political Science Review, 112}(3), 525--541. \url{https://doi.org/10.1017/S0003055418000217}
 
 \item Todorov, A., Mandisodza, A. N., Goren, A., \& Hall, C. C. (2005). Inferences of competence from faces predict election outcomes. \emph{Science, 308}(5728), 1623--1626.
+
+\item Ye, T., Shao, J., Yi, Y., \& Zhao, Q. (2023). Toward better practice of covariate adjustment in analyzing randomized clinical trials. \emph{Journal of the American Statistical Association, 118}(544), 2370--2382. \url{https://doi.org/10.1080/01621459.2022.2049278}
 \end{list}
 }
 
@@ -704,7 +807,7 @@ Procedural clarity also requires respondents to know the consequences of nonresp
 
 \subsection{Recruitment, sample, and implementation checks}
 
-Table~\ref{tab:recruitment} accounts for every started attempt, Table~\ref{tab:sample} describes the completed sample by condition, Table~\ref{tab:implementation} summarizes how each environment was experienced, and Table~\ref{tab:displayed} verifies that the randomization displayed comparable profiles across conditions. The reported hurry contrast between \armT\ and \armB\ is 1.87 scale points (95\% CI 0.98 to 2.75; $p=$ $<$0.001), based on 721 observed answers from 49 respondents with respondent-clustered errors.
+Table~\ref{tab:recruitment} accounts for every started attempt, Table~\ref{tab:sample} describes the completed sample by condition, and Table~\ref{tab:implementation} summarizes how each environment was experienced; panel C of Table~\ref{tab:variables} shows that the randomization displayed comparable profiles across conditions. The reported hurry contrast between \armT\ and \armB\ is 1.87 scale points (95\% CI 0.98 to 2.75; $p=$ $<$0.001), based on 721 observed answers from 49 respondents with respondent-clustered errors.
 
 \begin{table}[!htbp]
 \centering\small
@@ -714,9 +817,9 @@ Table~\ref{tab:recruitment} accounts for every started attempt, Table~\ref{tab:s
 \toprule
 Stage & N \\
 \midrule
-Survey entrants across study versions & 293 \\
+Survey entrants across study versions & 294 \\
 Screened out & 10 \\
-Initial screening or baseline not completed & 121 \\
+Initial screening or baseline not completed & 122 \\
 Eligible participants not yet finished & 41 \\
 Finished below the response threshold & 0 \\
 Excluded after detected reload or browser-history navigation & 19 \\
@@ -809,38 +912,6 @@ Task-level summaries of 1,005 analytical tasks from eligible completed responses
 \end{notes}
 \end{table}
 
-\begin{table}[!htbp]
-\centering\small
-\caption{Characteristics of displayed profiles by condition (percent of appearances)}
-\label{tab:displayed}
-\begin{tabular}{@{}lrrr@{}}
-\toprule
-Level & Baseline & Time & Cost \\
-\midrule
-\multicolumn{4}{@{}l}{\textit{Gender}} \\
-Men & 51.2 & 48.8 & 51.5 \\
-Women & 48.8 & 51.2 & 48.5 \\
-\addlinespace[2pt]
-\multicolumn{4}{@{}l}{\textit{Ideology}} \\
-Center & 32.3 & 34.8 & 33.9 \\
-Left & 35.7 & 34.7 & 32.4 \\
-Right & 32.0 & 30.5 & 33.7 \\
-\addlinespace[2pt]
-\multicolumn{4}{@{}l}{\textit{Dominance}} \\
-High & 50.7 & 50.5 & 53.3 \\
-Low & 49.3 & 49.5 & 46.7 \\
-\addlinespace[2pt]
-\multicolumn{4}{@{}l}{\textit{Age group}} \\
-Older & 51.1 & 52.6 & 50.9 \\
-Younger & 48.9 & 47.4 & 49.1 \\
-\bottomrule
-\end{tabular}
-
-\begin{notes}
-Percentages of the 2,010 candidate appearances in each condition, by classification of the displayed profile. Profiles are sampled at random for each respondent, so differences across conditions reflect chance.
-\end{notes}
-\end{table}
-
 \clearpage
 \renewcommand{\thetable}{B\arabic{table}}
 \renewcommand{\thefigure}{B\arabic{figure}}
@@ -849,23 +920,91 @@ Percentages of the 2,010 candidate appearances in each condition, by classificat
 \section{Supplementary analyses}
 \label{app:supplementary}
 
-\begin{figure}[!htbp]
-\centering
-\begin{knitrout}
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+\begin{table}[!htbp]
+\centering\small
+\caption{Regression-adjusted process models, Equation~\eqref{eq:process}}
+\label{tab:process-models}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+ & $A$ (pp) & $K$ (count) & $D^{9}$ (s) & $S^{9}$ (pp) \\
+\midrule
+\multicolumn{5}{@{}l}{\textit{Condition (difference from \textup{\armB})}} \\
+\armT & $-$17.15 & $-$0.39 & $-$2.00 & $-$43.45 \\
+ & (8.98) & (0.17) & (0.40) & (6.02) \\
+\armC & $-$27.08 & $-$0.54 & 0.54 & 20.42 \\
+ & (11.06) & (0.22) & (0.62) & (11.25) \\
+\addlinespace[2pt]
+\multicolumn{5}{@{}l}{\textit{Centered covariates (slopes in \textup{\armB})}} \\
+Age (decades) & $-$6.10 & $-$0.18 & $-$0.12 & 1.18 \\
+ & (5.37) & (0.09) & (0.24) & (4.91) \\
+Woman respondent & 17.91 & 0.42 & 1.68 & 30.08 \\
+ & (9.28) & (0.17) & (0.66) & (12.75) \\
+Tertiary education & $-$22.26 & $-$0.59 & $-$1.35 & $-$11.82 \\
+ & (11.26) & (0.19) & (0.76) & (16.45) \\
+Political interest (1--7) & 6.30 & 0.17 & 0.90 & 12.06 \\
+ & (4.73) & (0.08) & (0.24) & (4.69) \\
+\midrule
+Covariates $\times$ condition & Yes & Yes & Yes & Yes \\
+Respondents (clusters) & 67 & 67 & 67 & 67 \\
+Observations & 1,005 & 1,005 & 1,005 & 1,005 \\
+$R^2$ & 0.29 & 0.30 & 0.35 & 0.43 \\
+\bottomrule
+\end{tabular}
 
-{\centering \includegraphics[width=\linewidth]{analysis_outputs/figure-adjusted-candidate-probabilities-1}
-
-}
-
-
-\end{knitrout}
-\caption{Covariate-adjusted information acquisition and selection by candidate gender}
-\label{fig:adjusted-candidate-probabilities}
 \begin{notes}
-Average predicted probabilities from mean-bias-reduced logistic models of 2,010 candidate appearances with treatment-by-candidate-gender interactions, respondent age and gender, tertiary education, baseline political interest, task position, and randomized side. Predictions change only the assigned environment and average over the observed profiles within each candidate-gender group; filled circles are men, hollow circles women. Approximate 95\% intervals use two-way respondent--candidate clustering and are computed on the logit scale. Selection is a marginal binary event, not a structural paired-choice model.
+OLS estimates with respondent-clustered standard errors in parentheses. Binary outcomes ($A$, $S^{9}$) are in percentage points. Covariates are centered at the analytical-sample mean and interacted with condition, so the condition rows are the regression-adjusted contrasts of Table~\ref{tab:primary} and the covariate rows are slopes in \armB; the eight covariate-by-condition interactions are estimated but not shown. Task-position indicators are omitted because every respondent completes all 15 tasks, which makes them orthogonal to all regressors.
 \end{notes}
-\end{figure}
+\end{table}
+
+\begin{table}[!htbp]
+\centering\small
+\caption{Regression-adjusted candidate-level models, Equations~\eqref{eq:psi} and~\eqref{eq:gamma}}
+\label{tab:candidate-models}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+ & \multicolumn{2}{c}{Equation~\eqref{eq:psi}} & \multicolumn{2}{c}{Equation~\eqref{eq:gamma}} \\ \cmidrule(lr){2-3}\cmidrule(l){4-5}
+ & $M$ & $Y$ & $M$ & $Y$ \\
+\midrule
+\multicolumn{5}{@{}l}{\textit{Change in the women-minus-men gap, equation~\eqref{eq:psi}}} \\
+Woman candidate $\times$ \armT, $\Psi(T)$ & $-$0.02 & 12.49 &  &  \\
+ & (2.83) & (6.78) &  &  \\
+Woman candidate $\times$ \armC, $\Psi(C)$ & $-$0.15 & 9.03 &  &  \\
+ & (1.72) & (7.54) &  &  \\
+\addlinespace[2pt]
+\multicolumn{5}{@{}l}{\textit{Women-minus-men gap by condition, equation~\eqref{eq:gamma}}} \\
+Woman candidate in \armB, $\Gamma(B)$ &  &  & 0.83 & $-$4.98 \\
+ &  &  & (1.40) & (4.38) \\
+Woman candidate in \armT, $\Gamma(T)$ &  &  & 0.55 & 8.38 \\
+ &  &  & (2.64) & (4.76) \\
+Woman candidate in \armC, $\Gamma(C)$ &  &  & 0.45 & 5.39 \\
+ &  &  & (1.09) & (6.71) \\
+\addlinespace[2pt]
+\multicolumn{5}{@{}l}{\textit{Pretreatment controls}} \\
+Congruent in \armB & 1.42 & 32.60 & 1.33 & 30.30 \\
+ & (0.68) & (6.58) & (0.59) & (5.88) \\
+Congruent in \armT & $-$1.06 & 25.57 & $-$1.36 & 28.67 \\
+ & (2.03) & (6.80) & (2.10) & (5.42) \\
+Congruent in \armC & 0.13 & 25.56 & 0.36 & 23.43 \\
+ & (1.55) & (6.50) & (1.62) & (6.22) \\
+Woman candidate $\times$ woman respondent & 3.57 & $-$0.08 & 3.21 & 0.78 \\
+ & (1.99) & (5.55) & (2.09) & (5.39) \\
+Right-hand position & $-$0.13 & $-$1.17 & $-$0.08 & $-$1.07 \\
+ & (1.16) & (3.01) & (1.15) & (3.22) \\
+\midrule
+Respondent fixed effects & Yes & Yes & Yes & Yes \\
+Candidate fixed effects & Yes & Yes & No & No \\
+Task-position fixed effects & Yes & Yes & Yes & Yes \\
+Respondents (clusters) & 67 & 67 & 67 & 67 \\
+Candidates (clusters) & 71 & 71 & 71 & 71 \\
+Observations & 2,010 & 2,010 & 2,010 & 2,010 \\
+$R^2$ & 0.78 & 0.12 & 0.77 & 0.07 \\
+\bottomrule
+\end{tabular}
+
+\begin{notes}
+Linear probability models of candidate appearances, in percentage points, with standard errors clustered by respondent and candidate in parentheses. $M$: the candidate's description was opened; $Y$: the candidate was selected. In Equation~\eqref{eq:psi}, candidate fixed effects absorb candidate gender, so only its interactions with \armT\ and \armC\ are estimated; Equation~\eqref{eq:gamma} drops candidate fixed effects to estimate the women-minus-men gap in each condition. Congruence compares the respondent's pretreatment self-placement with the candidate's displayed ideology. Respondent gender is centered. $R^2$ includes the fixed effects.
+\end{notes}
+\end{table}
 
 \begin{figure}[!htbp]
 \centering

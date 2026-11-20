@@ -312,21 +312,26 @@ cumulative total need not equal the paper's current-protocol sample. Figure A1's
 original pre-test panel remains deliberately fixed; its current-protocol panel
 and all substantive analyses update from the latest qualifying responses.
 
-The paper is organized around the preregistered estimands. The main text
-reports Table 1 (every primary test with its estimand, hypothesis, raw and
-Holm-adjusted p-values, by family) and Figures 2-6: process outcomes (condition
-means and preregistered contrasts next to covariate-adjusted ones), candidate-
-gender means and gaps with the Psi interactions, candidate characteristics and
-ideological congruence by environment, real-election support and stated
-reasons, and profile-specific selection probabilities. Results prose in the Rnw
-is generated from the estimates with `\Sexpr{live(...)}` helpers defined in the
+The paper is organized around the preregistered estimands. Every estimand is
+estimated twice: by the main regression-adjusted models (paper equations 1-3:
+Lin-interacted OLS with centred age, gender, tertiary education and political
+interest for the process outcomes; respondent and candidate fixed effects with
+ideological congruence for the gender interactions) and by the preregistered
+estimators (differences in means; the condition-by-gender LPM). The main text
+reports Table 1 (descriptive statistics of every variable used, overall and by
+condition), Table 2 (every primary test under both estimators, Holm-adjusted
+p-values by family, and the standard-error ratio) and Figures 2-6: process
+outcomes (observed means; both estimators of each contrast), candidate-gender
+means and the Gamma/Psi estimands, candidate characteristics and ideological
+congruence by environment, real-election support and stated reasons, and
+profile-specific selection probabilities. Results prose in the Rnw is generated
+from the estimates with `\Sexpr{live(...)}` helpers defined in the
 `analysis-text` chunk, so the sentences update with each download. Appendix A
 holds the data-collection material (deadline calibration, Figure A1, recruitment
-flow, sample, implementation checks, displayed-profile balance); Appendix B
-holds covariate-adjusted and respondent-gender robustness figures. Uncertainty
-uses respondent clustering for task outcomes and respondent/candidate clustering
-for candidate outcomes. Daily monitoring is not a sequential significance-based
-stopping rule.
+flow, sample, implementation checks); Appendix B holds the full fitted
+regression tables and the respondent-gender figure. Uncertainty uses respondent
+clustering for task outcomes and respondent/candidate clustering for candidate
+outcomes. Daily monitoring is not a sequential significance-based stopping rule.
 
 Useful R objects after a run are `dat` (visited respondents in the original wide
 format), `analysis_people` (one row per eligible sequence starter), `tasks` (one
