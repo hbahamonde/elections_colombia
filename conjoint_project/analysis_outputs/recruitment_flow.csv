@@ -1,11 +1,11 @@
 Stage,N
-Survey entrants across study versions,166
-Screened out,6
-Initial screening or baseline not completed,67
-Eligible participants not yet finished,16
+Survey entrants across study versions,293
+Screened out,10
+Initial screening or baseline not completed,121
+Eligible participants not yet finished,41
 Finished below the response threshold,0
-Excluded after detected reload or browser-history navigation,9
-Stopped after exceeding the permitted missing choices,1
+Excluded after detected reload or browser-history navigation,19
+Stopped after exceeding the permitted missing choices,2
 Other terminated incomplete cases,0
 Other-protocol completes excluded from analysis,33
-Eligible completes included in analysis,34
+Eligible completes included in analysis,67
