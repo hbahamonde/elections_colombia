@@ -1,4 +1,4 @@
-arm,First selection (median s),Full task duration (mean s),Full task duration (median s),Full task duration (75th percentile s),Full task duration (90th percentile s),Full task duration (95th percentile s),Hurry responses (n),Reported hurry (1-7),Cost responses (n),Reported effort (1-7),Arithmetic attempts (mean),Arithmetic passed (%)
-Baseline,7.625,14.77652098765432,8.762,16.779,29.680200000000013,44.57459999999994,405,2.4617283950617295,0,NA,NA,NA
-Time,4.656499999999999,5.9086454545454545,5.8335,8.001000000000001,9.002,9.002,316,4.329113924050634,0,NA,NA,NA
-Cost,22.295,27.543392592592593,24.4045,34.90625,51.525499999999994,67.24374999999974,0,NA,195,3.082051282051282,1.5481481481481478,72.22222222222221
+arm,respondents,tasks,both_pct,expired_pct,timeout_pct,first_median,duration_median,duration_p90,hurry_mean,hurry_n,effort_mean,effort_n,attempts_mean,passed_pct
+Baseline,27,405,84.19753086419753,NA,NA,7.625,8.762,29.680200000000013,2.4617283950617295,405,NA,NA,NA,NA
+Time,22,330,77.57575757575758,19.090909090909093,4.242424242424243,4.656499999999999,5.8335,9.002,4.329113924050634,316,NA,NA,NA,NA
+Cost,18,270,67.4074074074074,NA,NA,22.295,24.4045,51.525499999999994,NA,NA,3.082051282051282,195,1.5481481481481478,72.22222222222221

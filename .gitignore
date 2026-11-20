@@ -332,6 +332,9 @@ TSWLatexianTemp*
 
 .DS_Store
 
-conjoint_project/tmp/pdfs/
+# Local scratch, IDE and environment folders.
+conjoint_project/tmp/
+.idea/
+.venv/
 
 conjoint_project/_static/conjoint/data/.Rhistory

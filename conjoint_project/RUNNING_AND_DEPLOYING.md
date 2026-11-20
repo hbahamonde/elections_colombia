@@ -312,15 +312,21 @@ cumulative total need not equal the paper's current-protocol sample. Figure A1's
 original pre-test panel remains deliberately fixed; its current-protocol panel
 and all substantive analyses update from the latest qualifying responses.
 
-The current analysis supports straightforward daily monitoring. It reports
-sample characteristics, recruitment coverage, task means, perceived hurry and
-effort, arithmetic-access checks, eight primary process point estimates, and
-four candidate-gender interactions. It retains 95% confidence intervals and
-two-sided significance tests, using respondent clustering for process outcomes
-and respondent/candidate clustering for candidate outcomes. Raw and Holm-adjusted
-p-values follow the proposal's separate test families. More elaborate robustness
-models and mediation remain for later. Daily monitoring is not a sequential
-significance-based stopping rule.
+The paper is organized around the preregistered estimands. The main text
+reports Table 1 (every primary test with its estimand, hypothesis, raw and
+Holm-adjusted p-values, by family) and Figures 2-6: process outcomes (condition
+means and preregistered contrasts next to covariate-adjusted ones), candidate-
+gender means and gaps with the Psi interactions, candidate characteristics and
+ideological congruence by environment, real-election support and stated
+reasons, and profile-specific selection probabilities. Results prose in the Rnw
+is generated from the estimates with `\Sexpr{live(...)}` helpers defined in the
+`analysis-text` chunk, so the sentences update with each download. Appendix A
+holds the data-collection material (deadline calibration, Figure A1, recruitment
+flow, sample, implementation checks, displayed-profile balance); Appendix B
+holds covariate-adjusted and respondent-gender robustness figures. Uncertainty
+uses respondent clustering for task outcomes and respondent/candidate clustering
+for candidate outcomes. Daily monitoring is not a sequential significance-based
+stopping rule.
 
 Useful R objects after a run are `dat` (visited respondents in the original wide
 format), `analysis_people` (one row per eligible sequence starter), `tasks` (one
@@ -588,15 +594,16 @@ The single `visual_conjoint_design.R` file applies the same 13-of-15 rule before
 all substantive analyses. `dat`, `analysis_people`, `tasks`, and
 `candidate_tasks` include only qualifying responses. `raw_dat` preserves the
 unfiltered export. The private `data_exports/completion_status.csv` records
-recruitment classifications for auditing. Recruitment Table 1 retains screened-
+recruitment classifications for auditing. Appendix Table A1 retains screened-
 out counts but does not report allocated capacity.
 
-Paper Table 5 reports choice-page duration means, medians, and the 75th, 90th,
-and 95th percentiles. Its untimed baseline is the unrestricted timing benchmark.
-These durations do not include the full questionnaire, instructions, practice,
-or follow-up pages. Figure A1 reports mean main-task duration by task and arm
-among the same completed respondents. Completion-conditioned comparisons are
-not automatically full-sample intention-to-treat effects.
+Appendix Table A3 reports choice-page duration medians and 90th percentiles,
+deadline and timeout rates, reported hurry and effort, and arithmetic success.
+Its untimed baseline is the unrestricted timing benchmark. These durations do not
+include the full questionnaire, instructions, practice, or follow-up pages.
+Figure A1 reports mean main-task duration by task and arm among the same
+completed respondents. Completion-conditioned comparisons are not automatically
+full-sample intention-to-treat effects.
 
 ### Candidate characteristics and conjoint-format analysis
 

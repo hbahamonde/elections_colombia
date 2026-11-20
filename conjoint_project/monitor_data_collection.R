@@ -159,7 +159,7 @@ monitor <- local({
   # average FULL choice-task duration in seconds at each main task, with
   # pointwise 95% t intervals. Keep timed nonresponses. Pre-test cases are excluded.
   # No cap is imposed on Control/Math; loading, practice and follow-ups are excluded.
-  arm_colors <- c(Baseline = "#3A526B", Time = "#B35236", Cost = "#347F78")
+  arm_colors <- c(Baseline = "#2A78D6", Time = "#EB6834", Cost = "#1BAF7A")  # same as the paper
   if (nrow(respondents) > 0L) {
     eval(parse(text = knitr::knit_code$get("analysis-duration-completes")))
     figure_A1 <- plot_task_duration_completes +

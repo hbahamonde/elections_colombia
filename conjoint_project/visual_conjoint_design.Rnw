@@ -2,6 +2,8 @@
 % All downloading and analysis code is in visual_conjoint_design.R.
 % Rebuild with Rscript visual_conjoint_design.R, or knit this Rnw with knitr.
 % Compiling the generated .tex alone does not download data or rerun analyses.
+% Knitting downloads the latest export first; set
+% options(colombia.refresh_data = FALSE) in R for an explicit offline build.
 \documentclass[11pt]{article}
 \usepackage[letterpaper,margin=0.85in]{geometry}
 \usepackage[T1]{fontenc}
@@ -46,37 +48,8 @@
 \newcommand{\armB}{\textsc{Baseline}}
 \newcommand{\E}{\mathbb{E}}
 \newcommand{\LatestPaperURL}{https://github.com/hbahamonde/elections_colombia/raw/refs/heads/main/conjoint_project/visual_conjoint_design.pdf}
-
-\title{\textbf{Faces or Facts?}\\[2pt]
-\large Experimental Evidence on Time Pressure, Information Costs, and Gender Bias in Electoral Choice}
-\author{%
-\begin{tabular}{@{}c@{\hspace{0.02\textwidth}}c@{\hspace{0.02\textwidth}}c@{}}
-\begin{minipage}[t]{0.30\textwidth}
-\centering
-\textbf{Alejandra Mar\'in D\'iaz}\\[-1pt]
-{\small Postdoctoral Researcher}\\[-1pt]
-{\small O'Higgins University}\\[-1pt]
-{\footnotesize\href{mailto:alejandra.marin@postdoc.uoh.cl}{\nolinkurl{alejandra.marin@postdoc.uoh.cl}}}
-\end{minipage}
-&
-\begin{minipage}[t]{0.30\textwidth}
-\centering
-\textbf{Andrea Canales}\\[-1pt]
-{\small Central Bank, Chile}\\[-1pt]
-{\footnotesize\href{mailto:andreacanalesg@gmail.com}{\nolinkurl{ acanalesg@.bcentral.cl}}}
-\end{minipage}
-&
-\begin{minipage}[t]{0.30\textwidth}
-\centering
-\textbf{H\'ector Bahamonde}\\[-1pt]
-{\small Senior Researcher}\\[-1pt]
-{\small University of Turku}\\[-1pt]
-{\footnotesize\href{mailto:hector.bahamonde@utu.fi}{\nolinkurl{hector.bahamonde@utu.fi}}}
-\end{minipage}
-\end{tabular}%
-}
-\date{Work in progress --- 19 October 2026\\[6pt]
-{\small\sffamily\href{\LatestPaperURL}{\textbf{Download the latest version}}}}
+% Figure and table notes share one format.
+\newenvironment{notes}{\par\smallskip\begin{minipage}{\linewidth}\footnotesize\textit{Notes.}}{\end{minipage}}
 
 % Load all labelled code from the matching R file before the manuscript begins.
 % Empty callers execute the matching external R chunks. Recompute on every knit.
@@ -116,6 +89,8 @@ knitr::read_chunk(file.path(.rnw_dir, "visual_conjoint_design.R"))
 @
 <<analysis-candidate-trait-model, include=FALSE>>=
 @
+<<analysis-decision-factors, include=FALSE>>=
+@
 <<analysis-respondent-scrutiny, include=FALSE>>=
 @
 <<analysis-adjusted-predictions, include=FALSE>>=
@@ -132,52 +107,108 @@ knitr::read_chunk(file.path(.rnw_dir, "visual_conjoint_design.R"))
 @
 <<analysis-paper-counts, include=FALSE>>=
 @
+<<analysis-text, include=FALSE>>=
+@
 <<analysis-save, include=FALSE>>=
 @
+
+\title{\textbf{Faces or Facts?}\\[2pt]
+\large Experimental Evidence on Time Pressure, Information Costs, and Gender Bias in Electoral Choice}
+\author{%
+\begin{tabular}{@{}c@{\hspace{0.02\textwidth}}c@{\hspace{0.02\textwidth}}c@{}}
+\begin{minipage}[t]{0.30\textwidth}
+\centering
+\textbf{Alejandra Mar\'in D\'iaz}\\[-1pt]
+{\small Postdoctoral Researcher}\\[-1pt]
+{\small O'Higgins University}\\[-1pt]
+{\footnotesize\href{mailto:alejandra.marin@postdoc.uoh.cl}{\nolinkurl{alejandra.marin@postdoc.uoh.cl}}}
+\end{minipage}
+&
+\begin{minipage}[t]{0.30\textwidth}
+\centering
+\textbf{Andrea Canales}\\[-1pt]
+{\small Central Bank, Chile}\\[-1pt]
+{\footnotesize\href{mailto:andreacanalesg@gmail.com}{\nolinkurl{ acanalesg@.bcentral.cl}}}
+\end{minipage}
+&
+\begin{minipage}[t]{0.30\textwidth}
+\centering
+\textbf{H\'ector Bahamonde}\\[-1pt]
+{\small Senior Researcher}\\[-1pt]
+{\small University of Turku}\\[-1pt]
+{\footnotesize\href{mailto:hector.bahamonde@utu.fi}{\nolinkurl{hector.bahamonde@utu.fi}}}
+\end{minipage}
+\end{tabular}%
+}
+\date{Work in progress --- data downloaded \Sexpr{data_date}\\[1pt]
+{\small Interim results from \Sexpr{paper_counts$completed_respondents} of \Sexpr{paper_counts$target_respondents} planned respondents}\\[6pt]
+{\small\sffamily\href{\LatestPaperURL}{\textbf{Download the latest version}}}}
 
 \begin{document}
 
 \maketitle
 \vspace{-1.5em}
 \begin{abstract}
-Voters often see a candidate's face before learning about the candidate's political positions. Building on evidence that rapid visual impressions predict electoral outcomes, we examine how time pressure and information costs shape political learning and whether these constraints produce distinct patterns of scrutiny for women candidates. We conduct a preregistered three-arm online visual conjoint experiment using photographs and political information drawn from Colombian electoral data. Respondents are randomly assigned to make these choices under a nine-second deadline, an effort cost for accessing political information, or an unconstrained baseline. Candidate pairings, task order, and left-right placement are randomized within respondents. The experiment measures recorded candidate selection, candidate-specific information acquisition, and decision time. The design targets causal effects of the decision environment and of assigning complete candidate profiles. Reported analyses use eligible completed responses and are interpreted as completion-conditioned contrasts because completion may itself respond to treatment. Because the attributes of real candidates are not independently randomized, analyses of gender, ideology, and appearance characterize heterogeneity across observed profile bundles rather than attribute-level average marginal component effects.
+Voters usually see a candidate's face before they learn anything about the candidate's politics. Facial impressions form within a fraction of a second and predict election outcomes, yet we know little about when voters move beyond them, and whether the conditions under which they decide govern how much political information they acquire and how they use it. We study this sequence in a preregistered three-arm online visual conjoint experiment that pairs photographs of real Colombian local candidates with short descriptions of their ideology and policy priorities. Respondents are randomly assigned for the whole interview to a nine-second decision deadline, to an effort cost of accessing information, or to an unconstrained baseline, and repeatedly choose between randomly drawn pairs of candidates. Because descriptions remain hidden until requested, the design records which candidates respondents learn about, how quickly they choose, and whom they select, separating the decision to acquire political information from the choice made with or without it. The candidate pool crosses gender, displayed ideology, facial dominance, and age, which lets us ask whether temporal and effort constraints redistribute scrutiny between women and men candidates. The primary estimands are effects of the randomized decision environment; analyses of candidate characteristics describe heterogeneity across real profile bundles rather than effects of independently randomized attributes. This working draft updates its interim estimates automatically as fieldwork proceeds.
 \end{abstract}
 
 \section{Faces arrive before facts}
 
-Most political choices begin with a sequence so ordinary that it is easy to overlook: voters see a face before they read a platform. A visual impression arrives almost automatically, whereas learning a candidate's ideology and priorities requires time and effort. This ordering matters because judgments made from faces can form after exposures as brief as 100 milliseconds and predict real election outcomes (Todorov et al. 2005). The familiar contrast between ``faces'' and ``facts'' is therefore not merely rhetorical. It describes two sources of political judgment that become available at different speeds and costs.
+Most political choices begin with a sequence so ordinary that it is easy to overlook: voters see a face before they read a platform. A visual impression arrives almost automatically, whereas learning a candidate's ideology and priorities requires time and effort. This ordering matters because judgments made from faces form after exposures as brief as 100 milliseconds and predict real election outcomes (Todorov et al. 2005; Olivola and Todorov 2010). The familiar contrast between ``faces'' and ``facts'' is therefore not merely rhetorical. It describes two sources of political judgment that become available at different speeds and at different costs.
 
-Time pressure matters because it changes how decision makers acquire and combine information before choosing. When time is scarce, people accelerate processing, filter cues, or substitute a simpler noncompensatory rule for effortful integration (Payne, Bettman, and Luce 1996; Rieskamp and Hoffrage 2008). Political learning follows the same basic logic. Candidate evaluations can be updated on-line as information is encountered, even when the facts supporting the resulting impression are poorly remembered (Lodge, McGraw, and Stroh 1989). A deadline can therefore alter which evidence enters the running evaluation and how extensively competing considerations are compared before a vote.
+Antonakis and Dalgas (2009) make the puzzle unusually concrete. After an imaginary voyage from Troy to Ithaca, Swiss children aged 5--13 were shown pairs of photographs from French parliamentary runoffs and asked whom they would choose as captain. Their choices predicted the actual winner with a probability of 0.71; adults' competence ratings predicted the winner with a probability of 0.72, and the child and adult response patterns were statistically indistinguishable. The participants needed no campaign knowledge, policy positions, or electoral experience to reproduce the electorate's ranking. As Antonakis and Dalgas put it, ``voters are anchored in first impressions and do not appropriately correct initial inferences'' (2009, 1183). Ballew and Todorov (2007) identify the speed of this process more directly: competence judgments after 100 or 250 milliseconds were as predictive as judgments made with unlimited exposure, and a two-second response deadline preserved predictive accuracy while instructions to deliberate lengthened response time and reduced it.
 
-Antonakis and Dalgas (2009) make this puzzle unusually concrete. After an imaginary voyage from Troy to Ithaca, Swiss children aged 5--13 were shown pairs of photographs from French parliamentary runoffs and asked whom they would choose as captain. Their choices predicted the actual winner with a probability of 0.71; adults' competence ratings predicted the winner with a probability of 0.72, and the child and adult response patterns were statistically indistinguishable. The participants did not need campaign knowledge, policy positions, or electoral experience to reproduce the electorate's ranking. As Antonakis and Dalgas put it, ``voters are anchored in first impressions and do not appropriately correct initial inferences'' (2009, 1183). Ballew and Todorov (2007) identify the speed of this process more directly: competence judgments after 100 or 250 milliseconds were as predictive as judgments made with unlimited exposure, and a two-second response deadline preserved predictive accuracy while instructions to deliberate lengthened response time and reduced it.
+The broader literature confirms that appearance matters while leaving its mechanism open. Appearance predicts electoral success across political systems (Rosar, Klein, and Beckers 2008; Berggren, Jordahl, and Poutvaara 2010; Lawson et al. 2010), and randomly showing voters ballots with candidate photographs shortly before real elections shifts votes toward appearance-advantaged candidates (Ahler et al. 2017). Part of the observational face--vote correlation nonetheless reflects which candidates parties field in competitive races (Atkinson, Enos, and Hill 2009), and appearance-based voting is concentrated among less informed citizens exposed to television (Lenz and Lawson 2011). Photographs also work as cues in low-information elections (Banducci et al. 2008), and faces convey perceived competence, ideology, party, status, dominance, and threat rather than attractiveness alone (Mattes et al. 2010; Herrmann and Shikano 2016; Laustsen and Petersen 2016; Olivola, Tingley, and Todorov 2018).
 
-That finding is compelling, but it leaves the central decision process unobserved. We know that faces can predict choices; we know much less about when voters stop at the face, when they seek political information, and whether constraints make one source dominate the other. Candidate photographs operate as cues in low-information elections (Banducci et al. 2008), appearance predicts success across political contexts (Rosar et al. 2008; Berggren et al. 2010; Lawson et al. 2010), and media exposure can strengthen appearance-based voting among less informed citizens (Lenz and Lawson 2011). Faces also convey perceived competence, ideology, party, status, and threat rather than attractiveness alone (Mattes et al. 2010; Herrmann and Shikano 2016; Olivola et al. 2018).
+These findings establish that faces can predict choices. They say much less about the decision process that connects a first impression to a vote: when voters stop at the face, when they seek programmatic information, and whether the circumstances in which they decide make one source of evidence dominate the other. Process-tracing research shows that voters search selectively and rely on heuristics whose usefulness depends on political expertise (Lau and Redlawsk 2001, 2006; Redlawsk 2004), and that identity and policy cues compete for weight in candidate evaluation rather than simply adding up (Jenke and Huettel 2016). Yet appearance-based voting is rarely studied as a problem of information search, and experiments on candidate choice usually hold constant the conditions under which voters decide.
 
-\subsection{Gendered scrutiny and the cost of learning}
+We address this gap with a design that follows the decision from initial exposure to information acquisition and, ultimately, choice. Every respondent completes the same paired-candidate task with photographs and hidden political descriptions of real Colombian local candidates, while random assignment determines whether choices are made under a nine-second deadline, whether political information is costly to access, or whether neither constraint applies. Candidate-specific information requests reveal whether these constraints alter both the amount and the gendered distribution of political learning. The study thus locates inequality within a sequence---from first impression, to information acquisition, to choice---rather than only in the final vote.\footnote{The study is registered in the AEA RCT Registry, AEARCTR-0017574, version 1.3, \url{https://doi.org/10.1257/rct.17574-1.3}. IRB Approval Number 086-2025. This paper describes the protocol following pretesting, including the revised nine-second deadline and fifteen analytical tasks. The registration's sample-size fields specify 444 participants and eight tasks, whereas its abstract specifies 462 participants. The current protocol specifies 462 participants and randomizes complete profiles rather than individual attributes.}
 
-Candidate gender can shape not only the final vote but the path by which voters learn. Ditonto, Hamilton, and Redlawsk (2014) show that voters seek more competence-related and ``compassion issue'' information about women than men. Andersen and Ditonto (2020) further show that the amount of search triggered by a woman candidate depends on partisan alignment and is strongest early in a campaign. This is consequential because women are often required to provide stronger evidence of qualification: across survey experiments, voters applied more stringent qualification standards to women candidates (Bauer 2020). A photograph makes candidate gender immediately available before policy text is opened, exactly the sequence in which an early cue can organize subsequent search.
+The first contribution is to recast appearance-based voting as a problem of information acquisition and evidence integration rather than simply an association between facial impressions and electoral choice. The same observed vote can emerge from distinct processes: a voter may never consult political information, may inspect only one candidate's positions, may examine both candidates yet retain the initial visual ranking, or may use programmatic evidence to revise that ranking. Studies that observe only trait judgments or final votes cannot distinguish among these paths. By measuring candidate-specific information requests, decision time, and choice across repeated tasks, the experiment separates the decision to acquire political information from the electoral decision made in its presence or absence. Comparing a deadline, an access cost, and an unconstrained baseline then reveals whether temporal and effort constraints reduce learning altogether, make learning asymmetric across candidates, or alter choice even when average acquisition changes little.
 
-The mechanism need not involve conscious hostility. Campaign communication can activate gender stereotypes that otherwise remain dormant (Bauer 2015), and rapid appearance-based inferences predict different outcomes by candidate gender: competence is most predictive in men-only races, whereas attractiveness predicts women-only races (Ditonto and Mattes 2018). Bahamonde and Sarpila (2024) likewise find a compounded penalty for working-class-looking women and weaker electoral returns to attractiveness for women than men. Recent work cautions against a universal penalty: eye-tracking evidence finds similar attention to stereotype-consistent and inconsistent information across candidate gender, suggesting that bias can arise from the standards applied to evidence rather than from attention alone (Jenke 2025), while think-aloud evidence shows both rapid gender heuristics and later gendered rationalizations (Rohrbach and Sch\"onhagen 2025). The empirical question is therefore not simply whether women lose. It is whether profiles of women candidates invite different patterns of information acquisition, whether constraints suppress potentially corrective learning, and whether the same evidence is translated into choice differently for women and men.
+The second contribution connects this process account to gender inequality in candidate evaluation. More extensive search about women candidates may reflect genuine openness to learning, but it may also indicate that women must supply additional evidence before voters regard them as qualified; conversely, limited search may signal either confidence or exclusion from serious consideration (Ditonto, Hamilton, and Redlawsk 2014; Bauer 2020). A gender difference in information acquisition therefore has no invariant meaning apart from the conditions under which it arises and the choices that follow it. Randomizing the decision environment supplies the relevant leverage: if the difference between women and men candidates expands, contracts, or reverses under time pressure or costly access, the experiment identifies how those constraints redistribute scrutiny across fixed profile groups, without treating candidate gender as independently randomized. Campaigns, ballot designs, and digital platforms routinely vary in the time and effort they demand from voters, so establishing whether such frictions place unequal informational burdens on women candidates links a micro-level process of political learning to broader inequalities in representation.
 
-Taken together, these findings motivate a design that follows the decision process from initial exposure to information acquisition and, ultimately, choice. Every respondent encounters the same paired-candidate task, while random assignment determines whether the choice occurs under a nine-second deadline, whether political information is costly to access, or whether neither constraint applies. Candidate-specific information requests reveal whether these constraints alter both the amount and the gendered distribution of political learning. The study thus locates inequality within a sequence---from first impression, to information acquisition, to choice---rather than only in the final vote. Methodologically, it combines randomized time and effort constraints with behavioral measures of information acquisition and repeated choices between profiles constructed from Colombian electoral data.\footnote{The study is registered in the AEA RCT Registry, AEARCTR-0017574, version 1.3, \url{https://doi.org/10.1257/rct.17574-1.3}. IRB Approval Number 086-2025. This paper describes the protocol following pretesting, including the revised nine-second deadline and fifteen analytical tasks. The registration's sample-size fields specify 444 participants and eight tasks, whereas its abstract specifies 462 participants. The current protocol specifies 462 participants and randomizes complete profiles rather than individual attributes.} Standard conjoint average marginal component effects require independently randomized attributes (Hainmueller, Hopkins, and Yamamoto 2014). Here, photographs, gender, ideology, electoral history, and facial characteristics remain bundled within real candidate profiles. The primary causal estimands therefore concern the randomized decision environment and the assignment of complete profiles. Analyses of individual profile characteristics assess heterogeneity in those contrasts, with the reported estimates further conditional on response completion.
+Colombia offers a useful source of stimuli for this question. Local elections there feature many candidates whom voters know little about, and since Law 1475 of 2011 party lists for bodies electing five or more seats must include at least 30 percent of either gender, so women and men compete on the same lists in large numbers. To prevent candidate recognition, respondents are adults who have no residential or national tie to Colombia, so their choices rely on exactly the information the interface provides. The next section develops expectations about how time and effort constraints shape the use of faces and facts. Sections~\ref{sec:design}--\ref{sec:estimation} describe the design, estimands, and estimation strategy, Section~\ref{sec:results} reports interim results that update with each data download, and Section~\ref{sec:discussion} discusses their implications and limits.
 
-The first contribution is to recast appearance-based voting as a problem of information acquisition and evidence integration rather than simply an association between facial impressions and electoral choice. The same observed vote can emerge from several distinct processes: a voter may never consult political information, may inspect only one candidate's positions, may examine both candidates yet retain the initial visual ranking, or may use programmatic evidence to revise that ranking. These paths carry different theoretical and practical implications, but studies that observe only trait judgments or final votes cannot distinguish among them. By measuring candidate-specific information requests, decision time, and choice across repeated tasks, the experiment separates the decision to acquire political information from the electoral decision made in its presence or absence. The comparison among a deadline, an access cost, and an unconstrained baseline then reveals whether temporal and effort constraints reduce learning altogether, make learning asymmetric across candidates, or alter choice even when average acquisition changes little. The design therefore moves beyond showing that faces matter: it identifies the decision environments under which voters acquire evidence capable of supplementing an initial visual impression and estimates whether those environments alter candidate choice.
+\section{Two frictions on political learning}
+\label{sec:theory}
 
-The second contribution is to connect this process account to gender inequality in candidate evaluation. More extensive information search about women candidates may reflect genuine openness to learning, but it may also indicate that women must supply additional evidence before voters regard them as qualified; conversely, limited search may signal either confidence or exclusion from serious consideration (Ditonto, Hamilton, and Redlawsk 2014; Bauer 2020). A gender difference in information acquisition therefore has no invariant meaning apart from the conditions under which it arises and the choices that follow it. Randomizing the decision environment supplies the relevant leverage. If the difference between women and men candidates expands, contracts, or reverses under time pressure or costly access, the experiment identifies how those constraints redistribute scrutiny across fixed profile groups, without treating candidate gender as independently randomized. Linking candidate-specific acquisition to candidate selection further documents whether unequal scrutiny is accompanied by unequal electoral returns. This contribution is consequential beyond the experimental interface: campaigns, ballot environments, and digital information platforms routinely vary in the time and effort they require from voters. Establishing whether such frictions place unequal informational burdens on women candidates connects a micro-level process of political learning to broader inequalities in evaluation and representation.
+\subsection{Faces as default evidence}
+
+Political information is costly to acquire, and voters economize on it by relying on whatever cues are freely available (Downs 1957; Popkin 1991). A candidate's photograph is the cheapest such cue: it requires no search and delivers an immediate impression of competence, warmth, dominance, age, and gender. Candidate evaluations are also updated on-line as information is encountered, so an early impression becomes part of a running tally even when the evidence that produced it is later forgotten (Lodge, McGraw, and Stroh 1989). Whether appearance-based competence inferences survive once substantive information is available is itself an open question (Ditonto 2018). If they do, faces are not merely a fallback for the uninformed but a default against which later information must compete. Whether programmatic information displaces that default depends first on whether voters acquire it and then on whether they have the time and inclination to integrate it.
+
+\subsection{Time and effort as distinct constraints}
+
+Time pressure changes how decision makers acquire and combine information. When time is scarce, people accelerate processing, filter cues, and substitute simpler noncompensatory rules for effortful integration (Payne, Bettman, and Johnson 1988; Payne, Bettman, and Luce 1996; Rieskamp and Hoffrage 2008). A deadline matters only when it binds, however: Ord\'o\~nez and Benson (1997, 122) note that ``it is possible to have time constraint but no time pressure.'' Laboratory elections show that time pressure can change voting itself, reducing strategic voting under plurality rule (Al\'os-Ferrer and Garagnani 2022). In candidate evaluation, a deadline limits two things at once: the opportunity to request information and the opportunity to weigh it against the impression already formed.
+
+An information cost works differently. It raises the price of each additional piece of evidence while leaving time to integrate whatever is acquired. Voters facing a cost should acquire less information, but those who pay it have chosen to learn and can deliberate over what they find. The two constraints therefore make distinct predictions. Both should reduce information acquisition. A deadline should accelerate choice and may weaken the link between acquired information and the final vote, whereas an access cost should slow choice, because obtaining information takes effort, and should leave that link intact among those who acquire it. Response times are thus informative about the decision process and not only about compliance with the deadline (Spiliopoulos and Ortmann 2018).
+
+\subsection{Gendered scrutiny}
+
+Candidate gender can shape not only the final vote but the path by which voters learn. Voters seek more competence-related and ``compassion issue'' information about women than about men (Ditonto, Hamilton, and Redlawsk 2014), and the amount of search triggered by a woman candidate depends on partisan alignment and is strongest early in a campaign (Andersen and Ditonto 2020). Women are often required to provide stronger evidence of qualification: across survey experiments, voters applied more stringent qualification standards to women candidates (Bauer 2020), and long-standing stereotypes portray women as less agentic and tough than men (Huddy and Terkildsen 1993). A photograph makes candidate gender available before any policy text is opened, exactly the sequence in which an early cue can organize subsequent search.
+
+The resulting penalty is neither universal nor necessarily conscious. A meta-analysis of 67 candidate-choice experiments finds that being a woman yields, on average, a modest advantage of about two percentage points (Schwarz and Coppock 2022), and experiments in Brazil find a pro-female effect of five to seven points (Aguilar, Cunow, and Desposato 2015). Conjoint evidence instead locates bias in the social roles voters expect women to occupy (Teele, Kalla, and Rosenbluth 2018). Campaign communication can activate dormant stereotypes (Bauer 2015), and the facial impressions that predict votes differ by candidate gender: competence is most predictive in men-only races and attractiveness in women-only races (Ditonto and Mattes 2018), and attractiveness weighs heavily in men's votes for women candidates (Chiao, Bowman, and Gill 2008). Bahamonde and Sarpila (2024) find a compounded penalty for working-class-looking women and weaker electoral returns to attractiveness for women than men. Eye-tracking evidence finds similar attention to stereotype-consistent and inconsistent information across candidate gender, suggesting that bias may arise from the standards applied to evidence rather than from attention alone (Jenke 2025), while think-aloud evidence shows both rapid gender heuristics and later gendered rationalizations (Rohrbach and Sch\"onhagen 2025). The empirical question is therefore not simply whether women lose. It is whether profiles of women candidates invite different patterns of information acquisition, whether constraints suppress that additional scrutiny, and whether the same evidence translates into choice differently for women and men.
+
+\subsection{Expectations}
+
+These arguments imply four preregistered expectations, stated formally in Section~\ref{sec:estimands}. Both constraints should reduce information acquisition (H1), and the deadline should accelerate the first selection (H2). If voters scrutinize women candidates more when learning is free, both constraints should attenuate that gendered difference (H3). Because additional scrutiny can either help women overcome stricter standards or expose them to them, constraints should change the relative selection of women and men candidates, in a direction we leave open (H4). Beyond these tests, the candidate pool allows an exploratory comparison of faces and facts. Facial dominance, which tracks the facial width-to-height ratio (fWHR; Carr\'e and McCormick 2008; Geniole et al. 2015) and whose electoral appeal varies with voters' ideology (Laustsen and Petersen 2016), is visible in every task. A candidate's ideology is visible only to respondents who open the description. If constraints shift weight from facts to faces, the selection premium for ideologically congruent candidates should shrink under a deadline or an access cost, and visible characteristics should gain influence.
 
 \section{Research design}
+\label{sec:design}
 
 \subsection{Sample and eligibility}
 
 The planned sample consists of 462 adults aged 18--65, balanced across men and women and allocated approximately equally across the three experimental conditions ($154$ per condition).\footnote{Participants are recruited through the survey company Borde Data (\url{https://www.bordedata.cl}).} To minimize candidate recognition and prior knowledge of Colombian politics, respondents must not be Colombian nationals, reside in Colombia, or have previously lived in Colombia. Country of residence and nationality are selected from country lists, followed by a question on previous residence in Colombia. Respondents who report a Colombian connection or decline to answer the residence-history question leave the study before the choice tasks. Eligibility screening and the baseline questionnaire precede exposure to the assigned-condition instructions. The questionnaire measures age, gender identity, occupation, education, electoral participation, political interest, frequency of political discussion, and ideological self-placement. Self-placement uses a 1--10 scale, anchored at left and right, with separate options for uncertainty, nonresponse, and identification with neither side.
 
-A response qualifies as an eligible complete when the respondent reaches the final study screen, submits all fifteen analytical choice tasks, records a valid candidate selection in at least thirteen of them, and has no detected prohibited browser navigation. The same rule applies in all three conditions and allows at most two analytical tasks without a recorded choice. Practice-task selections do not determine completion. After the initial instructions, respondents are instructed not to refresh the browser or use browser-history navigation. Detected reloads or history navigation during subsequent instructions, practice, analytical tasks, or their follow-up questions are recorded for audit and terminate participation, classifying the response as incomplete. Detection is limited to events observable by the application and does not establish the respondent's intent. Follow-up questions are required when applicable, while responses omitted by the questionnaire's conditional structure remain undefined rather than constituting incomplete data. Reaching the final screen without meeting these requirements is therefore distinguished from completing the study. All substantive analyses use only responses meeting these criteria, while recruitment accounting separately reports screened-out, navigation-excluded, and other incomplete attempts.
+A response qualifies as an eligible complete when the respondent reaches the final study screen, submits all fifteen analytical choice tasks, records a valid candidate selection in at least thirteen of them, and has no detected prohibited browser navigation. The same rule applies in all three conditions and allows at most two analytical tasks without a recorded choice. Practice-task selections do not determine completion. After the initial instructions, respondents are instructed not to refresh the browser or use browser-history navigation. Detected reloads or history navigation during subsequent instructions, practice, analytical tasks, or their follow-up questions are recorded for audit and terminate participation, classifying the response as incomplete. Detection is limited to events observable by the application and does not establish the respondent's intent. Follow-up questions are required when applicable, while responses omitted by the questionnaire's conditional structure remain undefined rather than constituting incomplete data. All substantive analyses use only responses meeting these criteria, while recruitment accounting separately reports screened-out, navigation-excluded, and other incomplete attempts (Appendix~\ref{app:collection}).
 
 \subsection{Stimuli and repeated choice}
 
-After the pretreatment questionnaire, respondents complete repeated paired choices drawn from 71 Colombian candidate profiles for which a photograph and political information are available. For each respondent, 40 profiles are sampled without replacement and randomly ordered. Consecutive profiles form 20 pairs, randomizing both pair composition and task order. The first five pairs are used for practice, and the remaining fifteen constitute the analytical sample. Within each task, the two candidates are assigned to left and right by an independent random permutation of the pair. No candidate therefore appears more than once for the same respondent, although candidates can appear for different respondents. Both photographs become visible together after loading. Descriptions are initially hidden and identify each candidate's ideological orientation as left, center, or right, followed by the candidate's thematic priorities. Respondents may reveal either description and revise their selection until they submit the task or the deadline expires. Information can therefore be accessed before or after an initial selection. The five practice rounds reproduce the assigned condition, including its deadline or arithmetic requirement, and are excluded from the analytical sample.
+The stimuli are \Sexpr{paper_counts$eligible_profiles} real Colombian local candidates for whom a photograph and political information are available. The pool was assembled as a crossed design of real people: it combines candidate gender, displayed ideology (left, center, right), a binary facial-dominance classification, and a younger or older age group, with \Sexpr{pool_counts$min_per_cell}--\Sexpr{pool_counts$max_per_cell} candidates in each of the \Sexpr{pool_counts$cells} cells. The dominance classification closely tracks the facial width-to-height ratio (median fWHR \Sexpr{sprintf("%.2f", pool_counts$fwhr_high)} among high- and \Sexpr{sprintf("%.2f", pool_counts$fwhr_low)} among low-dominance profiles). Because profiles are drawn at random from this balanced pool, the four classifications are nearly independent across displayed profiles, although each remains bundled with everything else about the real person in the photograph.
 
-The fifteen-task analytical sequence is supported by evidence on the response quality of repeated conjoint choices. Across six online experiments involving 6,534 respondents recruited through Amazon's Mechanical Turk and Survey Sampling International, Bansak et al. (2018) examined thirty paired candidate choices per respondent. They found only limited increases in survey satisficing. The estimated effects of candidate education and partisanship declined slightly between the first and second tasks but remained broadly stable across the remaining sequence, as did the explanatory power of these attributes. Fifteen analytical choices, and twenty choices when practice is included, therefore fall within a range over which repeated candidate evaluations have retained substantial informational value. Because the appropriate task burden also depends on the full instrument, we will examine response times, information requests, nonresponse, and choice patterns across task positions to assess fatigue under the additional demands of photographic evaluation, experimental constraints, and follow-up questions.
+For each respondent, \Sexpr{profiles_per_respondent} profiles are sampled without replacement and randomly ordered. Consecutive profiles form 20 pairs, randomizing both pair composition and task order. The first five pairs are used for practice, and the remaining fifteen constitute the analytical sample. Within each task, the two candidates are assigned to left and right by an independent random permutation of the pair. No candidate therefore appears more than once for the same respondent, although candidates can appear for different respondents. Both photographs become visible together after loading. Descriptions are initially hidden and identify each candidate's ideological orientation as left, center, or right, followed by the candidate's thematic priorities. Respondents may reveal either description and revise their selection until they submit the task or the deadline expires. Information can therefore be accessed before or after an initial selection. The five practice rounds reproduce the assigned condition, including its deadline or arithmetic requirement, and are excluded from the analytical sample.
+
+The fifteen-task analytical sequence is supported by evidence on the response quality of repeated conjoint choices. Across six online experiments involving 6,534 respondents, Bansak et al. (2018) examined thirty paired candidate choices per respondent and found only limited increases in survey satisficing; the estimated effects of candidate attributes remained broadly stable across the sequence. Paired conjoint designs also recover real-world behavioral benchmarks closely (Hainmueller, Hangartner, and Yamamoto 2015). Because the appropriate task burden also depends on the full instrument, we examine response times, information requests, nonresponse, and choice patterns across task positions to assess fatigue under the additional demands of photographic evaluation, experimental constraints, and follow-up questions.
 
 \begin{figure}[h!]
 \centering
@@ -227,25 +258,16 @@ After each analytical task with a registered selection, respondents are asked wh
 
 \subsection{Experimental conditions}
 
-Let $Z_i\in\{T,C,B\}$ denote assignment to one of three decision environments. In \armT, each task includes a visible nine-second countdown, while the candidate descriptions can be opened without an arithmetic requirement. In \armC, there is no deadline, but revealing each candidate's description requires correctly solving a simple addition problem. In \armB, neither a deadline nor an arithmetic barrier applies. Allocation occurs with equal probability at the respondent level when study sessions are initialized and remains concealed through screening and the baseline questionnaire. The candidates, number of tasks, and choice prompt are otherwise held constant. This structure distinguishes two constraints on political learning. \armT\ limits the time available to acquire and integrate information, whereas \armC\ increases the effort required to obtain it. In every condition, decision timing begins only when both photographs have loaded and decoded successfully and are revealed together. Loading time is recorded separately, and an image-loading failure prevents the task from starting until the images are available. The same nine-second deadline applies during practice and analytical tasks in \armT.\footnote{The assigned deadline is retained in browser storage when available. Participants are explicitly warned against refreshing or using browser history. Detected violations terminate participation and exclude the case from the analytical sample, while preserving previously recorded responses and the reason for termination. Stimulus readiness, deadline expiry, response preservation, and navigation handling were verified through isolated simulations and browser tests.} If the deadline expires, the current selection is submitted automatically. When no candidate has been selected, the choice remains missing.
+Let $Z_i\in\{T,C,B\}$ denote assignment to one of three decision environments. In \armT, each task includes a visible nine-second countdown, while the candidate descriptions can be opened without an arithmetic requirement. In \armC, there is no deadline, but revealing each candidate's description requires correctly solving a simple addition problem. In \armB, neither a deadline nor an arithmetic barrier applies. Allocation occurs with equal probability at the respondent level when study sessions are initialized and remains concealed through screening and the baseline questionnaire. The candidates, number of tasks, and choice prompt are otherwise held constant. This structure distinguishes two constraints on political learning: \armT\ limits the time available to acquire and integrate information, whereas \armC\ increases the effort required to obtain it. In every condition, decision timing begins only when both photographs have loaded and decoded successfully and are revealed together. Loading time is recorded separately, and an image-loading failure prevents the task from starting until the images are available. The same nine-second deadline applies during practice and analytical tasks in \armT.\footnote{The assigned deadline is retained in browser storage when available. Participants are explicitly warned against refreshing or using browser history. Detected violations terminate participation and exclude the case from the analytical sample, while preserving previously recorded responses and the reason for termination. Stimulus readiness, deadline expiry, response preservation, and navigation handling were verified through isolated simulations and browser tests.} If the deadline expires, the current selection is submitted automatically. When no candidate has been selected, the choice remains missing.
 
-\subsection{Temporal scarcity and deadline calibration}
-
-The time-pressure manipulation is calibrated to the demands of the decision task rather than to a universal threshold for rapid judgment. Ord\'o\~nez and Benson (1997, 122) distinguish the existence of a deadline from its psychological consequences, noting that ``it is possible to have time constraint but no time pressure.'' A consequential deadline must therefore restrict the time respondents would otherwise use to acquire and evaluate information. Experimental evidence shows that temporal constraints can induce faster processing, more selective information search, and changes in decision strategy (Payne, Bettman, and Johnson 1988). Although Ballew and Todorov (2007) elicited electorally predictive competence judgments under a two-second deadline, their task involved photographs alone. The present task additionally permits respondents to reveal and compare political descriptions. Across the available candidate pairs, these descriptions contain a median of 28 words in total. Brysbaert's (2019) estimated Spanish silent-reading rate of 278 words per minute implies approximately six seconds of uninterrupted reading, before allowing for information access, comparison, and candidate selection. This calculation provides context rather than a minimum comprehension time. Moreover, cursor movement and target selection depend on interface geometry and input devices, making fixed allowances per click inappropriate (MacKenzie 1992). The relevant benchmark is consequently respondents' observed performance on the experimental task itself.
-
-The nine-second deadline is informed jointly by research on task-relative time constraints and evidence from a pre-test of the experimental task. The pre-test evaluated an exploratory twenty-second deadline against an unconstrained baseline to assess how strongly that ceiling restricted task-completion time. The pre-test comprised \Sexpr{pretest$n_respondents} eligible completed responses, contributing \Sexpr{pretest$n_tasks} observations across \Sexpr{pretest$n_main_tasks} analytical tasks per respondent. Panel A of Figure~\ref{fig:task-duration-completes} reports mean task duration by task position among these completed pre-test participants. Across these tasks, pooled mean duration was \Sexpr{sprintf("%.2f", pretest$baseline$mean_seconds)} seconds (SD \Sexpr{sprintf("%.2f", pretest$baseline$sd_seconds)}, \Sexpr{pretest$baseline$n_respondents} respondents and \Sexpr{pretest$baseline$n_tasks} task observations) in the unconstrained condition and \Sexpr{sprintf("%.2f", pretest$time$mean_seconds)} seconds (SD \Sexpr{sprintf("%.2f", pretest$time$sd_seconds)}, \Sexpr{pretest$time$n_respondents} respondents and \Sexpr{pretest$time$n_tasks} task observations) under the exploratory \Sexpr{pretest$deadline_seconds}-second deadline. The arithmetic-cost condition contributed the remaining \Sexpr{pretest$cost$n_respondents} respondents and \Sexpr{pretest$cost$n_tasks} task observations. The corresponding unconstrained median was \Sexpr{sprintf("%.2f", pretest$baseline$median_seconds)} seconds (interquartile range \Sexpr{sprintf("%.2f", pretest$baseline$q25_seconds)}--\Sexpr{sprintf("%.2f", pretest$baseline$q75_seconds)}), and only \Sexpr{sprintf("%.1f", pretest$baseline$percent_over_deadline)} percent of unconstrained tasks (\Sexpr{pretest$baseline$n_over_deadline} of \Sexpr{pretest$baseline$n_tasks}) lasted longer than \Sexpr{pretest$deadline_seconds} seconds. These observations suggest that the exploratory ceiling frequently exceeded the time respondents used without a deadline, although they do not establish an absence of experienced pressure. To impose a more binding restriction, we adapt the calibration principle employed by Kocher et al. (2019, 220--221), whose deadlines represented ``a 20\% reduction of the median decision times in the absence of constraints.'' Their restrictions applied to blocks of choices rather than individual tasks, so the present design adopts their relative calibration principle rather than their implementation. Applying that reduction to the unconstrained median yields \Sexpr{sprintf("%.2f", pretest$reference_seconds)} seconds, rounded upward to nine seconds, approximately \Sexpr{sprintf("%.0f", pretest$reduction_percent)} percent below the observed median. Rounding upward retains a modest margin for information access and response registration while keeping the deadline below typical unconstrained task duration. Although nine seconds exceeds the unconstrained median time to first selection of \Sexpr{sprintf("%.2f", pretest$baseline$first_selection_median)} seconds, it remains below the typical time used to complete the full task. This restriction therefore compresses opportunities for information acquisition and comparison without assuming that political information becomes inaccessible. Its effectiveness will be assessed jointly through reported hurry, information acquisition, and nonselection at the deadline, rather than inferred from mechanically shortened task durations alone. These completion-conditioned pre-test statistics inform calibration but do not establish that nine seconds is optimal.
-
-\subsection{Participant preparation and procedural transparency}
-
-A binding deadline should constrain the decision process rather than leave respondents uncertain about how the interface operates. In an online time-pressure experiment, Isler, Maule, and Starmer (2018) combined interface familiarization with advance explanations of the consequences of missing a deadline, achieving substantially higher compliance than earlier protocols. This evidence motivates preparation under the assigned condition: the five practice tasks reproduce the analytical task, and the timed instructions explain the countdown, automatic advancement, and preservation of any selection already made. In the timed condition, the revised preparation protocol adds a brief comprehension check before practice and repeats it before the analytical sequence; incorrect answers receive explanatory feedback and may be corrected without disqualification.\footnote{The additional disclosures, comprehension checks, and nonresponse reminders are prospective procedural refinements. Previously collected responses retain their original procedural context and are not retrospectively treated as having received these additions.} The purpose is to establish understanding, not to screen respondents for decision speed. This distinction matters because Br\"uhlmann et al. (2024) found that a passive warning did not reduce careless responding, while requiring participants to reproduce the warning increased attrition. Their findings do not establish the effectiveness of our comprehension check, but caution against treating longer or more demanding warnings as an unqualified improvement.
-
-Procedural clarity also requires respondents to know the consequences of nonresponse before investing time in the study. Agley, Mumaw, and Johnson (2024) recommend advance disclosure of rejection conditions, reminders at consent, and clear explanations when participation ends. Accordingly, the revised protocol specifies neutral advance disclosure that some respondents will face a nine-second deadline, without instructing the unconstrained groups to hurry. Consent explains the completion threshold, prohibited browser navigation, and the restriction of prize-draw registration to eligible completions. Timed respondents receive reminders after the first and second unanswered analytical choices; a third ends participation, with a reason-specific explanation and a research contact. Practice nonresponse does not count toward this threshold. These procedures distinguish a missed selection from dishonesty, but do not eliminate the possibility that the deadline changes who completes the study. Bouwmeester et al. (2017) documented substantial deadline noncompliance and differences between intention-to-treat and compliant-only estimates. We therefore retain incomplete records for recruitment accounting and interpret the substantive estimates as conditional on completion rather than assuming that advance disclosure removes selection.
+The deadline is calibrated to the task rather than to a universal threshold for rapid judgment. A pre-test with an exploratory twenty-second deadline showed that this ceiling rarely bound: the unconstrained median task lasted \Sexpr{sprintf("%.2f", pretest$baseline$median_seconds)} seconds. Following the relative calibration of Kocher et al. (2019), we reduced that median by 20 percent and rounded upward to nine seconds, a limit that compresses opportunities for information acquisition and comparison without making political information inaccessible. Timed respondents receive an explanation of the countdown and automatic submission, a comprehension check before practice and before the analytical sequence, and reminders after missed choices. Appendix~\ref{app:collection} details the calibration, the preparation protocol, and the resulting task durations by study version.
 
 \subsection{Outcomes and measurement}
 
 The primary outcomes are recorded candidate selection, whether any description is revealed, the number of descriptions revealed, time to first selection capped at a common nine-second window, and failure to register a selection within that window. Description revelation is the observed measure of information acquisition and does not establish that the text was read or understood. These candidate-specific records permit tests of gendered scrutiny. Total time from photograph display to task submission, changes in selection, and information-button presses are recorded separately. Information-acquisition measures cover the entire task, including openings after an initial selection. Terminal nonselection at the deadline is retained as a separate outcome. Post-choice measures capture whether respondents would support the selected candidate in a real election and which considerations they report using. The candidate profiles include gender, age, party affiliation, geographic constituency, electoral performance, political information, and previously measured facial characteristics. Recording the alternatives and information available in each task allows us to distinguish treatment effects on information acquisition from treatment effects on recorded selection.
 
 \section{Potential outcomes and estimands}
+\label{sec:estimands}
 
 \subsection{Notation and common averaging distribution}
 
@@ -299,379 +321,133 @@ The \textbf{primary process family} consists of $\tau^A_{zB}$, $\tau^K_{zB}$, $\
 
 We expect both constrained conditions to reduce any information acquisition and the number of descriptions consulted, $\tau^A_{zB}<0$ and $\tau^K_{zB}<0$ (H1). We also expect \armT\ to reduce capped selection latency, $\tau^{D^{9}}_{TB}<0$, while effects on $S^{9}$ and the timing effects of \armC\ are tested without directional restrictions (H2). Under \armB, we expect respondents to consult information more often for profiles of women candidates, $\Gamma_M(B)>0$, and both constraints to attenuate this difference, $\Psi_M(T)<0$ and $\Psi_M(C)<0$ (H3). Finally, we expect $\Psi_Y(T)$ and $\Psi_Y(C)$ to differ from zero, with their signs left open because prior work implies both potential penalties and advantages for women candidates (H4).
 
-\textbf{Additional estimands} include acquisition of both descriptions $X$, terminal timeout $Q$, full task duration, profile-specific $\theta_c(z)$ and $\Delta_c(z)$, the real-election support item, self-reported time pressure and information cost, ideological congruence, associations between choice and other candidate characteristics, and moderation by respondent gender or political sophistication. \textbf{Additional analyses} examine mediation through information acquisition, models conditioned on realized information acquisition or completed choice, high-dimensional profile interactions, decision-factor responses, and subgroup variation. Because these analyses require further assumptions or extend beyond the central hypotheses, they will be interpreted separately from the primary tests.
+\textbf{Additional estimands} include acquisition of both descriptions $X$, terminal timeout $Q$, full task duration, profile-specific $\theta_c(z)$ and $\Delta_c(z)$, the real-election support item, self-reported time pressure and information cost, ideological congruence, associations between choice and other candidate characteristics, and moderation by respondent gender or political sophistication. \textbf{Additional analyses} examine mediation through information acquisition, models conditioned on realized information acquisition or completed choice, high-dimensional profile interactions, decision-factor responses, and subgroup variation. Because these analyses require further assumptions or extend beyond the central hypotheses, they are interpreted separately from the primary tests.
 
 \subsection{Timeout and missing-data rules}
 
 For respondents meeting the response-completion criteria, all descriptions revealed before a task terminates contribute to $M^s$, $A$, $K$, and $X$, including when no candidate is selected. A task with no selection within nine seconds receives $D^{9}=9$ and $S^{9}=1$. If the \armT\ task terminates without a selection, $Q=1$, the recorded candidate response remains missing, the derived registered-selection indicators satisfy $Y^L=Y^R=0$, and every follow-up question is skipped. These undefined follow-up responses will not be imputed. If a selection has already occurred when the deadline expires, the current candidate response is retained, $Q=0$, and the usual follow-up questions are shown. Up to two missing analytical choices are permitted within a completed response, and their associated information and timing outcomes remain in the analysis. Participation ends when a third analytical task is submitted without a valid selection, because the minimum response requirement can no longer be met. These respondents, and those who otherwise do not finish the study, are excluded from substantive analyses but remain in recruitment accounting, with their previously recorded responses preserved. Withdrawal or abandonment before task submission is not recoded as a timeout. No missing candidate choice or undefined follow-up response will be imputed.
 
 \section{Estimation strategy}
+\label{sec:estimation}
 
 All substantive analyses are restricted to eligible completed responses as defined above. Each retained respondent contributes all fifteen analytical tasks, including up to two tasks without a registered candidate selection. Outcomes $A$, $K$, $D^{9}$, and $S^{9}$ are estimated using linear models with indicators for \armT\ and \armC, giving unadjusted contrasts relative to \armB\ within this sample. Let $H_i=1$ indicate that respondent $i$ meets the observed completion criteria. For a task-level outcome $R$, the reported condition contrast is
 \[
 \delta^R_{zB}=\E[R_{it}\mid Z_i=z,H_i=1]-\E[R_{it}\mid Z_i=B,H_i=1].
 \]
-Because the decision environment may affect reaching the final screen, recording at least thirteen choices, or detected browser navigation, conditioning on $H_i=1$ can select different respondents across conditions. Consequently, $\delta^R_{zB}$ need not equal the full-population intention-to-treat effect $\tau^R_{zB}$, even under randomized assignment. The reported contrasts are therefore interpreted as completion-conditioned comparisons rather than automatically as causal effects for all eligible randomized respondents. Screening, final-screen arrival, navigation-related exclusions, and other incomplete responses are reported separately to make this selection transparent. Standard errors are clustered by respondent. Covariate-adjusted specifications using pretreatment characteristics and task-order indicators may improve precision but do not, by themselves, remove completion-related selection.
+Because the decision environment may affect reaching the final screen, recording at least thirteen choices, or detected browser navigation, conditioning on $H_i=1$ can select different respondents across conditions. Consequently, $\delta^R_{zB}$ need not equal the full-population intention-to-treat effect $\tau^R_{zB}$, even under randomized assignment. The reported contrasts are therefore interpreted as completion-conditioned comparisons rather than automatically as causal effects for all eligible randomized respondents. Screening, final-screen arrival, navigation-related exclusions, and other incomplete responses are reported separately to make this selection transparent. Standard errors are clustered by respondent.
 
-Candidate-level analyses use two observations per analytical task among completed responses, one for each displayed candidate, including retained tasks that terminate without a selection. Linear probability models for $M^s$ and the derived registered-selection outcome $Y^s$ include treatment indicators, candidate gender, treatment-by-gender interactions, randomized side, and task-order indicators. Their interaction coefficients are completion-conditioned empirical counterparts of $\Psi_M(z)$ and $\Psi_Y(z)$ and share the same selection limitation. Primary uncertainty for these models uses two-way clustering by respondent and candidate. Profile-specific selection probabilities likewise condition on completed responses and are not interpreted as attribute-level average marginal component effects.
+Candidate-level analyses use two observations per analytical task among completed responses, one for each displayed candidate, including retained tasks that terminate without a selection. Linear probability models for $M^s$ and the derived registered-selection outcome $Y^s$ include treatment indicators, candidate gender, treatment-by-gender interactions, randomized side, and task-order indicators. Their interaction coefficients are completion-conditioned empirical counterparts of $\Psi_M(z)$ and $\Psi_Y(z)$, and linear combinations of the same coefficients give $\Gamma_M(z)$ and $\Gamma_Y(z)$. Primary uncertainty for these models uses two-way clustering by respondent and candidate. Profile-specific selection probabilities $\theta_c(z)$ are estimated by the share of a profile's appearances in which it was selected; side and rival are randomized, so these shares are side-neutral, but they condition on completed responses and are not attribute-level average marginal component effects.
 
-Supplementary analyses describe which candidate characteristics are associated with registered selection in each decision environment. For gender, displayed ideology, dominance classification, and candidate age category, we report both the proportion selected among displayed profiles and the composition of the selected profiles. The former accounts for how often each characteristic is encountered, whereas the latter describes the candidates respondents choose. A joint linear probability model includes these four classifications, their interactions with the assigned condition, randomized side, and task-order indicators. Within-condition contrasts compare women with men, left- and right-identified profiles with centrist profiles, high with low dominance, and older with younger age categories. These are adjusted associations across observed profile bundles rather than causal effects of independently assigned attributes. The model does not condition on whether respondents opened political information, which is itself a response to the experimental environment. Two-way clustered confidence intervals and unadjusted two-sided tests accompany these exploratory contrasts\ifnum\Sexpr{as.integer(has_model_data)}=1 in Appendix~\ref{app:candidate-characteristics}\fi, separately from the primary hypothesis families.
+Within the primary process and gender-interaction families, two-sided $p$-values are adjusted separately by Holm's sequential procedure. The two baseline gender contrasts constitute a third, descriptive multiplicity family. Unadjusted estimates with 95\% confidence intervals are also reported. Covariate-adjusted predictions complement these comparisons without replacing the primary tests. Separate mean-bias-reduced logistic working models (Kosmidis and Firth 2021) describe binary outcomes, a fractional logit describes the share of descriptions acquired, and ordinary least squares describes capped latency. Every specification adjusts for respondent age, gender, tertiary education, baseline political interest, and task position, and fitted outcomes are averaged over the observed covariate distribution rather than evaluated for an artificial average respondent (Arel-Bundock, Greifer, and Heiss 2024). No model controls for realized information acquisition, response time, reported hurry, or arithmetic success, because these are consequences of the assigned environment.
 
-Covariate-adjusted predictions complement these unadjusted comparisons without replacing the primary tests. Separate logistic working-mean models describe any information acquisition, acquisition of both descriptions, failure to select within the common observation window, candidate-specific information acquisition, and registered candidate selection. Mean-bias-reduced estimation yields finite logistic estimates in the presence of separation, which can arise when every member of a small subgroup opens information (Kosmidis and Firth 2021). A fractional-logit model with a quasi-binomial variance describes the proportion of descriptions acquired, with predictions rescaled to the expected number of descriptions. Capped selection latency is modeled by ordinary least squares and reported in seconds rather than as a probability. Every specification adjusts for respondent age, gender, completion of tertiary education, baseline political interest, and task position. Candidate-level models additionally include randomized side and treatment-by-candidate-gender interactions. An exploratory information-acquisition model adds interactions with respondent gender. No model controls for realized information acquisition, response time, reported hurry, or arithmetic success when these variables are consequences of the assigned environment.
+Exploratory analyses describe which candidate characteristics are associated with registered selection in each decision environment. A joint linear probability model includes candidate gender, displayed ideology, dominance classification, and age group, their interactions with the assigned condition, randomized side, and task-order indicators; within-condition contrasts compare women with men, left- and right-identified with centrist profiles, high with low dominance, and older with younger profiles. A separate model replaces these classifications with ideological congruence, coding respondents' self-placement as left (1--4), center (5--6), or right (7--10) and comparing profiles whose displayed ideology matches that group with those that do not. Because profiles are real bundles, these are adjusted associations across observed profiles rather than causal effects of independently assigned attributes (Hainmueller, Hopkins, and Yamamoto 2014; Abramson, Ko\c{c}ak, and Magazinnik 2022). Comparing a within-condition contrast across conditions compares gaps between levels rather than the overall favorability of any level, and for multi-level classifications such comparisons depend on the reference category, so we read them as changes in relative selection (Leeper, Hobolt, and Tilley 2020). These models do not condition on whether respondents opened political information, and their two-way clustered intervals and unadjusted tests remain separate from the primary families. Stated decision factors are summarized as shares of eligible tasks by condition; because they are asked only after a registered selection and a positive real-election answer, they describe reasons among those responses rather than effects of the environment.
 
-For each decision environment, fitted outcomes are averaged over the same observed covariate distribution rather than evaluated for an artificial average respondent (Arel-Bundock, Greifer, and Heiss 2024). Thus, for a task-level outcome $R$, the adjusted mean is
-\[
-\widehat{\mu}^{R}_{\mathrm{adj}}(z)
-=\frac{1}{nT}\sum_{i:H_i=1}\sum_{t=1}^{T}
-\widehat{m}_{R}(z,X_i,t),
-\]
-where $n$ is the number of eligible completed respondents, $T$ is the number of analytical tasks, and $X_i$ contains pretreatment characteristics. Candidate-level predictions change only the decision environment and retain the observed profile bundles, averaging separately within candidate-gender groups. Respondent-gender panels likewise retain the observed members of each subgroup. Approximate pointwise confidence intervals use respondent-clustered covariance for task-level models and two-way respondent--candidate clustering for candidate-level models. Probability intervals are calculated on the logit of the average predicted probability and transformed back, preserving the empirical averaging target and the probability bounds. Student-$t$ reference distributions are used, with the smaller cluster count determining degrees of freedom in two-way analyses. These model-based comparisons remain conditional on completion and on the chosen working specification. Neither adjustment nor nonlinear estimation removes completion-related selection or identifies an isolated causal effect of candidate gender.
-
-Within the primary process and gender-interaction families, two-sided $p$-values are adjusted separately by Holm's sequential procedure. The two baseline gender contrasts constitute a third, descriptive multiplicity family. Unadjusted estimates with 95\% confidence intervals are also reported. Pretreatment characteristics and the distribution of candidate profiles and positions are summarized within the completed sample. Manipulation checks examine arithmetic-problem completion, information acquisition, $D^{9}$, $S^{9}$, and $Q$, together with reported hurry in \armT\ relative to \armB\ among tasks with a registered selection. These checks are conditional on response completion, and the hurry comparison additionally conditions on an observed answer. The timeout frequency among completed responses excludes respondents with more than two missing choices and therefore does not represent the timeout frequency of all recruits. Task-order analyses also use only retained responses, while practice tasks remain outside the analytical sample. Candidate gender and respondent gender are distinguished throughout.
-
-% Main-study displays stay out of the paper until all treatment arms are represented.
+% Results stay out of the paper until all treatment arms are represented.
 \Sexpr{if (has_model_data) "" else "\\iffalse"}
-\section{Preliminary tables and figures}
-\label{sec:preliminary}
-\noindent\textit{Incomplete fieldwork.} Tables report descriptive statistics, regression estimates,
-pointwise \Sexpr{ci_percent}\% confidence intervals, and two-sided tests. Except for recruitment
-accounting, every table and figure uses only eligible completed responses.
-Daily updates are interim monitoring summaries and do not define a
-significance-based stopping rule.
+\section{Interim results}
+\label{sec:results}
 
-\begin{table}[!htbp]
-\centering
-\caption{Recruitment and analytical coverage}
-\label{tab:recruitment}
-<<table-flow, results='asis', eval=has_model_data>>=
-@
-\par\smallskip
-\begin{minipage}{0.95\linewidth}\footnotesize
-\textit{Notes.} An eligible completed response requires reaching the final screen,
-submitting all \Sexpr{n_main_tasks} analytical tasks, and recording at least
-\Sexpr{minimum_valid_main_choices} valid choices, with no detected prohibited
-browser navigation. Detected navigation exclusions are reported separately.
-Recruitment accounting covers all started attempts across study versions.
-The cumulative total comprises \Sexpr{paper_counts$cumulative_completes} eligible completes,
-of which \Sexpr{paper_counts$other_protocol_completes} belong to other protocol versions
-and are excluded from the current analyses. Screened-out respondents and incomplete
-attempts do not enter substantive analyses.
-The analytical sample contains \Sexpr{paper_counts$completed_respondents} eligible completed responses.
-\end{minipage}
-\end{table}
+\noindent\textit{Status of fieldwork.} This section is regenerated from the most recent export (\Sexpr{data_date}). It uses \Sexpr{paper_counts$completed_respondents} eligible completed responses---\Sexpr{paper_counts$baseline_respondents} in \armB, \Sexpr{paper_counts$time_respondents} in \armT, and \Sexpr{paper_counts$cost_respondents} in \armC---or \Sexpr{sprintf("%.0f", paper_counts$percent_of_target)} percent of the planned \Sexpr{paper_counts$target_respondents}. They contribute \Sexpr{format(paper_counts$analytical_tasks, big.mark = ",")} analytical tasks and \Sexpr{format(paper_counts$candidate_appearances, big.mark = ",")} candidate appearances. These are interim monitoring estimates: they do not define a significance-based stopping rule, and the preregistered analysis of the complete sample will supersede them. Table~\ref{tab:primary} reports every preregistered primary test, and Figures~\ref{fig:process}--\ref{fig:profiles} display the corresponding estimands. Recruitment, sample composition, and implementation checks are in Appendix~\ref{app:collection}.
 
 \begin{table}[!htbp]
 \centering\small
-\caption{Completed responses and analytical choices by assigned condition}
-\label{tab:arm-coverage}
-<<table-arm-flow, results='asis', eval=has_model_data>>=
+\caption{Preregistered primary tests among completed responses}
+\label{tab:primary}
+<<table-primary-tests, results='asis', eval=has_model_data>>=
 @
-\par\smallskip
-\begin{minipage}{0.95\linewidth}\footnotesize
-\textit{Notes.} The \Sexpr{paper_counts$completed_respondents} eligible completed
-responses contribute \Sexpr{paper_counts$analytical_tasks} analytical tasks.
-Each respondent contributes \Sexpr{n_main_tasks} submitted analytical tasks and at
-least \Sexpr{minimum_valid_main_choices} valid candidate choices. Missing choices
-remain missing in the original response and are retained in the information and
-timing denominators. Practice tasks are excluded.
-\end{minipage}
+\begin{notes}
+Completion-conditioned counterparts of the estimands in Section~\ref{sec:estimands}. Process contrasts come from unadjusted linear models of \Sexpr{format(paper_counts$analytical_tasks, big.mark = ",")} analytical tasks with respondent-clustered errors. Gender estimands come from linear probability models of \Sexpr{format(paper_counts$candidate_appearances, big.mark = ",")} candidate appearances with condition, candidate gender, their interaction, randomized side, and task position, and two-way clustering by respondent and candidate. Units: pp, percentage points; count, descriptions opened (0--2); s, seconds. Tests are two-sided; Holm corrections apply within each family. $\Gamma$ compares complete profiles grouped by gender and is not a causal effect of gender. Completion may respond to treatment, so these contrasts need not equal the intention-to-treat targets.
+\end{notes}
 \end{table}
 
-\begin{table}[!htbp]
-\centering\small
-\setlength{\tabcolsep}{3pt}
-\caption{Pretreatment characteristics of the completed sample}
-\label{tab:sample}
-<<table-sample, results='asis', eval=has_model_data>>=
-@
-\par\smallskip
-\begin{minipage}{0.95\linewidth}\footnotesize
-\textit{Notes.} The sample comprises \Sexpr{paper_counts$completed_respondents}
-eligible completed responses. Continuous entries are means with standard deviations in
-parentheses. Categorical entries are counts and percentages. Each respondent is
-counted once and meets the response-completion criteria. Missing numeric
-self-placement includes uncertainty, nonresponse, and identification with neither
-side. The final column reports the overall percentage missing.
-\end{minipage}
-\end{table}
+\subsection{Information acquisition and decision speed}
 
-\begin{table}[!htbp]
-\centering\small
-\caption{Task-level descriptive statistics by decision environment}
-\label{tab:task-descriptive}
-<<table-task-description, results='asis', eval=has_model_data>>=
-@
-\par\smallskip
-\begin{minipage}{0.95\linewidth}\footnotesize
-\textit{Notes.} The \Sexpr{paper_counts$analytical_tasks} analytical tasks come only
-from \Sexpr{paper_counts$completed_respondents} eligible completed responses and
-exclude practice. Information acquisition covers the entire choice task. Capped
-time concerns the first selection, not submission, and uses a
-\Sexpr{selection_window_seconds}-second window. The permitted terminal
-nonselections remain in information and timing denominators.
-An expired timer can retain a choice and is not necessarily a nonselection.
-\end{minipage}
-\end{table}
+Figure~\ref{fig:process} reports the primary process outcomes. Under \armB, respondents opened at least one description in \Sexpr{live(mean_value("Any information", "Baseline"))} percent of tasks and opened \Sexpr{live(mean_value("Descriptions revealed", "Baseline", 2))} of the two descriptions on average. Relative to \armB, the estimated change in the probability of opening any description ($\tau^A_{zB}$) was \Sexpr{live(effect_text(process_row("Any information", "Time"), 100, 1, " percentage points"))} under \armT\ and \Sexpr{live(effect_text(process_row("Any information", "Cost"), 100, 1, " percentage points"))} under \armC. The estimated change in the number of descriptions opened ($\tau^K_{zB}$) was \Sexpr{live(effect_text(process_row("Descriptions revealed", "Time"), 1, 2, ""))} under \armT\ and \Sexpr{live(effect_text(process_row("Descriptions revealed", "Cost"), 1, 2, ""))} under \armC.
+
+The theory expects the two constraints to act differently on timing: a deadline should speed the first selection, whereas an access cost should slow it, because information must be earned before it is used. Relative to \armB, the estimated change in capped time to first selection ($\tau^{D^{9}}_{zB}$) was \Sexpr{live(effect_text(process_row("Capped first-selection time (s)", "Time"), 1, 2, " seconds"))} under \armT\ and \Sexpr{live(effect_text(process_row("Capped first-selection time (s)", "Cost"), 1, 2, " seconds"))} under \armC. The share of tasks without a selection within nine seconds ($\tau^{S^{9}}_{zB}$) changed by \Sexpr{live(effect_text(process_row(process_outcomes$outcome[4], "Time"), 100, 1, " percentage points"))} under \armT\ and \Sexpr{live(effect_text(process_row(process_outcomes$outcome[4], "Cost"), 100, 1, " percentage points"))} under \armC. Figure~\ref{fig:process}B places each preregistered contrast next to its covariate-adjusted counterpart.
 
 \begin{figure}[!htbp]
 \centering
-<<figure-treatment-means, fig.width=6.3, fig.height=4.5, eval=has_model_data>>=
+<<figure-process, fig.width=6.7, fig.height=5.0, eval=has_model_data>>=
 @
-\caption{Observed condition means for the primary process outcomes.
-Means use \Sexpr{paper_counts$analytical_tasks} analytical tasks from
-\Sexpr{paper_counts$completed_respondents} eligible completed responses.
-Panels retain their natural units and use different vertical scales.}
-\label{fig:treatment-means}
+\caption{Information acquisition and decision speed by decision environment}
+\label{fig:process}
+\begin{notes}
+Panel A: condition means with respondent-clustered 95\% confidence intervals. Panel B: differences from \armB\ ($\tau_{TB}$, $\tau_{CB}$); filled points are the preregistered unadjusted contrasts, hollow points covariate-adjusted contrasts (age, gender, tertiary education, political interest, task position; mean-bias-reduced logit, fractional logit, or OLS, averaged over observed respondents). Proportions are in percent and their differences in percentage points; intervals for proportions are truncated at 0 and 100 for display. Time to first selection is capped at \Sexpr{selection_window_seconds} seconds in every condition, and the no-selection outcome uses the same window, so it is not a terminal timeout. \armT: \Sexpr{deadline_seconds}-second deadline. \armC: arithmetic problem required to open each description. \Sexpr{format(paper_counts$analytical_tasks, big.mark = ",")} analytical tasks from \Sexpr{paper_counts$completed_respondents} eligible completed responses.
+\end{notes}
 \end{figure}
 
-\begin{table}[!htbp]
-\centering\small
-\caption{Timing, perceived pressure, and information-cost checks}
-\label{tab:manipulation}
-<<table-manipulation, results='asis', eval=has_model_data>>=
-@
-\par\smallskip
-<<table-hurry-check, results='asis', eval=has_model_data>>=
-@
-\par\smallskip
-\begin{minipage}{0.95\linewidth}\footnotesize
-\textit{Notes.} The sample includes \Sexpr{paper_counts$completed_respondents}
-eligible completed responses and \Sexpr{paper_counts$analytical_tasks} analytical tasks.
-Timing measures
-describe the choice page, not the duration of the full study or its follow-up
-questions. Hurry is asked in the deadline and baseline conditions after a
-registered choice. Effort is asked in the cost condition after information is
-revealed. Follow-up means condition on an observed answer. Arithmetic success
-refers to at least one successful access during a cost-condition task.
-The hurry contrast uses \Sexpr{paper_counts$hurry_model_n} observed answers from
-\Sexpr{paper_counts$hurry_respondents} respondents, respondent-clustered
-\Sexpr{ci_percent}\% confidence intervals, and an unadjusted two-sided test.
-Undefined items remain missing.
-Untimed baseline durations provide an unrestricted descriptive reference for the
-task. Deadline-condition durations are mechanically bounded and cannot
-independently calibrate an appropriate deadline. Shorter durations in that
-condition alone do not establish experienced pressure.
-\end{minipage}
-\end{table}
+\subsection{Gendered scrutiny and selection}
 
-\clearpage
-\begin{table}[!htbp]
-\centering\small
-\caption{Primary process contrasts among completed responses}
-\label{tab:process-effects}
-<<table-process, results='asis', eval=has_model_data>>=
-@
-\par\smallskip
-\begin{minipage}{0.95\linewidth}\footnotesize
-\textit{Notes.} Unadjusted linear models use
-\Sexpr{paper_counts$analytical_tasks} analytical tasks from
-\Sexpr{paper_counts$completed_respondents} eligible completed responses, with
-\Sexpr{n_main_tasks} tasks per respondent.
-Standard errors are clustered by respondent. Intervals are pointwise \Sexpr{ci_percent}\% intervals.
-The two-sided $p$-values are shown unadjusted and Holm-adjusted across the \Sexpr{paper_counts$process_family_n}
-primary process contrasts. Binary-outcome coefficients are probability differences, description
-coefficients are counts, and timing coefficients are seconds. Every retained
-respondent contributes equally many tasks. Completion can be affected by treatment,
-so these completion-conditioned contrasts do not automatically identify the full
-intention-to-treat effects.
-\end{minipage}
-\end{table}
+Figure~\ref{fig:gender} turns to the candidate-level estimands. Under \armB, the women-minus-men difference in the probability of opening a candidate's description was $\Gamma_M(B)=$ \Sexpr{live(effect_text(gamma_row("Information acquisition", "Baseline"), 100, 1, " percentage points"))}; H3 anticipates a positive gap. The preregistered change in this gap was $\Psi_M(T)=$ \Sexpr{live(effect_text(psi_row("Information acquisition", "Time"), 100, 1, " points"))} under \armT\ and $\Psi_M(C)=$ \Sexpr{live(effect_text(psi_row("Information acquisition", "Cost"), 100, 1, " points"))} under \armC.
+
+For selection, the baseline gap was $\Gamma_Y(B)=$ \Sexpr{live(effect_text(gamma_row("Registered selection", "Baseline"), 100, 1, " percentage points"))}. Relative to that gap, the women-minus-men difference in selection changed by $\Psi_Y(T)=$ \Sexpr{live(effect_text(psi_row("Registered selection", "Time"), 100, 1, " points"))} under \armT\ and $\Psi_Y(C)=$ \Sexpr{live(effect_text(psi_row("Registered selection", "Cost"), 100, 1, " points"))} under \armC. Within the constrained environments, the selection gap was \Sexpr{live(effect_text(gamma_row("Registered selection", "Time"), 100, 1, " points"))} under \armT\ and \Sexpr{live(effect_text(gamma_row("Registered selection", "Cost"), 100, 1, " points"))} under \armC. These contrasts compare naturally occurring profiles of women and men; they show how the constraints redistribute selection between the two groups of real candidates, not the effect of changing a candidate's gender.
 
 \begin{figure}[!htbp]
 \centering
-<<figure-process, fig.width=6.4, fig.height=4.0, eval=has_model_data>>=
+<<figure-gender, fig.width=6.7, fig.height=4.6, eval=has_model_data>>=
 @
-\caption{Direction and magnitude of the primary process contrasts.
-Estimates use \Sexpr{paper_counts$analytical_tasks} analytical tasks from
-\Sexpr{paper_counts$completed_respondents} eligible completed responses.
-The vertical line marks no difference from the unconstrained baseline.
-Bars show respondent-clustered pointwise \Sexpr{ci_percent}\% confidence intervals.}
-\label{fig:process-effects}
+\caption{Information acquisition and selection by candidate gender and decision environment}
+\label{fig:gender}
+\begin{notes}
+Panel A: candidate-level means $\mu^R_g(z)$ for opening a candidate's description ($R=M$) and selecting the candidate ($R=Y$); filled circles are profiles of men, hollow circles profiles of women. Panel B: the women-minus-men gap $\Gamma_R(z)$ in each condition; the label above each constrained condition is $\Psi_R(z)=\Gamma_R(z)-\Gamma_R(B)$ in percentage points, tested in Table~\ref{tab:primary}. Estimates come from the preregistered linear probability models with randomized side and task position, using \Sexpr{format(paper_counts$candidate_appearances, big.mark = ",")} candidate appearances from \Sexpr{paper_counts$completed_respondents} eligible completed responses; 95\% intervals use two-way clustering by respondent and candidate. A retained task without a selection contributes zero selections for both profiles. Candidate gender is bundled with other characteristics of the real profiles. Appendix Figure~\ref{fig:adjusted-candidate-probabilities} reports covariate-adjusted counterparts.
+\end{notes}
 \end{figure}
 
-\begin{table}[!htbp]
-\centering\small
-\caption{Between-condition differences in gender-indexed profile contrasts}
-\label{tab:gender-effects}
-<<table-gender, results='asis', eval=has_model_data>>=
-@
-\par\smallskip
-\begin{minipage}{0.95\linewidth}\footnotesize
-\textit{Notes.} Completion-conditioned counterparts of $\Psi_M(z)$ and $\Psi_Y(z)$
-come from models using \Sexpr{paper_counts$candidate_appearances} candidate
-appearances from \Sexpr{paper_counts$completed_respondents} eligible completed responses
-with condition, candidate gender, their interactions, randomized side, and task
-position. Standard errors are clustered by respondent and candidate. Intervals
-are pointwise \Sexpr{ci_percent}\% intervals. The two-sided tests are shown unadjusted and
-Holm-adjusted across the \Sexpr{paper_counts$gender_family_n} primary interaction contrasts. The covariance
-calculation uses a positive-semidefinite correction when necessary.
-A submitted terminal nonselection contributes zero registered-selection
-events for both candidates, while the original vote remains missing. Gender is
-bundled with other candidate attributes. These are not gender AMCEs, and
-completion-related selection limits their causal interpretation.
-\end{minipage}
-\end{table}
+\subsection{Faces or facts?}
+
+Figure~\ref{fig:traits} asks which characteristics of the displayed profiles are associated with selection in each environment. The ideology of a candidate is a fact that respondents see only after opening a description, whereas gender, age, and facial dominance are visible in the photograph. The selection premium for ideologically congruent candidates---the difference in selection probability between profiles whose displayed ideology matched the respondent's self-placement and those that did not---was \Sexpr{live(effect_text(trait_row("Ideological congruence", "Baseline"), 100, 1, " percentage points", holm = FALSE))} under \armB, \Sexpr{live(effect_text(trait_row("Ideological congruence", "Time"), 100, 1, " points", holm = FALSE))} under \armT, and \Sexpr{live(effect_text(trait_row("Ideological congruence", "Cost"), 100, 1, " points", holm = FALSE))} under \armC. The corresponding association for high- versus low-dominance faces was \Sexpr{live(effect_text(trait_row("Dominance", "Baseline"), 100, 1, " points", holm = FALSE))} under \armB, \Sexpr{live(effect_text(trait_row("Dominance", "Time"), 100, 1, " points", holm = FALSE))} under \armT, and \Sexpr{live(effect_text(trait_row("Dominance", "Cost"), 100, 1, " points", holm = FALSE))} under \armC.
 
 \begin{figure}[!htbp]
 \centering
-<<figure-gender-effects, fig.width=6.3, fig.height=3.5, eval=has_model_data>>=
+<<figure-candidate-traits, fig.width=6.7, fig.height=5.0, eval=has_model_data>>=
 @
-\caption{Direction of the gender-indexed condition interactions.
-Estimates use \Sexpr{paper_counts$candidate_appearances} candidate appearances
-from \Sexpr{paper_counts$completed_respondents} eligible completed responses.
-Positive values indicate a larger women-minus-men profile contrast than
-under baseline. Bars show two-way clustered pointwise \Sexpr{ci_percent}\% confidence intervals.}
-\label{fig:gender-effects}
+\caption{Candidate characteristics, ideological congruence, and selection by decision environment}
+\label{fig:traits}
+\begin{notes}
+Within-condition differences in the probability of a registered selection, in percentage points, with 95\% intervals clustered by respondent and candidate. The first four panels come from one linear probability model of \Sexpr{format(paper_counts$candidate_appearances, big.mark = ",")} candidate appearances with candidate gender, displayed ideology, dominance classification, and age group, their interactions with condition, randomized side, and task position; references are men, center, low dominance, and younger. The congruence panel comes from a separate model with congruence, its interaction with condition, side, and task position, among \Sexpr{live(congruence_n_respondents)} respondents with a numeric self-placement (left 1--4, center 5--6, right 7--10). Estimates are adjusted associations across real profile bundles, not causal effects of independently randomized attributes, and do not condition on opening information. Unadjusted, exploratory tests.
+\end{notes}
 \end{figure}
 
-\begin{table}[!htbp]
-\centering\small
-\caption{Gender-indexed contrasts within each decision environment}
-\label{tab:gamma}
-<<table-gamma, results='asis', eval=has_model_data>>=
-@
-\par\smallskip
-\begin{minipage}{0.95\linewidth}\footnotesize
-\textit{Notes.} Entries give completion-conditioned counterparts of
-$\Gamma_M(z)$ and $\Gamma_Y(z)$ from the same
-candidate-level models using \Sexpr{paper_counts$candidate_appearances} candidate
-appearances from \Sexpr{paper_counts$completed_respondents} eligible completed
-responses, with two-way clustered pointwise \Sexpr{ci_percent}\% intervals. They compare
-complete profiles grouped by gender, not an isolated causal effect of gender.
-The \Sexpr{paper_counts$baseline_family_n} baseline descriptive tests form a separate Holm family. Other within-arm
-$p$-values are unadjusted descriptive comparisons.
-\end{minipage}
-\end{table}
-
-\clearpage
-\begin{table}[!htbp]
-\centering\footnotesize
-\setlength{\tabcolsep}{3pt}
-\caption{Additional pretreatment sample characteristics}
-\label{tab:sample-additional}
-<<table-sample-additional, results='asis', eval=has_model_data>>=
-@
-\par\smallskip
-\begin{minipage}{0.95\linewidth}\footnotesize
-\textit{Notes.} Counts and percentages refer to the
-\Sexpr{paper_counts$completed_respondents} eligible completed responses.
-ISO country codes identify residence and nationality.
-\end{minipage}
-\end{table}
-\clearpage
-
-
-\Sexpr{if (has_model_data) "" else "\\fi"}
-\Sexpr{if (has_model_data) "" else "\\iffalse"}
-\clearpage
-\subsection{Covariate-adjusted predictions}
-\label{sec:adjusted-predictions}
+Respondents' own accounts offer a complementary view. Among tasks in which respondents would support their chosen candidate in a real election, the candidate's appearance or first impression was cited in \Sexpr{live(reason_share("Appearance or first impression", "Baseline"))} percent of \armB\ tasks, \Sexpr{live(reason_share("Appearance or first impression", "Time"))} percent of \armT\ tasks, and \Sexpr{live(reason_share("Appearance or first impression", "Cost"))} percent of \armC\ tasks (Figure~\ref{fig:reasons}). Where a description had been opened, the candidate's ideology was cited in \Sexpr{live(reason_share("Ideology shown", "Baseline"))}, \Sexpr{live(reason_share("Ideology shown", "Time"))}, and \Sexpr{live(reason_share("Ideology shown", "Cost"))} percent of tasks, and policy priorities in \Sexpr{live(reason_share("Policy priorities shown", "Baseline"))}, \Sexpr{live(reason_share("Policy priorities shown", "Time"))}, and \Sexpr{live(reason_share("Policy priorities shown", "Cost"))} percent, respectively. Stated reasons are post-choice self-reports and cannot by themselves establish which evidence drove a decision, but they show how respondents themselves weigh faces and facts.
 
 \begin{figure}[!htbp]
 \centering
-<<figure-adjusted-process-probabilities, fig.width=6.7, fig.height=3.7, eval=has_model_data>>=
+<<figure-reasons, fig.width=6.7, fig.height=4.3, eval=has_model_data>>=
 @
-\caption{Adjusted probabilities of information acquisition and slow selection}
-\label{fig:adjusted-process-probabilities}
-\par\smallskip
-\begin{minipage}{\linewidth}\footnotesize
-\textit{Notes.} Points report average predicted probabilities from separate
-mean-bias-reduced logistic regressions using \Sexpr{if (has_model_data) adjusted_n_tasks else 0L}
-analytical tasks from \Sexpr{if (has_model_data) adjusted_n_people else 0L} eligible completed respondents.
-All specifications adjust for age, respondent gender, tertiary education,
-baseline political interest, and linear task position. Each condition is evaluated
-over the same observed respondents and task positions. Bars are approximate pointwise
-\Sexpr{ci_percent}\% confidence intervals based on respondent-clustered covariance
-and \Sexpr{if (has_model_data) adjusted_task_df else 0L} degrees of freedom.
-Intervals are calculated on the logit of the average probability and transformed back.
-Slow selection denotes no first selection within \Sexpr{selection_window_seconds} seconds
-in any condition, not necessarily a terminal timeout.
-Permitted no-choice submissions remain in the sample. These are completion-conditioned
-model-based predictions, not unconditional intention-to-treat estimates.
-\end{minipage}
+\caption{Real-election support and stated reasons for the choice by decision environment}
+\label{fig:reasons}
+\begin{notes}
+Shares of tasks with respondent-clustered 95\% intervals, truncated at 0 and 100. Real-election support is asked after every registered selection (\Sexpr{live(format(reason_counts$support_tasks, big.mark = ","))} tasks). Reasons are asked only after a positive answer (\Sexpr{live(format(reason_counts$reason_tasks, big.mark = ","))} tasks), and several may be chosen. Ideology and policy priorities are offered only when at least one description was opened, so their denominator is the \Sexpr{live(format(reason_counts$reason_revealed_tasks, big.mark = ","))} such tasks. Because each question follows post-treatment events, these shares are descriptive.
+\end{notes}
 \end{figure}
+
+\subsection{Profile-level choices}
+
+Finally, Figure~\ref{fig:profiles} compares the selection probability of each real profile under each constraint with its probability under \armB, the estimands $\theta_c(z)$ and $\Delta_c(z)$. If the same candidates win regardless of how voters decide, points cluster around the diagonal; if constraints reshuffle the ranking, they scatter away from it. The current correlation between $\hat\theta_c(T)$ and $\hat\theta_c(B)$ is \Sexpr{live(profile_r("Time"))}, and between $\hat\theta_c(C)$ and $\hat\theta_c(B)$ it is \Sexpr{live(profile_r("Cost"))}. With a median of \Sexpr{live(median(profile_comparison$appearances))} appearances per profile and constrained condition, these correlations are attenuated by sampling noise and will become informative only as fieldwork accumulates.
 
 \begin{figure}[!htbp]
 \centering
-<<figure-adjusted-process-means, fig.width=6.7, fig.height=3.7, eval=has_model_data>>=
+<<figure-profiles, fig.width=6.7, fig.height=3.7, eval=has_model_data>>=
 @
-\caption{Adjusted expected information acquisition and first-selection latency}
-\label{fig:adjusted-process-means}
-\par\smallskip
-\begin{minipage}{\linewidth}\footnotesize
-\textit{Notes.} Expected descriptions are estimated by a fractional-logit
-quasi-binomial model for the share of the \Sexpr{profiles_per_task} available descriptions opened,
-then rescaled to a count. Capped first-selection latency is estimated by ordinary
-least squares in seconds, using the common \Sexpr{selection_window_seconds}-second window.
-The panels retain their different natural units and vertical scales.
-Models use \Sexpr{if (has_model_data) adjusted_n_tasks else 0L} analytical tasks from
-\Sexpr{if (has_model_data) adjusted_n_people else 0L} eligible completes and the pretreatment
-controls and empirical standardization described in Figure~\ref{fig:adjusted-process-probabilities}.
-Bars show approximate respondent-clustered pointwise \Sexpr{ci_percent}\% confidence intervals.
-The description-count intervals use a transformed probability scale before rescaling.
-A task with no selection within the common window contributes
-\Sexpr{selection_window_seconds} seconds to capped latency. The figure concerns the
-first selection, not full task duration, which is reported separately in Figure~\ref{fig:task-duration-completes}.
-\end{minipage}
+\caption{Profile-specific selection probabilities under constraint and at baseline}
+\label{fig:profiles}
+\begin{notes}
+Each point is one of the \Sexpr{paper_counts$eligible_profiles} real candidate profiles: its share of appearances that ended in its selection under \armT\ or \armC\ (vertical axis) against \armB\ (horizontal axis). The dashed line marks $\Delta_c(z)=0$. Point area is proportional to the profile's appearances in the constrained condition; hollow points are women. Side and rival are randomized, so these shares estimate $\theta_c(z)$ among completed responses. No profile-level estimate is interpreted individually.
+\end{notes}
 \end{figure}
-
-\clearpage
-\begin{figure}[!htbp]
-\centering
-<<figure-adjusted-candidate-probabilities, fig.width=6.7, fig.height=4.0, eval=has_model_data>>=
-@
-\caption{Adjusted information acquisition and registered selection by candidate gender}
-\label{fig:adjusted-candidate-probabilities}
-\par\smallskip
-\begin{minipage}{\linewidth}\footnotesize
-\textit{Notes.} Separate mean-bias-reduced logistic models use
-\Sexpr{if (has_model_data) adjusted_n_candidate_rows else 0L} candidate appearances from
-\Sexpr{if (has_model_data) adjusted_n_people else 0L} eligible completed respondents.
-Specifications include treatment-by-candidate-gender interactions, respondent age
-and gender, tertiary education, baseline political interest, task position, and
-randomized side. Predictions replace only the assigned environment and average
-over the observed profiles within each candidate-gender group.
-Bars show approximate pointwise \Sexpr{ci_percent}\% confidence intervals using two-way
-respondent--candidate clustering and \Sexpr{if (has_model_data) adjusted_candidate_df else 0L}
-degrees of freedom. Positive-semidefinite covariance correction is used when required.
-Registered selection is a marginal binary event, not a structural paired-choice model.
-A permitted task without a selection contributes zero selection events for both profiles
-while its recorded candidate response remains missing. The profiles' gender and
-other characteristics remain bundled. Differences between candidate-gender groups
-are therefore not isolated causal effects of gender, and all predictions condition
-on study completion.
-\end{minipage}
-\end{figure}
-
-\begin{table}[!htbp]
-\centering\footnotesize
-\setlength{\tabcolsep}{3pt}
-\caption{Covariate-adjusted process contrasts relative to the unconstrained condition}
-\label{tab:adjusted-process-contrasts}
-<<table-adjusted-process-contrasts, results='asis', eval=has_model_data>>=
-@
-\par\smallskip
-\begin{minipage}{\linewidth}\footnotesize
-\textit{Notes.} Contrasts average response-scale differences over the same
-\Sexpr{if (has_model_data) adjusted_n_people else 0L} eligible completed respondents and
-their \Sexpr{if (has_model_data) adjusted_n_tasks else 0L} analytical tasks.
-Probability differences are proportions, description differences are counts, and
-latency differences are seconds. Covariates and working models match
-Figures~\ref{fig:adjusted-process-probabilities} and~\ref{fig:adjusted-process-means}.
-Confidence intervals are respondent-clustered pointwise \Sexpr{ci_percent}\% intervals.
-Two-sided $p$-values are unadjusted supplementary tests. The unadjusted primary
-comparisons and their Holm corrections remain reported separately.
-\end{minipage}
-\end{table}
 \Sexpr{if (has_model_data) "" else "\\fi"}
 
-\clearpage
 \section{Discussion}
+\label{sec:discussion}
 
-The experiment examines whether randomized constraints alter political information acquisition, candidate choice, and the scrutiny applied to women candidates. The reported comparisons are restricted to eligible completed responses, so their causal interpretation depends on assumptions about completion-related selection. Because gender, ideology, party, and facial characteristics remain bundled within observed candidates, gender-indexed comparisons additionally capture heterogeneity across naturally occurring profiles rather than isolated attribute effects. Observed information acquisition locates a stage at which unequal evaluation may emerge but does not, by itself, establish an unconscious psychological mechanism. Combining randomized decision environments, repeated choices, and behavioral measures of political learning connects appearance-based judgment to the acquisition and use of substantive information in the Colombian electoral context.
+The experiment examines whether randomized constraints alter political information acquisition, candidate choice, and the scrutiny applied to women candidates. Its central design choice is to treat appearance-based voting as the outcome of a search process: respondents always see the faces, and the decision environment governs how costly it is to go beyond them. This makes it possible to ask not only whether faces matter but when voters stop at them. The interim estimates in Section~\ref{sec:results} illustrate how the evidence will accumulate. They show how much programmatic information respondents request when it is free, how a binding deadline and an access cost change the timing of choice, and how the women-minus-men differences in search and selection move across environments. The congruence estimates indicate how strongly respondents use a candidate's ideology once they can see it, which determines how consequential the access constraints are for programmatic voting. The interim sample is a fraction of the planned one, however, and the preregistered tests of the complete sample will determine which of these patterns are robust.
+
+Several limits qualify the interpretation. First, the reported comparisons are restricted to eligible completed responses, so their causal interpretation depends on assumptions about completion-related selection; Appendix~\ref{app:collection} documents attrition by stage. Second, gender, ideology, party, and facial characteristics remain bundled within observed candidates. The crossed construction of the candidate pool makes the main classifications nearly independent, but gender-indexed comparisons still capture heterogeneity across naturally occurring profiles rather than isolated attribute effects. Third, opening a description shows that information was accessed, not that it was read, understood, or believed, and stated reasons are self-reports. Fourth, respondents are deliberately unfamiliar with Colombian politics. This removes recognition and partisan attachment, approximating voters who meet unfamiliar local candidates with little prior information, but it means that the magnitudes should not be read as estimates for Colombian voters. Within these limits, combining randomized decision environments, repeated choices, and behavioral measures of political learning connects appearance-based judgment to the acquisition and use of substantive information.
 
 \enlargethispage{\baselineskip}
-\section{References}
+\section*{References}
+\addcontentsline{toc}{section}{References}
 
 {\footnotesize
 \begin{list}{}{%
@@ -681,7 +457,13 @@ The experiment examines whether randomized constraints alter political informati
   \setlength{\parsep}{0pt}%
   \setlength{\topsep}{1pt}%
 }
+\item Abramson, S. F., Ko\c{c}ak, K., \& Magazinnik, A. (2022). What do we learn about voter preferences from conjoint experiments? \emph{American Journal of Political Science, 66}(4), 1008--1020. \url{https://doi.org/10.1111/ajps.12714}
+
 \item Agley, J., Mumaw, C., \& Johnson, B. (2024). Rationale and study checklist for ethical rejection of participants on crowdsourcing research platforms. \emph{Ethics \& Human Research, 46}(4), 38--46. \url{https://doi.org/10.1002/eahr.500217}
+
+\item Aguilar, R., Cunow, S., \& Desposato, S. (2015). Choice sets, gender, and candidate choice in Brazil. \emph{Electoral Studies, 39}, 230--242. \url{https://doi.org/10.1016/j.electstud.2015.03.011}
+
+\item Ahler, D. J., Citrin, J., Dougal, M. C., \& Lenz, G. S. (2017). Face value? Experimental evidence that candidate appearance influences electoral choice. \emph{Political Behavior, 39}(1), 77--102. \url{https://doi.org/10.1007/s11109-016-9348-6}
 
 \item Al\'os-Ferrer, C., \& Garagnani, M. (2022). Voting under time pressure. \emph{Judgment and Decision Making, 17}(5), 1072--1093. \url{https://doi.org/10.1017/S1930297500009335}
 
@@ -690,6 +472,8 @@ The experiment examines whether randomized constraints alter political informati
 \item Antonakis, J., \& Dalgas, O. (2009). Predicting elections: Child's play! \emph{Science, 323}(5918), 1183. \url{https://doi.org/10.1126/science.1167748}
 
 \item Arel-Bundock, V., Greifer, N., \& Heiss, A. (2024). How to interpret statistical models using marginaleffects for R and Python. \emph{Journal of Statistical Software, 111}(9), 1--32. \url{https://doi.org/10.18637/jss.v111.i09}
+
+\item Atkinson, M. D., Enos, R. D., \& Hill, S. J. (2009). Candidate faces and election outcomes: Is the face--vote correlation caused by candidate selection? \emph{Quarterly Journal of Political Science, 4}(3), 229--249. \url{https://doi.org/10.1561/100.00008062}
 
 \item Bahamonde, H., \& Sarpila, O. (2024). Physical appearance and elections: An inequality perspective. \emph{Political Psychology, 45}(3), 623--642. \url{https://doi.org/10.1111/pops.12940}
 
@@ -715,25 +499,51 @@ The experiment examines whether randomized constraints alter political informati
 
 \item Card, S. K., Moran, T. P., \& Newell, A. (1980). The keystroke-level model for user performance time with interactive systems. \emph{Communications of the ACM, 23}(7), 396--410. \url{https://doi.org/10.1145/358886.358895}
 
+\item Carr\'e, J. M., \& McCormick, C. M. (2008). In your face: Facial metrics predict aggressive behaviour in the laboratory and in varsity and professional hockey players. \emph{Proceedings of the Royal Society B, 275}(1651), 2651--2656. \url{https://doi.org/10.1098/rspb.2008.0873}
+
+\item Chiao, J. Y., Bowman, N. E., \& Gill, H. (2008). The political gender gap: Gender bias in facial inferences that predict voting behavior. \emph{PLoS ONE, 3}(10), e3666. \url{https://doi.org/10.1371/journal.pone.0003666}
+
+\item Ditonto, T. (2018). A face fit for office? Appearance-based competence inferences in high-information environments. \emph{Electoral Studies, 54}, 248--253. \url{https://doi.org/10.1016/j.electstud.2018.04.007}
+
 \item Ditonto, T. M., Hamilton, A. J., \& Redlawsk, D. P. (2014). Gender stereotypes, information search, and voting behavior in political campaigns. \emph{Political Behavior, 36}(2), 335--358. \url{https://doi.org/10.1007/s11109-013-9232-6}
 
 \item Ditonto, T., \& Mattes, K. (2018). Differences in appearance-based trait inferences for male and female political candidates. \emph{Journal of Women, Politics \& Policy, 39}(4), 430--450. \url{https://doi.org/10.1080/1554477X.2018.1506206}
+
+\item Downs, A. (1957). \emph{An Economic Theory of Democracy}. Harper \& Row.
+
+\item Geniole, S. N., Denson, T. F., Dixson, B. J., Carr\'e, J. M., \& McCormick, C. M. (2015). Evidence from meta-analyses of the facial width-to-height ratio as an evolved cue of threat. \emph{PLoS ONE, 10}(7), e0132726. \url{https://doi.org/10.1371/journal.pone.0132726}
+
+\item Hainmueller, J., Hangartner, D., \& Yamamoto, T. (2015). Validating vignette and conjoint survey experiments against real-world behavior. \emph{Proceedings of the National Academy of Sciences, 112}(8), 2395--2400. \url{https://doi.org/10.1073/pnas.1416587112}
 
 \item Hainmueller, J., Hopkins, D. J., \& Yamamoto, T. (2014). Causal inference in conjoint analysis: Understanding multidimensional choices via stated preference experiments. \emph{Political Analysis, 22}(1), 1--30. \url{https://doi.org/10.1093/pan/mpt024}
 
 \item Herrmann, M., \& Shikano, S. (2016). Attractiveness and facial competence bias face-based inferences of candidate ideology. \emph{Political Psychology, 37}(3), 401--417.
 
+\item Huddy, L., \& Terkildsen, N. (1993). Gender stereotypes and the perception of male and female candidates. \emph{American Journal of Political Science, 37}(1), 119--147.
+
 \item Isler, O., Maule, J., \& Starmer, C. (2018). Is intuition really cooperative? Improved tests support the social heuristics hypothesis. \emph{PLOS ONE, 13}(1), e0190560. \url{https://doi.org/10.1371/journal.pone.0190560}
 
 \item Jenke, L. (2025). An eye tracking study of gender biased information acquisition in candidate evaluation. \emph{Political Psychology, 46}(3), 673--690. \url{https://doi.org/10.1111/pops.13031}
+
+\item Jenke, L., \& Huettel, S. A. (2016). Issues or identity? Cognitive foundations of voter choice. \emph{Trends in Cognitive Sciences, 20}(11), 794--804. \url{https://doi.org/10.1016/j.tics.2016.08.013}
 
 \item Kocher, M. G., Schindler, D., Trautmann, S. T., \& Xu, Y. (2019). Risk, time pressure, and selection effects. \emph{Experimental Economics, 22}(1), 216--246. \url{https://doi.org/10.1007/s10683-018-9576-1}
 
 \item Kosmidis, I., \& Firth, D. (2021). Jeffreys-prior penalty, finiteness and shrinkage in binomial-response generalized linear models. \emph{Biometrika, 108}(1), 71--82. \url{https://doi.org/10.1093/biomet/asaa052}
 
+\item Lau, R. R., \& Redlawsk, D. P. (2001). Advantages and disadvantages of cognitive heuristics in political decision making. \emph{American Journal of Political Science, 45}(4), 951--971. \url{https://doi.org/10.2307/2669334}
+
+\item Lau, R. R., \& Redlawsk, D. P. (2006). \emph{How Voters Decide: Information Processing during Election Campaigns}. Cambridge University Press.
+
+\item Laustsen, L., \& Petersen, M. B. (2016). Winning faces vary by ideology: How nonverbal source cues influence election and communication success in politics. \emph{Political Communication, 33}(2), 188--211. \url{https://doi.org/10.1080/10584609.2015.1050565}
+
 \item Lawson, C., Lenz, G. S., Baker, A., \& Myers, M. (2010). Looking like a winner: Candidate appearance and electoral success in new democracies. \emph{World Politics, 62}(4), 561--593.
 
+\item Leeper, T. J., Hobolt, S. B., \& Tilley, J. (2020). Measuring subgroup preferences in conjoint experiments. \emph{Political Analysis, 28}(2), 207--221. \url{https://doi.org/10.1017/pan.2019.30}
+
 \item Lenz, G. S., \& Lawson, C. (2011). Looking the part: Television leads less informed citizens to vote based on candidates' appearance. \emph{American Journal of Political Science, 55}(3), 574--589.
+
+\item Ley 1475 de 2011. Por la cual se adoptan reglas de organizaci\'on y funcionamiento de los partidos y movimientos pol\'iticos, de los procesos electorales y se dictan otras disposiciones. Congreso de la Rep\'ublica de Colombia, 14 July 2011.
 
 \item Lodge, M., McGraw, K. M., \& Stroh, P. (1989). An impression-driven model of candidate evaluation. \emph{American Political Science Review, 83}(2), 399--419. \url{https://doi.org/10.2307/1962397}
 
@@ -745,11 +555,17 @@ The experiment examines whether randomized constraints alter political informati
 
 \item Olivola, C. Y., Tingley, D., \& Todorov, A. (2018). Republican voters prefer candidates who have conservative-looking faces: New evidence from exit polls. \emph{Political Psychology, 39}(5), 1157--1171. \url{https://doi.org/10.1111/pops.12489}
 
+\item Olivola, C. Y., \& Todorov, A. (2010). Elected in 100 milliseconds: Appearance-based trait inferences and voting. \emph{Journal of Nonverbal Behavior, 34}(2), 83--110. \url{https://doi.org/10.1007/s10919-009-0082-1}
+
 \item Ord\'o\~nez, L., \& Benson, L., III. (1997). Decisions under time pressure: How time constraint affects risky decision making. \emph{Organizational Behavior and Human Decision Processes, 71}(2), 121--140. \url{https://doi.org/10.1006/obhd.1997.2717}
 
 \item Payne, J. W., Bettman, J. R., \& Johnson, E. J. (1988). Adaptive strategy selection in decision making. \emph{Journal of Experimental Psychology: Learning, Memory, and Cognition, 14}(3), 534--552. \url{https://doi.org/10.1037/0278-7393.14.3.534}
 
 \item Payne, J. W., Bettman, J. R., \& Luce, M. F. (1996). When time is money: Decision behavior under opportunity-cost time pressure. \emph{Organizational Behavior and Human Decision Processes, 66}(2), 131--152. \url{https://doi.org/10.1006/obhd.1996.0044}
+
+\item Popkin, S. L. (1991). \emph{The Reasoning Voter: Communication and Persuasion in Presidential Campaigns}. University of Chicago Press.
+
+\item Redlawsk, D. P. (2004). What voters do: Information search during election campaigns. \emph{Political Psychology, 25}(4), 595--610.
 
 \item Rieskamp, J., \& Hoffrage, U. (2008). Inferences under time pressure: How opportunity costs affect strategy selection. \emph{Acta Psychologica, 127}(2), 258--276. \url{https://doi.org/10.1016/j.actpsy.2007.05.004}
 
@@ -759,211 +575,127 @@ The experiment examines whether randomized constraints alter political informati
 
 \item Sauro, J. (2009). Estimating productivity: Composite operators for keystroke level modeling. In J. A. Jacko (Ed.), \emph{Human-Computer Interaction. New Trends} (Lecture Notes in Computer Science, Vol. 5610, pp. 352--361). Springer. \url{https://doi.org/10.1007/978-3-642-02574-7_40}
 
+\item Schwarz, S., \& Coppock, A. (2022). What have we learned about gender from candidate choice experiments? A meta-analysis of sixty-seven factorial survey experiments. \emph{The Journal of Politics, 84}(2), 655--668. \url{https://doi.org/10.1086/716290}
+
+\item Spiliopoulos, L., \& Ortmann, A. (2018). The BCD of response time analysis in experimental economics. \emph{Experimental Economics, 21}(2), 383--433. \url{https://doi.org/10.1007/s10683-017-9528-1}
+
+\item Teele, D. L., Kalla, J., \& Rosenbluth, F. (2018). The ties that double bind: Social roles and women's underrepresentation in politics. \emph{American Political Science Review, 112}(3), 525--541. \url{https://doi.org/10.1017/S0003055418000217}
+
 \item Todorov, A., Mandisodza, A. N., Goren, A., \& Hall, C. C. (2005). Inferences of competence from faces predict election outcomes. \emph{Science, 308}(5728), 1623--1626.
 \end{list}
 }
 
 \clearpage
 \appendix
-\section{Task duration by study version}
-\label{app:task-duration}
+\renewcommand{\thetable}{A\arabic{table}}
 \renewcommand{\thefigure}{A\arabic{figure}}
+\setcounter{table}{0}
 \setcounter{figure}{0}
+\section{Data collection and implementation}
+\label{app:collection}
+
+\subsection{Deadline calibration}
+
+The time-pressure manipulation is calibrated to the demands of the decision task rather than to a universal threshold for rapid judgment. A consequential deadline must restrict the time respondents would otherwise use to acquire and evaluate information (Ord\'o\~nez and Benson 1997), and temporal constraints can induce faster processing, more selective information search, and changes in decision strategy (Payne, Bettman, and Johnson 1988). Although Ballew and Todorov (2007) elicited electorally predictive competence judgments under a two-second deadline, their task involved photographs alone. The present task additionally permits respondents to reveal and compare political descriptions. Across the available candidate pairs, these descriptions contain a median of 28 words in total. Brysbaert's (2019) estimated Spanish silent-reading rate of 278 words per minute implies approximately six seconds of uninterrupted reading, before allowing for information access, comparison, and candidate selection (see also Caballero Germain et al. 2021 on remotely measured reading speed among Spanish-speaking university students). This calculation provides context rather than a minimum comprehension time. Keystroke-level models assign standard operator times to pointing and clicking (Card, Moran, and Newell 1980; Sauro 2009), but cursor movement and target selection depend on interface geometry and input devices, making fixed allowances per click inappropriate (MacKenzie 1992). The relevant benchmark is consequently respondents' observed performance on the experimental task itself.
+
+The pre-test evaluated an exploratory twenty-second deadline against an unconstrained baseline. It comprised \Sexpr{pretest$n_respondents} eligible completed responses, contributing \Sexpr{pretest$n_tasks} observations across \Sexpr{pretest$n_main_tasks} analytical tasks per respondent. Pooled mean task duration was \Sexpr{sprintf("%.2f", pretest$baseline$mean_seconds)} seconds (SD \Sexpr{sprintf("%.2f", pretest$baseline$sd_seconds)}; \Sexpr{pretest$baseline$n_respondents} respondents, \Sexpr{pretest$baseline$n_tasks} tasks) in the unconstrained condition and \Sexpr{sprintf("%.2f", pretest$time$mean_seconds)} seconds (SD \Sexpr{sprintf("%.2f", pretest$time$sd_seconds)}; \Sexpr{pretest$time$n_respondents} respondents, \Sexpr{pretest$time$n_tasks} tasks) under the exploratory \Sexpr{pretest$deadline_seconds}-second deadline; the arithmetic-cost condition contributed the remaining \Sexpr{pretest$cost$n_respondents} respondents and \Sexpr{pretest$cost$n_tasks} tasks. The unconstrained median was \Sexpr{sprintf("%.2f", pretest$baseline$median_seconds)} seconds (interquartile range \Sexpr{sprintf("%.2f", pretest$baseline$q25_seconds)}--\Sexpr{sprintf("%.2f", pretest$baseline$q75_seconds)}), and only \Sexpr{sprintf("%.1f", pretest$baseline$percent_over_deadline)} percent of unconstrained tasks (\Sexpr{pretest$baseline$n_over_deadline} of \Sexpr{pretest$baseline$n_tasks}) lasted longer than \Sexpr{pretest$deadline_seconds} seconds. The exploratory ceiling therefore frequently exceeded the time respondents used without a deadline. To impose a more binding restriction, we adapt the calibration principle of Kocher et al. (2019, 220--221), whose deadlines represented ``a 20\% reduction of the median decision times in the absence of constraints.'' Their restrictions applied to blocks of choices rather than individual tasks, so we adopt the relative principle rather than the implementation. Applying that reduction to the unconstrained median yields \Sexpr{sprintf("%.2f", pretest$reference_seconds)} seconds, rounded upward to nine seconds, approximately \Sexpr{sprintf("%.0f", pretest$reduction_percent)} percent below the observed median. Rounding upward retains a modest margin for information access and response registration while keeping the deadline below typical unconstrained task duration. Although nine seconds exceeds the unconstrained median time to first selection of \Sexpr{sprintf("%.2f", pretest$baseline$first_selection_median)} seconds, it remains below the typical time used to complete the full task. Its effectiveness is assessed jointly through reported hurry, information acquisition, and nonselection at the deadline (Table~\ref{tab:implementation}), rather than inferred from mechanically shortened durations alone. Figure~\ref{fig:task-duration-completes} compares task durations in the pre-test and the current protocol.
 
 \begin{figure}[!htbp]
 \centering
-<<figure-task-duration-comparison, fig.width=6.7, fig.height=6.0>>=
+<<figure-task-duration-comparison, fig.width=6.7, fig.height=5.6>>=
 @
 \caption{Mean choice-task duration by condition and study version among eligible completes}
 \label{fig:task-duration-completes}
-\par\smallskip
-\begin{minipage}{\linewidth}\footnotesize
-\textit{Notes.} Panel A comprises the original \Sexpr{pretest$n_respondents} eligible pre-test
-participants who reached the final study screen, submitted all \Sexpr{pretest$n_main_tasks} analytical
-tasks, and recorded at least \Sexpr{pretest$minimum_valid_main_choices} valid candidate choices.
-The unconstrained, exploratory timed, and arithmetic-cost conditions include
-\Sexpr{pretest$baseline$n_respondents}, \Sexpr{pretest$time$n_respondents}, and
-\Sexpr{pretest$cost$n_respondents} participants, respectively. Each contributes
-one observation to each of the \Sexpr{pretest$n_main_tasks} analytical choice tasks, for
-\Sexpr{pretest$n_tasks} task observations. The \Sexpr{pretest$n_practice_tasks} practice tasks
-are excluded.
-Points report arithmetic means, and bars show pointwise \Sexpr{ci_percent}\% Student-$t$
-confidence intervals across respondents within each condition and task.
-Time runs from the display of both loaded photographs until manual or automatic
-task submission. It includes information acquisition and arithmetic operations
-when applicable, but excludes image loading and follow-up questions.
-Up to \Sexpr{pretest$allowed_missing_choices} timed submissions without a candidate selection are permitted per
-retained response and remain in the figure. No long durations are removed or
-capped. Panel A's dotted line marks the exploratory \Sexpr{pretest$deadline_seconds}-second deadline.
-Confidence limits may extend below zero, although observed durations are nonnegative.
-Comparisons are descriptive and conditional on study completion, which may
-itself be affected by treatment.
-\Sexpr{if (has_main_data) paste0("Panel B includes ", paper_counts$completed_respondents,
-  " qualifying completes from the revised ", deadline_seconds,
-  "-second version, contributing ", paper_counts$analytical_tasks,
-  " analytical task observations. Its condition-specific respondent counts appear in the panel header. ",
-  "Recorded navigation violations and terminated cases are excluded from this panel but retained in the source data. ",
-  "Both panels use the same seconds scale. Their dotted lines mark their respective deadlines. ",
-  "The two cohorts are distinct, and differences between panels are not randomized effects of deadline length.") else ""}
-\end{minipage}
+\begin{notes}
+Panel A: the original pre-test (\Sexpr{pretest$n_respondents} eligible completes; exploratory \Sexpr{pretest$deadline_seconds}-second deadline). \Sexpr{if (has_main_data) paste0("Panel B: the current protocol (", paper_counts$completed_respondents, " eligible completes; ", deadline_seconds, "-second deadline). ") else ""}Points are means across respondents at each analytical task, with pointwise 95\% Student-$t$ intervals; each complete contributes one observation per task. Time runs from the display of both loaded photographs to manual or automatic submission and includes information acquisition and arithmetic, but excludes loading and follow-up questions. Up to \Sexpr{allowed_missing_choices} timed submissions without a selection per response are retained; no durations are trimmed. Dotted lines mark each version's deadline. The cohorts are distinct, so differences between panels are not randomized effects of deadline length.
+\end{notes}
 \end{figure}
 
+\subsection{Participant preparation and procedural transparency}
+
+A binding deadline should constrain the decision process rather than leave respondents uncertain about how the interface operates. In an online time-pressure experiment, Isler, Maule, and Starmer (2018) combined interface familiarization with advance explanations of the consequences of missing a deadline, achieving substantially higher compliance than earlier protocols. This evidence motivates preparation under the assigned condition: the five practice tasks reproduce the analytical task, and the timed instructions explain the countdown, automatic advancement, and preservation of any selection already made. In the timed condition, a brief comprehension check precedes practice and is repeated before the analytical sequence; incorrect answers receive explanatory feedback and may be corrected without disqualification.\footnote{The additional disclosures, comprehension checks, and nonresponse reminders are prospective procedural refinements. Previously collected responses retain their original procedural context and are not retrospectively treated as having received these additions.} The purpose is to establish understanding, not to screen respondents for decision speed. Br\"uhlmann et al. (2024) found that a passive warning did not reduce careless responding, while requiring participants to reproduce the warning increased attrition, which cautions against treating longer or more demanding warnings as an unqualified improvement.
+
+Procedural clarity also requires respondents to know the consequences of nonresponse before investing time in the study. Agley, Mumaw, and Johnson (2024) recommend advance disclosure of rejection conditions, reminders at consent, and clear explanations when participation ends. Accordingly, the protocol specifies neutral advance disclosure that some respondents will face a nine-second deadline, without instructing the unconstrained groups to hurry. Consent explains the completion threshold, prohibited browser navigation, and the restriction of prize-draw registration to eligible completions. Timed respondents receive reminders after the first and second unanswered analytical choices; a third ends participation, with a reason-specific explanation and a research contact. Practice nonresponse does not count toward this threshold. These procedures distinguish a missed selection from dishonesty, but do not eliminate the possibility that the deadline changes who completes the study. Bouwmeester et al. (2017) documented substantial deadline noncompliance and differences between intention-to-treat and compliant-only estimates. We therefore retain incomplete records for recruitment accounting and interpret the substantive estimates as conditional on completion.
+
 \Sexpr{if (has_model_data) "" else "\\iffalse"}
+\subsection{Recruitment, sample, and implementation checks}
+
+Table~\ref{tab:recruitment} accounts for every started attempt, Table~\ref{tab:sample} describes the completed sample by condition, Table~\ref{tab:implementation} summarizes how each environment was experienced, and Table~\ref{tab:displayed} verifies that the randomization displayed comparable profiles across conditions. The reported hurry contrast between \armT\ and \armB\ is \Sexpr{live(tex_num(hurry_check$estimate, 2))} scale points (95\% CI \Sexpr{live(tex_num(hurry_check$conf.low, 2))} to \Sexpr{live(tex_num(hurry_check$conf.high, 2))}; $p=$ \Sexpr{live(tex_p(hurry_check$p.value))}), based on \Sexpr{paper_counts$hurry_model_n} observed answers from \Sexpr{paper_counts$hurry_respondents} respondents with respondent-clustered errors.
+
+\begin{table}[!htbp]
+\centering\small
+\caption{Recruitment flow and analytical sample by condition}
+\label{tab:recruitment}
+<<table-recruitment, results='asis', eval=has_model_data>>=
+@
+\begin{notes}
+Top: every started attempt across study versions, in mutually exclusive stages. An eligible complete reaches the final screen, submits all \Sexpr{n_main_tasks} analytical tasks, records at least \Sexpr{minimum_valid_main_choices} valid choices, and has no detected prohibited browser navigation. Of \Sexpr{paper_counts$cumulative_completes} cumulative eligible completes, \Sexpr{paper_counts$other_protocol_completes} belong to other protocol versions (including the pre-test) and are excluded from current analyses. Bottom: the analytical sample. Missing choices remain missing and stay in the information and timing denominators; practice tasks are excluded.
+\end{notes}
+\end{table}
+
+\begin{table}[!htbp]
+\centering\footnotesize
+\setlength{\tabcolsep}{3pt}
+\caption{Pretreatment characteristics of the completed sample}
+\label{tab:sample}
+<<table-sample, results='asis', eval=has_model_data>>=
+@
+\begin{notes}
+\Sexpr{paper_counts$completed_respondents} eligible completed responses, each counted once. Continuous entries are means with standard deviations in parentheses; categorical entries are counts and percentages. Missing numeric self-placement includes uncertainty, nonresponse, and identification with neither side. The final column reports the overall percentage missing. Most common countries of residence (ISO codes): \Sexpr{live(residence_note)}.
+\end{notes}
+\end{table}
+
+\begin{table}[!htbp]
+\centering\small
+\caption{Implementation checks by decision environment}
+\label{tab:implementation}
+<<table-implementation, results='asis', eval=has_model_data>>=
+@
+\begin{notes}
+Task-level summaries of \Sexpr{format(paper_counts$analytical_tasks, big.mark = ",")} analytical tasks from eligible completed responses. Durations describe the choice page only. Deadline quantities exist only in \armT; a reached deadline can retain an earlier selection, so it is not necessarily a nonselection. Hurry is asked in \armT\ and \armB\ after a registered choice; effort is asked in \armC\ after information is revealed; follow-up means condition on an observed answer. Arithmetic success refers to at least one solved problem during a \armC\ task. Untimed \armB\ durations are an unrestricted reference; \armT\ durations are mechanically bounded and do not by themselves establish experienced pressure.
+\end{notes}
+\end{table}
+
+\begin{table}[!htbp]
+\centering\small
+\caption{Characteristics of displayed profiles by condition (percent of appearances)}
+\label{tab:displayed}
+<<table-displayed-profiles, results='asis', eval=has_model_data>>=
+@
+\begin{notes}
+Percentages of the \Sexpr{format(paper_counts$candidate_appearances, big.mark = ",")} candidate appearances in each condition, by classification of the displayed profile. Profiles are sampled at random for each respondent, so differences across conditions reflect chance.
+\end{notes}
+\end{table}
+
 \clearpage
-\section{Candidate characteristics and registered selection}
-\label{app:candidate-characteristics}
 \renewcommand{\thetable}{B\arabic{table}}
 \renewcommand{\thefigure}{B\arabic{figure}}
 \setcounter{table}{0}
 \setcounter{figure}{0}
+\section{Supplementary analyses}
+\label{app:supplementary}
 
-\begin{table}[!htbp]
-\centering\footnotesize
-\setlength{\tabcolsep}{3pt}
-\caption{Displayed and selected candidate characteristics by condition}
-\label{tab:candidate-trait-composition}
-<<table-candidate-trait-composition, results='asis', eval=has_model_data>>=
-@
-\par\smallskip
-\begin{minipage}{0.98\linewidth}\footnotesize
-\textit{Notes.} The table includes \Sexpr{paper_counts$candidate_appearances} candidate
-appearances from \Sexpr{paper_counts$candidate_profiles} distinct candidates evaluated by
-\Sexpr{paper_counts$completed_respondents} eligible completed respondents.
-Each submitted analytical task contributes its \Sexpr{profiles_per_task} displayed candidate profiles.
-Shown counts profile appearances, and chosen counts registered selections.
-Chosen / shown is the percentage of displayed profiles with that characteristic
-that were selected. Among chosen is the percentage of registered selections with
-that characteristic, calculated separately for each attribute and condition.
-The latter percentages therefore sum to 100 within each attribute and condition.
-A retained task without a selection contributes \Sexpr{profiles_per_task} shown profiles and no chosen
-profile. The original missing choice is not imputed.
-Ideology refers to the classification in the candidate's available description.
-The age grouping uses the supplied younger/older profile classification rather
-than age in years.
-The cost condition requires an arithmetic operation to access information.
-\end{minipage}
-\end{table}
-
-\clearpage
-\begin{table}[!htbp]
-\centering\footnotesize
-\setlength{\tabcolsep}{3pt}
-\caption{Adjusted associations between candidate characteristics and selection}
-\label{tab:candidate-trait-associations}
-<<table-candidate-trait-associations, results='asis', eval=has_model_data>>=
-@
-\par\smallskip
-\begin{minipage}{0.98\linewidth}\footnotesize
-\textit{Notes.} Estimates are within-condition differences in the probability
-of a registered candidate selection, expressed in percentage points.
-The joint linear probability model includes candidate gender, displayed ideology,
-dominance classification, and candidate age group, together with their interactions
-with condition, randomized side, and task-order indicators.
-Reference categories are men, centrist ideology, low dominance, and the younger
-age category. Confidence intervals are pointwise \Sexpr{ci_percent}\% intervals with two-way
-clustering by respondent and candidate. Two-sided $p$-values are unadjusted
-exploratory tests and do not enter the primary multiplicity families.
-When required, the software's standard positive-semidefinite covariance correction
-is applied.
-The model uses \Sexpr{paper_counts$candidate_appearances} candidate appearances from
-\Sexpr{paper_counts$completed_respondents} eligible completed responses. Retained submissions
-without a choice contribute zero registered selections for both displayed
-candidates, while the original candidate response remains missing.
-Because candidate attributes remain bundled within real profiles, these contrasts
-are adjusted associations, not attribute-level average marginal component effects.
-They do not isolate the effect of reading political information.
-\end{minipage}
-\end{table}
-
-\clearpage
 \begin{figure}[!htbp]
 \centering
-<<figure-candidate-trait-associations, fig.width=6.7, fig.height=5.8, eval=has_model_data>>=
+<<figure-adjusted-candidate-probabilities, fig.width=6.7, fig.height=3.3, eval=has_model_data>>=
 @
-\caption{Candidate characteristics and registered selection by decision environment}
-\label{fig:candidate-trait-associations}
-\par\smallskip
-\begin{minipage}{\linewidth}\footnotesize
-\textit{Notes.} Points report adjusted within-condition differences in registered
-selection in percentage points from the joint model in
-Table~\ref{tab:candidate-trait-associations}. Bars show two-way clustered pointwise
-\Sexpr{ci_percent}\% confidence intervals. The vertical line marks no difference from the relevant
-reference category. Estimates use \Sexpr{paper_counts$candidate_appearances} candidate
-appearances from \Sexpr{paper_counts$completed_respondents} eligible completed responses.
-The layout follows a conjoint coefficient plot, but the estimates are associations
-across naturally occurring candidate profiles rather than causal effects of
-independently randomized attributes. Baseline has no time or arithmetic constraint,
-time imposes a \Sexpr{deadline_seconds}-second deadline, and cost requires an arithmetic operation.
-\end{minipage}
+\caption{Covariate-adjusted information acquisition and selection by candidate gender}
+\label{fig:adjusted-candidate-probabilities}
+\begin{notes}
+Average predicted probabilities from mean-bias-reduced logistic models of \Sexpr{live(format(adjusted_n_candidate_rows, big.mark = ","))} candidate appearances with treatment-by-candidate-gender interactions, respondent age and gender, tertiary education, baseline political interest, task position, and randomized side. Predictions change only the assigned environment and average over the observed profiles within each candidate-gender group; filled circles are men, hollow circles women. Approximate 95\% intervals use two-way respondent--candidate clustering and are computed on the logit scale. Selection is a marginal binary event, not a structural paired-choice model.
+\end{notes}
 \end{figure}
 
-\clearpage
-\section{Information acquisition by respondent and candidate gender}
-\label{app:respondent-scrutiny}
-\renewcommand{\thefigure}{C\arabic{figure}}
-\setcounter{figure}{0}
-
 \begin{figure}[!htbp]
 \centering
-<<figure-respondent-scrutiny, fig.width=7.2, fig.height=4.4, eval=has_model_data>>=
+<<figure-respondent-scrutiny, fig.width=6.7, fig.height=3.3, eval=has_model_data>>=
 @
-\caption{Candidate information acquisition among male and female respondents}
+\caption{Information acquisition by respondent and candidate gender}
 \label{fig:respondent-scrutiny}
-\par\smallskip
-\begin{minipage}{\linewidth}\footnotesize
-\textit{Notes.} Panels distinguish male and female respondents. Within each panel,
-points show the probability that information about a male or female candidate was
-opened at least once in each experimental condition. The points equal the observed
-opening rates, not differences between respondent groups. Bars show pointwise
-\Sexpr{ci_percent}\% confidence intervals from a saturated binomial-logit model
-of condition, candidate gender, respondent gender, and their interactions.
-The covariance is clustered by respondent and candidate, with a
-positive-semidefinite correction when required. Student-$t$ critical values use
-\Sexpr{if (has_model_data) scrutiny_df else 0L} degrees of freedom. Intervals are calculated on the log-odds
-scale and transformed to probabilities.
-The figure uses \Sexpr{paper_counts$scrutiny_appearances} candidate appearances
-from \Sexpr{paper_counts$scrutiny_respondents} eligible completed responses.
-Respondent counts by condition are \Sexpr{if (has_model_data) scrutiny_sample_note else ""}.
-Participants reporting another gender identity or not reporting gender are
-outside this specific comparison, but remain in the other analyses if eligible.
-This excludes \Sexpr{paper_counts$scrutiny_excluded_respondents} completed
-respondents from the present figure.
-Retained tasks without a candidate selection still contribute their recorded
-information-opening outcomes. The measure does not establish that the text was
-read or count repeated clicks. These exploratory, completion-conditioned
-associations are not causal effects of respondent or candidate gender.
-\end{minipage}
+\begin{notes}
+Observed probability that a displayed candidate's description was opened, by condition, candidate gender (filled: men; hollow: women), and respondent gender, with 95\% intervals from a saturated binomial-logit model clustered by respondent and candidate (\Sexpr{live(scrutiny_df)} degrees of freedom, logit scale). \Sexpr{format(paper_counts$scrutiny_appearances, big.mark = ",")} appearances from \Sexpr{paper_counts$scrutiny_respondents} respondents; respondent counts by condition: \Sexpr{live(scrutiny_sample_note)}. \Sexpr{paper_counts$scrutiny_excluded_respondents} respondents who reported another gender identity or none are outside this comparison only. Exploratory, completion-conditioned associations, not causal effects of respondent or candidate gender.
+\end{notes}
 \end{figure}
-
-\clearpage
-\begin{figure}[!htbp]
-\centering
-<<figure-adjusted-respondent-scrutiny, fig.width=7.2, fig.height=4.4, eval=has_model_data>>=
-@
-\caption{Covariate-adjusted information acquisition by respondent and candidate gender}
-\label{fig:adjusted-respondent-scrutiny}
-\par\smallskip
-\begin{minipage}{\linewidth}\footnotesize
-\textit{Notes.} Panels distinguish observed male and female respondents.
-Within each panel, points show average predicted information-opening probabilities
-for profiles of male and female candidates in each decision environment.
-A mean-bias-reduced logistic model includes the three-way interaction among
-treatment, candidate gender, and respondent gender, adjusting for age, tertiary
-education, baseline political interest, task position, and randomized side.
-The model uses \Sexpr{if (has_model_data) adjusted_scrutiny_n_rows else 0L} candidate appearances from
-\Sexpr{if (has_model_data) adjusted_scrutiny_n_people else 0L} eligible completed respondents.
-Respondent counts by condition are \Sexpr{if (has_model_data) scrutiny_sample_note else ""}.
-Each treatment prediction averages over the observed members and profiles of
-the relevant respondent--candidate-gender subgroup, without changing either gender.
-Bars are approximate pointwise \Sexpr{ci_percent}\% confidence intervals based on
-two-way respondent--candidate clustering, \Sexpr{if (has_model_data) adjusted_scrutiny_df else 0L}
-degrees of freedom, and logit transformation of the average probability.
-Positive-semidefinite covariance correction is used when required.
-Subgroup differences are exploratory, completion-conditioned associations,
-not causal effects of respondent or candidate gender. Information opening does
-not establish that the text was read.
-\end{minipage}
-\end{figure}
-
 \Sexpr{if (has_model_data) "" else "\\fi"}
+
 \end{document}
